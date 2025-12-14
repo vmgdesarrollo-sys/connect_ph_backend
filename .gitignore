@@ -1,0 +1,93 @@
+# ----------------------------------------------
+# 1. Dependencias y Directorios Generados
+# ----------------------------------------------
+
+# Dependencias de Node (generalmente el directorio más grande)
+/node_modules
+
+# Directorio de salida de la compilación de TypeScript/NestJS
+# (donde se generan los archivos .js)
+/dist
+/build
+
+# ----------------------------------------------
+# 2. Archivos de Entorno Local y Seguridad
+# ----------------------------------------------
+
+# Archivos de entorno que contienen claves secretas (API keys, DB credentials, etc.)
+# ¡CRÍTICO para la seguridad de LIVEKIT_API_KEY y LIVEKIT_API_SECRET!
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# ----------------------------------------------
+# 3. Archivos de Pruebas y Cobertura
+# ----------------------------------------------
+
+# Reportes de cobertura de pruebas (Jest)
+/coverage
+
+# Archivos de caché para pruebas
+.jest/
+.nyc_output/
+
+# ----------------------------------------------
+# 4. Archivos de Sistema Operativo y Editores
+# ----------------------------------------------
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history
+
+# Vim/Nano/Editores
+*.swp
+*~
+
+# ----------------------------------------------
+# 5. Archivos de Logging y PID
+# ----------------------------------------------
+
+# Logs de la aplicación
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Archivos de ID de Proceso
+*.pid
+*.seed
+*.lock
+
+# ----------------------------------------------
+# 6. Caché y Metadata de Node.js
+# ----------------------------------------------
+
+# Archivos de caché de npm y yarn
+.npm
+.yarn-cache
+
+# Archivos de lock/checksums
+package-lock.json
+# Si usa yarn:
+# yarn.lock (aunque muchos proyectos prefieren incluirlo para consistencia)
+
+# ----------------------------------------------
+# 7. Otros Archivos de NestJS/TypeScript
+# ----------------------------------------------
+
+# Archivos de caché y compilación temporal
+.tsbuildinfo
