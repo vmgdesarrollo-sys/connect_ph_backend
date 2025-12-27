@@ -17,7 +17,17 @@ async function bootstrap() {
     .setTitle('ERP Propiedad Horizontal API')
     .setDescription('Documentación de los servicios de PH y Usuarios')
     .setVersion('1.0')
-    //.addBearerAuth() // Para cuando implementemos JWT
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Ingresa tu token JWT',
+        in: 'header',
+      },
+      'access-token', // Este es el nombre interno que usaremos en los decoradores
+    )
     .build();
   
   const document = SwaggerModule.createDocument(app, config);
