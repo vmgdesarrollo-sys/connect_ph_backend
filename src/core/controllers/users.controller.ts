@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from '../services/users.service';
-import { CreateUserDto } from '../dtos/create-user.dto';
+import { CreateUserDto } from '../dtos/payload/create-user.dto';
 import { AuthGuard } from '../utils/auth.guard';
 
 @UseGuards(AuthGuard)

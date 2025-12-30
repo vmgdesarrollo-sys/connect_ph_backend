@@ -1,8 +1,9 @@
 import { Controller, Put, Get, Post, Delete, Body, Param, ParseUUIDPipe, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiQuery, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { PhsService } from '../services/phs.service';
-import { CreatePhDto } from '../dtos/create-ph.dto';
+import { CreatePhDto } from '../dtos/payload/create-ph.dto';
 import { AuthGuard } from '../utils/auth.guard';
+import { CreatePhResponseDto, CreatePhResponseErrorDto, CreatePhResponseErrorTaxIdDto, PhsListResponseDto } from '../dtos/responses/ph-response.dto';
 
 @UseGuards(AuthGuard)
 @ApiTags('Copropiedades (PHs)')
@@ -15,6 +16,21 @@ export class PhsController {
   @ApiOperation({ 
     summary: 'Servicio para creación de copropiedades.', 
     description: 'Crear copropiedades en bases de datos.' 
+  })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'La copropiedad ha sido creada correctamente.',
+    type: CreatePhResponseDto
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Los datos de la copropiedad son incorrectos.',
+    type: CreatePhResponseErrorDto
+  })
+  @ApiResponse({ 
+    status: 409, 
+    description: 'tax_id (NIT) ya existe.',
+    type: CreatePhResponseErrorTaxIdDto
   })
   async create(@Body() createPhDto: CreatePhDto) {
     return await this.phsService.create(createPhDto);
@@ -34,11 +50,32 @@ export class PhsController {
     summary: 'Listar todas las copropiedades', 
     description: 'Obtiene un listado de las copropiedades registradas con soporte para filtros.' 
   })
-  @ApiQuery({ name: 'name', required: false, description: 'Filtrar por nombre de la PH' })
-  @ApiQuery({ name: 'city', required: false, description: 'Filtrar por ciudad' })
-  async findAll(@Query('name') name?: string,
-    @Query('city') city?: string) {
-    return await this.phsService.findAll();
+  @ApiBearerAuth('access-token')
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 100 })
+  @ApiQuery({ name: '_fields', required: false, example: "*" })
+  @ApiQuery({ name: '_where', required: false, example: "(id=1 AND name=ph1)" })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Retorno de las copropiedades almacenadas en bases de datos por bloques de 100.',
+    type: PhsListResponseDto
+  })
+  async findAll(@Query('_fields') _fields?: string,
+    @Query('_where') _where?: string) {    
+    const phs= await this.phsService.findAll(), limit=100, page=1;
+
+    return {
+      status: 'success',
+      message: 'Listado de copropiedades obtenido correctamente',
+      data: phs,
+      properties: {
+        total_items: phs.length,
+        items_per_page: limit,
+        current_page: page,
+        total_pages: Math.ceil(phs.length / limit),
+        timestamp: new Date().toISOString()
+      }
+    };
   }
 
   @Get(':id')

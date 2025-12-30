@@ -2,7 +2,7 @@ import { Injectable, ConflictException, NotFoundException, Inject } from '@nestj
 //import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Ph } from '../entities/ph.entity';
-import { CreatePhDto } from '../dtos/create-ph.dto';
+import { CreatePhDto } from '../dtos/payload/create-ph.dto';
 
 import { getRepositoryToken } from '@nestjs/typeorm';
 

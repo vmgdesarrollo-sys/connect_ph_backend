@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { RolesService } from '../services/roles.service';
-import { CreateRoleDto } from '../dtos/create-role.dto';
+import { CreateRoleDto } from '../dtos/payload/create-role.dto';
 import { AuthGuard } from '../utils/auth.guard';
 
 @UseGuards(AuthGuard)
