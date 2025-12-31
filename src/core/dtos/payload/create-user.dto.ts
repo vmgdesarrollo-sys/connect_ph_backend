@@ -1,6 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
+import { I18nContext } from 'nestjs-i18n';
+import {getSwaggerText} from "../../../utils/swagger-i18n.loader"
+const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
+
 export class CreateUserDto {
   @ApiProperty({ example: 'Juan' })
   @IsString()

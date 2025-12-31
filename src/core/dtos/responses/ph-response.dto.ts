@@ -1,5 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { I18nContext } from 'nestjs-i18n';
+import {getSwaggerText} from "../../../utils/swagger-i18n.loader"
+const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
+
 class PhDataDto {
   @ApiProperty({ example: 'uuid-123-456' })
   id: string;

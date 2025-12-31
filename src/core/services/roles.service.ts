@@ -3,8 +3,10 @@ import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Role } from '../entities/role.entity';
 import { CreateRoleDto } from '../dtos/payload/create-role.dto';
-
 import { getRepositoryToken } from '@nestjs/typeorm';
+
+import { I18nContext, I18nService } from 'nestjs-i18n';
+const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
 
 @Injectable()
 export class RolesService {

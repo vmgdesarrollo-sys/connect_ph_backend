@@ -4,6 +4,10 @@ import { UsersService } from '../services/users.service';
 import { CreateUserDto } from '../dtos/payload/create-user.dto';
 import { AuthGuard } from '../utils/auth.guard';
 
+import { I18nContext, I18nService } from 'nestjs-i18n';
+import {getSwaggerText} from "../../utils/swagger-i18n.loader"
+const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
+
 @UseGuards(AuthGuard)
 @ApiTags('Users')
 @ApiBearerAuth('access-token')

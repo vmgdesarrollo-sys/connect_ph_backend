@@ -4,8 +4,10 @@ import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { CreateUserDto } from '../dtos/payload/create-user.dto';
 import * as bcrypt from 'bcrypt';
-
 import { getRepositoryToken } from '@nestjs/typeorm';
+
+import { I18nContext, I18nService } from 'nestjs-i18n';
+const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
 
 @Injectable()
 export class UsersService {

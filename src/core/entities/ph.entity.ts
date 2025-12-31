@@ -7,32 +7,32 @@ export class Ph {
   id: string;
 
   @Column({ length: 150 })
-  name: string;
+  name?: string;
 
   @Column({ unique: true, nullable: true })
   tax_id: string;
 
   @Column({ type: 'text', nullable: true })
-  address: string;
+  address?: string;
 
   @Column({ nullable: true })
-  phone_number: string;
+  phone_number?: string;
 
   @Column({ nullable: true })
-  email: string;
+  email?: string;
 
   @Column({ nullable: true })
-  logo_url: string;
+  logo_url?: string;
 
   @Column({ nullable: true })
-  legal_representative: string;
+  legal_representative?: string;
 
   @Column({ default: true })
   is_active: boolean;
 
   @CreateDateColumn()
-  created_at: Date;
+  created_at?: Date;
 
   @UpdateDateColumn()
-  updated_at: Date;
+  updated_at?: Date;
 }
