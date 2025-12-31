@@ -45,6 +45,28 @@ export class CreatePhResponseDto {
   data: PhDataDto;
 }
 
+export class GetPhResponseDto {
+  @ApiProperty({ example: 'success' })
+  status: string;
+
+  @ApiProperty({ example: 'Detalle de la copropiedad' })
+  message: string;
+
+  @ApiProperty({ type: PhDataDto })
+  data: PhDataDto;
+}
+
+export class UpdatePhResponseDto {
+  @ApiProperty({ example: 'success' })
+  status: string;
+
+  @ApiProperty({ example: 'Copropiedad actualizada exitosamente' })
+  message: string;
+
+  @ApiProperty({ type: PhDataDto })
+  data: PhDataDto;
+}
+
 export class CreatePhResponseErrorDto {
   @ApiProperty({ example: 'Datos informados son invalidos.' })
   message: string;
@@ -96,4 +118,12 @@ export class PhsListResponseDto {
 
   @ApiProperty({ type: PaginationMetaDto })
   properties: PaginationMetaDto;
+}
+
+export class DeletePhResponseDto {
+  @ApiProperty({ example: 'success' })
+  status: string;
+
+  @ApiProperty({ example: 'Copropiedad eliminada exitosamente' })
+  message: string;
 }
