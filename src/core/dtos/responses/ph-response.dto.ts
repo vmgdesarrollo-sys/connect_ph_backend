@@ -5,44 +5,44 @@ import {getSwaggerText} from "../../../utils/swagger-i18n.loader"
 const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
 
 class PhDataDto {
-  @ApiProperty({ example: 'uuid-123-456' })
+  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_UUID", lang) })
   id: string;
 
-  @ApiProperty({ example: 'Conjunto Residencial Los Álamos' })
+  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_PH_NAME", lang) })
   name: string;
 
-  @ApiProperty({ example: '900123456-1', description: 'NIT o Identificación tributaria' })
+  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_PH_TAX", lang), description: getSwaggerText("phs", "DESP_PH_TAX", lang) })
   tax_id: string;
 
-  @ApiProperty({ example: 'Calle 123 # 45-67, Bogotá' })
+  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_PH_ADDRESS", lang) })
   address?: string;
 
-  @ApiProperty({ example: '+576012345678' })
+  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_PH_PHONE_NUMBER", lang) })
   phone_number?: string;
 
-  @ApiProperty({ example: 'administracion@alamos.com' })
+  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_PH_EMAIL", lang) })
   email?: string;
 
   @ApiProperty({ 
-    example: 'https://storage.googleapis.com/tu-bucket/logos/logo.png'
+    example: getSwaggerText("phs", "EXAMPLE_PH_LOGO_URL", lang)
   })
   logo_url?: string;
 
-  @ApiProperty({ example: 'Carlos Mario Restrepo' })
+  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_PH_LEGAL_REPRESENTATIVE", lang) })
   legal_representative?: string;
 
   @ApiProperty({ example: true })
   is_active?: boolean;
 
-  @ApiProperty({ example: '2025-12-25T13:45:00Z' })
+  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_CREATED_AT", lang) })
   created_at: Date;
 }
 
 export class CreatePhResponseDto {
-  @ApiProperty({ example: 'success' })
+  @ApiProperty({ example: getSwaggerText("general", "SUCCESS", lang) })
   status: string;
 
-  @ApiProperty({ example: 'Copropiedad creada exitosamente' })
+  @ApiProperty({ example: getSwaggerText("phs", "CREAR_COPROPIEDAD_RES", lang) })
   message: string;
 
   @ApiProperty({ type: PhDataDto })
@@ -50,10 +50,10 @@ export class CreatePhResponseDto {
 }
 
 export class GetPhResponseDto {
-  @ApiProperty({ example: 'success' })
+  @ApiProperty({ example: getSwaggerText("general", "SUCCESS", lang) })
   status: string;
 
-  @ApiProperty({ example: 'Detalle de la copropiedad' })
+  @ApiProperty({ example: getSwaggerText("phs", "DETALLE_COPROPIEDAD", lang) })
   message: string;
 
   @ApiProperty({ type: PhDataDto })
@@ -61,10 +61,10 @@ export class GetPhResponseDto {
 }
 
 export class UpdatePhResponseDto {
-  @ApiProperty({ example: 'success' })
+  @ApiProperty({ example: getSwaggerText("general", "SUCCESS", lang) })
   status: string;
 
-  @ApiProperty({ example: 'Copropiedad actualizada exitosamente' })
+  @ApiProperty({ example: getSwaggerText("phs", "COPROPIEDAD_ACTUALIZADA", lang) })
   message: string;
 
   @ApiProperty({ type: PhDataDto })
@@ -72,10 +72,10 @@ export class UpdatePhResponseDto {
 }
 
 export class CreatePhResponseErrorDto {
-  @ApiProperty({ example: 'Datos informados son invalidos.' })
+  @ApiProperty({ example: getSwaggerText("general", "DATA_ERROR", lang) })
   message: string;
 
-  @ApiProperty({ example: 'Bad Request' })
+  @ApiProperty({ example: getSwaggerText('general', 'BAD_REQUEST', lang) })
   error: string;
 
   @ApiProperty({ example: 401 })
@@ -83,10 +83,10 @@ export class CreatePhResponseErrorDto {
 }
 
 export class CreatePhResponseErrorTaxIdDto {
-  @ApiProperty({ example: 'tax_id (NIT) ya existe.' })
+  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_TAX_ID_EXIST", lang) })
   message: string;
 
-  @ApiProperty({ example: 'Conflict' })
+  @ApiProperty({ example: getSwaggerText("general", "CONFLICTO", lang) })
   error: string;
 
   @ApiProperty({ example: 409 })
@@ -106,15 +106,15 @@ export class PaginationMetaDto {
   @ApiProperty({ example: 10 })
   total_pages: number;
 
-  @ApiProperty({ example: '2025-12-29T21:15:00Z' })
+  @ApiProperty({ example:getSwaggerText("phs", "EXAMPLE_CREATED_AT", lang) })
   timestamp: string;
 }
 
 export class PhsListResponseDto {
-  @ApiProperty({ example: 'success' })
+  @ApiProperty({ example: getSwaggerText("general", "SUCCESS", lang) })
   status: string;
 
-  @ApiProperty({ example: 'Listado de copropiedades obtenido correctamente' })
+  @ApiProperty({ example: getSwaggerText("phs", "RESPUESTA_TODAS_LAS_COPROPIDADES", lang) })
   message: string;
 
   @ApiProperty({ type: [PhDataDto] }) // El corchete [PhDto] indica que es un array
@@ -125,9 +125,9 @@ export class PhsListResponseDto {
 }
 
 export class DeletePhResponseDto {
-  @ApiProperty({ example: 'success' })
+  @ApiProperty({ example: getSwaggerText("general", "SUCCESS", lang) })
   status: string;
 
-  @ApiProperty({ example: 'Copropiedad eliminada exitosamente' })
+  @ApiProperty({ example: getSwaggerText('phs', 'COPROPIEDAD_ELIMINADA', lang) })
   message: string;
 }

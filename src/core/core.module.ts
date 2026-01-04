@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
 
 // Entidades (Asegúrate de importar todas las del Excel para esta etapa)
 import { User } from './entities/user.entity';
@@ -16,11 +17,12 @@ import { UsersService } from './services/users.service';
 import { RolesService } from './services/roles.service';
 import { PhsService } from './services/phs.service';
 
-
 /**
  * Borrarme porque soy simulacion
  */
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { AuthController } from './controllers/auth.controller';
+import { AuthService } from './services/auth/auth.service';
 const mockRepository = {
   find: () => [],
   findOne: () => ({}),
@@ -30,7 +32,13 @@ const mockRepository = {
 /** FIN simulacion */
 
 @Module({
-  imports:[],
+  imports:[
+    JwtModule.register({
+      global: true, // Esto permite usar el JwtService en otros módulos sin re-importarlo
+      secret: process.env.JWT_SECRET || 'CLAVE_SECRETA_PROVISIONAL',
+      signOptions: { expiresIn: '1h' },
+    }),
+  ],
   //imports: [
   //  TypeOrmModule.forFeature([
   //    User, 
@@ -39,11 +47,13 @@ const mockRepository = {
   //  ]), 
   //],
   controllers: [
+    AuthController,
     PhsController, 
     UsersController, 
-    RolesController
+    RolesController, 
   ],
   providers: [  
+    AuthService,
     PhsService, 
     UsersService, 
     RolesService,

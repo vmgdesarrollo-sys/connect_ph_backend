@@ -27,7 +27,7 @@ export class PhsService {
   async create(createPhDto: CreatePhDto): Promise<any> {
     return {
       status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('general.COPROPIEDAD_CREADA', {lang, args: {},}), //"",//
+      message: this.i18n.t('phs.COPROPIEDAD_CREADA', {lang, args: {},}),
       data: {
         id: "550e8400-e29b-41d4-a716-446655440000",
         ...createPhDto,
@@ -40,7 +40,7 @@ export class PhsService {
     });
 
     if (existingPh) {
-      throw new ConflictException(this.i18n.t('general.ERROR_TAX', {lang, args: {},}));
+      throw new ConflictException(this.i18n.t('phs.ERROR_TAX', {lang, args: {},}));
     }
 
     const newPh = this.phRepository.create(createPhDto);
@@ -49,7 +49,7 @@ export class PhsService {
   async update(id: string, createPhDto: CreatePhDto): Promise<any> {
     return {
       status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('general.COPROPIEDAD_ACTUALIZADA', {lang, args: {},}),
+      message: this.i18n.t('phs.COPROPIEDAD_ACTUALIZADA', {lang, args: {},}),
       data: {
         id: "550e8400-e29b-41d4-a716-446655440000",
         ...createPhDto,
@@ -63,7 +63,7 @@ export class PhsService {
     });
 
     if (existingPh) {
-      throw new ConflictException(this.i18n.t('general.ERROR_TAX', {lang, args: {},}));
+      throw new ConflictException(this.i18n.t('phs.ERROR_TAX', {lang, args: {},}));
     }
 
     const newPh = this.phRepository.create(createPhDto);
@@ -93,7 +93,7 @@ export class PhsService {
   async findOne(id: string): Promise<any> {
     return {
       status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('general.DETALLE_COPROPIEDAD', {lang, args: {},}),
+      message: this.i18n.t('phs.DETALLE_COPROPIEDAD', {lang, args: {},}),
       data: {
         id: "uuid-123-456",
         name: "Conjunto Residencial Los Álamos",
@@ -110,19 +110,19 @@ export class PhsService {
     const ph = await this.phRepository.findOne({
       where: { id, is_active: true },
     });
-    if (!ph) throw new NotFoundException(this.i18n.t('general.COPROPIEDAD_NO_EXISTE', {lang, args: {id},}));
+    if (!ph) throw new NotFoundException(this.i18n.t('phs.COPROPIEDAD_NO_EXISTE', {lang, args: {id},}));
     // return ph;
   }
 
   async delete(id: string): Promise<any> {
     return {
       status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('general.COPROPIEDAD_ELIMINADA', {lang, args: {id},}),
+      message: this.i18n.t('phs.COPROPIEDAD_ELIMINADA', {lang, args: {id},}),
     };
     const ph = await this.phRepository.findOne({
       where: { id, is_active: true },
     });
-    if (!ph) throw new NotFoundException(this.i18n.t('general.COPROPIEDAD_NO_EXISTE', {lang, args: {id},}));
+    if (!ph) throw new NotFoundException(this.i18n.t('phs.COPROPIEDAD_NO_EXISTE', {lang, args: {id},}));
     // return ph;
   }
 }

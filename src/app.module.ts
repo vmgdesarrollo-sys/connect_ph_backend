@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 //import { TypeOrmModule } from '@nestjs/typeorm';
 import { CoreModule } from "./core/core.module";
+import { ConfigModule } from '@nestjs/config';
 import {
   I18nModule,
   AcceptLanguageResolver,
@@ -14,14 +15,19 @@ import * as path from "path";
     I18nModule.forRoot({
       fallbackLanguage: "es", // Idioma por defecto
       loaderOptions: {
-        path: path.join(__dirname, "/i18n/"),
+        path: path.join(process.cwd(), "dist/i18n/"),
         watch: true,
       },
       resolvers: [
         new QueryResolver(["lang"]), // ?lang=en
         new HeaderResolver(["x-custom-lang"]),
         AcceptLanguageResolver, // Header standard: Accept-Language
-      ],
+      ]
+    }),
+    
+    ConfigModule.forRoot({
+      isGlobal: true, // Hace que no tengas que importarlo en otros módulos
+      envFilePath: '.env', // Busca el archivo en la raíz
     }),
     //TypeOrmModule.forRoot({
     //type: 'postgres',

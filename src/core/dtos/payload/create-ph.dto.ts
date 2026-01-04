@@ -1,68 +1,101 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { 
-  IsEmail, 
+import { ApiProperty } from "@nestjs/swagger";
+import {
+  IsEmail,
   IsBoolean,
-  IsNotEmpty, 
-  IsOptional, 
-  IsString, 
-  IsUrl, 
-  IsUUID 
-} from 'class-validator';
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsUUID,
+} from "class-validator";
 
-import { I18nContext } from 'nestjs-i18n';
-import {getSwaggerText} from "../../../utils/swagger-i18n.loader"
-const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
+import { I18nContext } from "nestjs-i18n";
+import { getSwaggerText } from "../../../utils/swagger-i18n.loader";
+const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
 
 export class CreatePhDto {
-  @ApiProperty({ example: 'Conjunto Residencial Los Álamos', description: 'Nombre oficial de la copropiedad' })
+  @ApiProperty({
+    example: getSwaggerText("phs", "EXAMPLE_PH_NAME", lang),
+    description: getSwaggerText("phs", "DESP_PH_NAME", lang),
+  })
   @IsString()
-  @IsNotEmpty({ message: 'El nombre de la PH es obligatorio' })
+  @IsNotEmpty({ message: getSwaggerText("phs", "MSG_PH_NAME", lang) })
   name: string;
 
-  @ApiProperty({ example: '900123456-1', description: 'NIT o Identificación tributaria', required: true })
+  @ApiProperty({
+    example: getSwaggerText("phs", "EXAMPLE_PH_TAX", lang),
+    description: getSwaggerText("phs", "DESP_PH_TAX", lang),
+    required: true,
+  })
   @IsString()
-  @IsNotEmpty({ message: 'El tax_id (NIT) es obligatorio' })
+  @IsNotEmpty({ message: getSwaggerText("phs", "MSG_RQD_PH_TAX", lang) })
   tax_id: string;
 
-  @ApiProperty({ example: 'Calle 123 # 45-67, Bogotá', required: false })
+  @ApiProperty({
+    example: getSwaggerText("phs", "EXAMPLE_PH_ADDRESS", lang),
+    required: false,
+  })
   @IsString()
   @IsOptional()
   address?: string;
 
-  @ApiProperty({ example: '+576012345678', required: false })
+  @ApiProperty({
+    example: getSwaggerText("phs", "EXAMPLE_PH_PHONE_NUMBER", lang),
+    required: false,
+  })
   @IsString()
   @IsOptional()
   phone_number?: string;
 
-  @ApiProperty({ example: 'administracion@alamos.com', required: false })
-  @IsEmail({}, { message: 'El correo electrónico no tiene un formato válido' })
+  @ApiProperty({
+    example: getSwaggerText("phs", "EXAMPLE_PH_EMAIL", lang),
+    required: false,
+  })
+  @IsEmail({}, { message: getSwaggerText("phs", "DESP_PH_EMAIL", lang) })
   @IsOptional()
   email?: string;
 
-  @ApiProperty({ 
-    example: 'https://storage.googleapis.com/tu-bucket/logos/logo.png', 
+  @ApiProperty({
+    example: getSwaggerText("phs", "EXAMPLE_PH_LOGO_URL", lang),
     required: false,
-    description: 'URL del logo almacenado en Cloud Storage'
+    description: getSwaggerText("phs", "DESP_PH_LOGO_URL", lang),
   })
-  @IsUrl({}, { message: 'La URL del logo no es válida' })
+  @IsUrl(
+    {},
+    { message: getSwaggerText("phs", "NO_VALID_PH_LOGO_URL", lang) }
+  )
   @IsOptional()
   logo_url?: string;
 
-  @ApiProperty({ example: 'Carlos Mario Restrepo', description: 'Nombre del representante legal', required: false })
+  @ApiProperty({
+    example: getSwaggerText("phs", "EXAMPLE_PH_LEGAL_REPRESENTATIVE", lang),
+    description: getSwaggerText(
+      "phs",
+      "DESP_PH_LEGAL_REPRESENTATIVE",
+      lang
+    ),
+    required: false,
+  })
   @IsString()
   @IsOptional()
   legal_representative?: string;
 
-  @ApiProperty({ example: true, description: 'Activación o inactivación del registro.', required: false })
+  @ApiProperty({
+    example: true,
+    description: getSwaggerText("phs", "DESP_PH_ACTIVE", lang),
+    required: false,
+  })
   @IsBoolean()
   @IsOptional()
   is_active?: boolean;
 
-  @ApiProperty({ 
-    example: 'd290f1ee-6c54-4b01-90e6-d701748f0851', 
-    description: 'ID del usuario que registra la PH' 
+  @ApiProperty({
+    example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
+    description: getSwaggerText("phs", "DESP_PH_CREATED_BY", lang),
   })
-  @IsUUID('4', { message: 'El ID del creador debe ser un UUID válido' })
+  @IsUUID("4", {
+    message: getSwaggerText("phs", "VALID_PH_CREATED_BY", lang),
+  })
   @IsNotEmpty()
   created_by: string;
 }

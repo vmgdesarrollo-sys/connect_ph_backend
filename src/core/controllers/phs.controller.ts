@@ -37,7 +37,7 @@ import {getSwaggerText} from "../../utils/swagger-i18n.loader"
 const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
 
 @UseGuards(AuthGuard)
-@ApiTags( getSwaggerText('general', 'COPROPIEDADES_TITULO', lang))
+@ApiTags( getSwaggerText('phs', 'COPROPIEDADES_TITULO', lang))
 @ApiBearerAuth("access-token")
 @Controller("phs")
 @ApiResponse({
@@ -56,17 +56,17 @@ export class PhsController {
   // Create register
   @Post()
   @ApiOperation({
-    summary: getSwaggerText('general', 'CREAR_COPROPIEDAD', lang),
-    description: getSwaggerText('general', 'CREAR_COPROPIEDAD_DESC', lang),
+    summary: getSwaggerText('phs', 'CREAR_COPROPIEDAD', lang),
+    description: getSwaggerText('phs', 'CREAR_COPROPIEDAD_DESC', lang),
   })
   @ApiResponse({
     status: 201,
-    description: getSwaggerText('general', 'CREAR_COPROPIEDAD_RES', lang),
+    description: getSwaggerText('phs', 'CREAR_COPROPIEDAD_RES', lang),
     type: CreatePhResponseDto,
   })
   @ApiResponse({
     status: 409,
-    description: getSwaggerText('general', 'ERROR_TAX', lang),
+    description: getSwaggerText('phs', 'ERROR_TAX', lang),
     type: CreatePhResponseErrorTaxIdDto,
   })
   async create(@Body() createPhDto: CreatePhDto) {
@@ -77,16 +77,16 @@ export class PhsController {
   @Put(":id")
   @ApiParam({
     name: "id",
-    description: getSwaggerText('general', 'UUID_PH', lang),
+    description: getSwaggerText('phs', 'UUID_PH', lang),
     example: "550e8400-e29b-41d4-a716-446655440000",
   })
   @ApiOperation({
-    summary: getSwaggerText('general', 'SERCIVIO_PH_ACTUALIZACION', lang),
-    description: getSwaggerText('general', 'SERCIVIO_PH_ACTUALIZACION_DESC', lang),
+    summary: getSwaggerText('phs', 'SERCIVIO_PH_ACTUALIZACION', lang),
+    description: getSwaggerText('phs', 'SERCIVIO_PH_ACTUALIZACION_DESC', lang),
   })
   @ApiResponse({
     status: 200,
-    description: getSwaggerText('general', 'COPROPIEDAD_ACTUALIZADA_RES', lang),
+    description: getSwaggerText('phs', 'COPROPIEDAD_ACTUALIZADA_RES', lang),
     type: UpdatePhResponseDto,
   })
   async update(@Param("id", ParseUUIDPipe) id: string, @Body() createPhDto: CreatePhDto) {
@@ -96,8 +96,8 @@ export class PhsController {
   // Get all registers
   @Get()
   @ApiOperation({
-    summary: getSwaggerText('general', 'LISTAR_TODAS_PH', lang),
-    description: getSwaggerText('general', 'LISTAR_TODAS_PH_DESC', lang),
+    summary: getSwaggerText('phs', 'LISTAR_TODAS_PH', lang),
+    description: getSwaggerText('phs', 'LISTAR_TODAS_PH_DESC', lang),
   })
   @ApiBearerAuth("access-token")
   @ApiQuery({ name: "page", required: false, example: 1 })
@@ -106,7 +106,7 @@ export class PhsController {
   @ApiQuery({ name: "_where", required: false, example: "(id=1 AND name=ph1)" })
   @ApiResponse({
     status: 200,
-    description: getSwaggerText('general', 'LISTAR_TODAS_PH_RES', lang),
+    description: getSwaggerText('phs', 'LISTAR_TODAS_PH_RES', lang),
     type: PhsListResponseDto,
   })
   async findAll(
@@ -119,7 +119,7 @@ export class PhsController {
 
     return {
       status: "success",
-      message: getSwaggerText('general', 'LISTAR_TODAS_PH_RESP', lang),
+      message: getSwaggerText('phs', 'LISTAR_TODAS_PH_RESP', lang),
       data: phs,
       properties: {
         total_items: phs.length,
@@ -135,12 +135,12 @@ export class PhsController {
   @Get(":id")
   @ApiResponse({
     status: 200,
-    description: getSwaggerText('general', 'COPROPIEDAD_ACTUALIZADA_RES', lang),
+    description: getSwaggerText('phs', 'COPROPIEDAD_ACTUALIZADA_RES', lang),
     type: GetPhResponseDto,
   })
   @ApiParam({
     name: "id",
-    description: getSwaggerText('general', 'UUID_PH', lang),
+    description: getSwaggerText('phs', 'UUID_PH', lang),
     example: "550e8400-e29b-41d4-a716-446655440000",
   })
   async findOne(@Param("id", ParseUUIDPipe) id: string) {
@@ -151,12 +151,12 @@ export class PhsController {
   @Delete(":id")
   @ApiResponse({
     status: 200,
-    description: getSwaggerText('general', 'OBTENER_PH', lang),
+    description: getSwaggerText('phs', 'OBTENER_PH', lang),
     type: DeletePhResponseDto,
   })
   @ApiParam({
     name: "id",
-    description: getSwaggerText('general', 'UUID_PH', lang),
+    description: getSwaggerText('phs', 'UUID_PH', lang),
     example: "550e8400-e29b-41d4-a716-446655440000",
   })
   async delete(@Param("id", ParseUUIDPipe) id: string) {
