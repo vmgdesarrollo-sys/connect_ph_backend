@@ -20,7 +20,7 @@ export class ApiClientGuard implements CanActivate {
     // Extraer de las cabeceras
     const clientId = this.configService.get<string>('AUTH_CLIENT_ID');
     const clientSecret = request.headers['client-secret'];
-console.log(this.VALID_CLIENT_ID, clientId);
+
     if (!clientId || !clientSecret) {
       throw new UnauthorizedException('Missing client credentials in headers');
     }

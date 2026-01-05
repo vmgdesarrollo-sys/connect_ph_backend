@@ -21,21 +21,21 @@ import { ApiClientGuard } from "../services/auth/guards/api-client.guard";
 @ApiTags("Authentication")
 @Controller("api/v1/auth")
 // Aplicamos los headers requeridos para todo el controlador
-@ApiHeader({
-  name: "client-id",
-  description: "ID de la aplicación cliente",
-  required: true,
-})
-@ApiHeader({
-  name: "client-secret",
-  description: "Secreto de la aplicación cliente",
-  required: true,
-})
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Get("options")
   @UseGuards(ApiClientGuard)
+  @ApiHeader({
+    name: "client-id",
+    description: "ID de la aplicación cliente",
+    required: true,
+  })
+  @ApiHeader({
+    name: "client-secret",
+    description: "Secreto de la aplicación cliente",
+    required: true,
+  })
   @ApiResponse({
     status: 200,
     description: "Lista de proveedores disponibles",
@@ -61,6 +61,16 @@ export class AuthController {
 
   @Post("select")
   @UseGuards(ApiClientGuard)
+  @ApiHeader({
+    name: "client-id",
+    description: "ID de la aplicación cliente",
+    required: true,
+  })
+  @ApiHeader({
+    name: "client-secret",
+    description: "Secreto de la aplicación cliente",
+    required: true,
+  })
   @ApiOperation({ summary: "Seleccionar un proveedor y obtener campos/token" })
   @ApiBody({
     schema: {
