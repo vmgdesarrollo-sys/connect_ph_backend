@@ -2,14 +2,17 @@ import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Any } from "typeorm";
 
+import { I18nContext, I18nService } from 'nestjs-i18n';
+const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
+
 @Injectable()
 export class AuthService {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(private readonly i18n: I18nService, private readonly jwtService: JwtService) {}
 
   // 1. Listar opciones (puedes traer esto de una DB o config)
   getOptions() {
     return {
-      state: "success",
+      state: this.i18n.t('general.SUCCESS', {lang, args: {},}),
       result: {
         providers: [
           {
@@ -43,7 +46,7 @@ export class AuthService {
       token_type = "Bearer";
 
     return {
-      state: "success",
+      state: this.i18n.t('general.SUCCESS', {lang, args: {},}),
       result: {
         fields,
         authorization: { token: token, expires_in, token_type },
@@ -69,7 +72,7 @@ export class AuthService {
       });
 
       return {
-        state: "success",
+        state: this.i18n.t('general.SUCCESS', {lang, args: {},}),
         result: {
           access_token: finalSessionToken,
           expires_in: 3600,
@@ -79,7 +82,7 @@ export class AuthService {
     } catch (error) {
       // Si el token del header expiró o es inválido
       throw new UnauthorizedException(
-        "El token de autorización ha expirado o es inválido"
+        this.i18n.t('general.TOKEN_EXPIRED', {lang, args: {},})
       );
     }
   }

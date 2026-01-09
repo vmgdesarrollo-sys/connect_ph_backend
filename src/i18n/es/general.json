@@ -6,8 +6,12 @@
   "SUCCESS": "success", 
   "AUTH_ERROR": "Error de autenticación.", 
   "DATA_ERROR": "Los datos informados son incorrectos.",
-  "ERROR_TOKEN_AUTH": "Token no proporcionado o formato inválido.", 
+  "ERROR_TOKEN_AUTH": "Token no proporcionado o formato inválido.",
+  "ERROR_TOKEN_AUTH_INVALID": "Token inválido o credenciales incorrectas.", 
   "UNAUTHORIZED": "Unauthorized", 
   "CONFLICTO": "Conflict",
-  "BAD_REQUEST": "Bad Request"
+  "BAD_REQUEST": "Bad Request",
+  "TOKEN_EXPIRED": "El token de autorización ha expirado o es inválido",
+  "INVALID_CREDENTIALS": "Credenciales invalidas", 
+  "HEADERS_INITIAL_REQUIRED": "Cabeceras de client-id y client-secret son requeridas."
 }
