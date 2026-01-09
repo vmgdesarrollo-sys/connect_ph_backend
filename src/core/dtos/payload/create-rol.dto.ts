@@ -4,15 +4,20 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { I18nContext } from 'nestjs-i18n';
 import {getSwaggerText} from "../../../utils/swagger-i18n.loader"
 const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
+const t = (key: string) => getSwaggerText('roles', key, lang);
 
 export class CreateRoleDto {
-  @ApiProperty({ example: 'RESIDENT', description: 'Nombre único del rol' })
+  @ApiProperty({ 
+    example: t('NAME_EXAMPLE'), 
+    description: t('NAME_DESC') 
+  })
   @IsString()
-  @IsNotEmpty({ message: 'El nombre del rol es obligatorio' })
+  @IsNotEmpty({ message: t('NAME_REQUIRED') })
   name: string;
 
   @ApiProperty({ 
-    example: 'Persona que vive en la unidad', 
+    example: t('DESC_EXAMPLE'), 
+    description: t('DESC_LABEL'),
     required: false 
   })
   @IsString()
@@ -20,8 +25,8 @@ export class CreateRoleDto {
   description?: string;
 
   @ApiProperty({ 
-    example: 'unit:read, assembly:vote, pqrs:create', 
-    description: 'Lista de permisos separados por coma o formato JSON',
+    example: t('SCOPES_EXAMPLE'), 
+    description: t('SCOPES_DESC'),
     required: false 
   })
   @IsString()

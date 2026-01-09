@@ -70,7 +70,7 @@ export class PhsService {
     return await this.phRepository.save(newPh);
   }
 
-  async findAll(_fields?: string, _where?: string): Promise<Ph[]> {
+  async findAll(_fields?: string, _where?: string): Promise<any[]> {
     return [
       {
         id: "uuid-123-456",

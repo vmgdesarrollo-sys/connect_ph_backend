@@ -99,7 +99,6 @@ export class PhsController {
     summary: getSwaggerText('phs', 'LISTAR_TODAS_PH', lang),
     description: getSwaggerText('phs', 'LISTAR_TODAS_PH_DESC', lang),
   })
-  @ApiBearerAuth("access-token")
   @ApiQuery({ name: "page", required: false, example: 1 })
   @ApiQuery({ name: "limit", required: false, example: 100 })
   @ApiQuery({ name: "_fields", required: false, example: "*" })
@@ -125,8 +124,7 @@ export class PhsController {
         total_items: phs.length,
         items_per_page: limit,
         current_page: page,
-        total_pages: Math.ceil(phs.length / limit),
-        timestamp: new Date().toISOString(),
+        total_pages: Math.ceil(phs.length / limit)
       },
     };
   }

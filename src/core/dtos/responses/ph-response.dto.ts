@@ -105,9 +105,6 @@ export class PaginationMetaDto {
 
   @ApiProperty({ example: 10 })
   total_pages: number;
-
-  @ApiProperty({ example:getSwaggerText("phs", "EXAMPLE_CREATED_AT", lang) })
-  timestamp: string;
 }
 
 export class PhsListResponseDto {
