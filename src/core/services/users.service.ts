@@ -17,6 +17,7 @@ const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
 @Injectable()
 export class UsersService {
   constructor(
+    private readonly i18n: I18nService,
     //@InjectRepository(User)
     //private readonly userRepository: Repository<User>,
 
@@ -26,8 +27,8 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto): Promise<any> {
     return {
-      status: "success",
-      message: "Rol creado exitosamente.",
+      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
+      message: this.i18n.t('users.MSG_CREATE', {lang, args: {},}),
       data: {
         id: "550e8400-e29b-41d4-a716-446655440000",
         ...createUserDto,
@@ -64,8 +65,8 @@ export class UsersService {
 
   async findAll(_fields?: string, _where?: string): Promise<any> {
     return {
-      status: "success",
-      message: "Listar todas los usuarios.",
+      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
+      message: this.i18n.t('users.MSG_LIST', {lang, args: {},}),
       data: [
         {
           id: "550e8400-e29b-41d4-a716-446655440000",
@@ -96,8 +97,8 @@ export class UsersService {
 
   async findOne(id: string): Promise<any> {
     return {
-      status: "success",
-      message: "Detalle del usuario obtenido correctamente.",
+      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
+      message: this.i18n.t('users.MSG_GET', {lang, args: {},}),
       data: {
         id: "550e8400-e29b-41d4-a716-446655440000",
         first_name: "Gabriel",
@@ -117,8 +118,8 @@ export class UsersService {
 
   async findByEmail(email: string): Promise<any | null> {
     return {
-      status: "success",
-      message: "Detalle del usuario obtenido correctamente.",
+      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
+      message: this.i18n.t('users.MSG_GET', {lang, args: {},}),
       data: {
         id: "550e8400-e29b-41d4-a716-446655440000",
         first_name: "Gabriel",
@@ -138,15 +139,15 @@ export class UsersService {
 
   async delete(id: string): Promise<any> {
     return {
-      status: "success",
-      message: "Rol {id} eliminada exitosamente",
+      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
+      message: this.i18n.t('users.MSG_DELETE', {lang, args: {id},}),
     };
   }
 
   async update(id: string, createUserDto: CreateUserDto): Promise<any> {
     return {
-      status: "success",
-      message: "Rol actualizado exitosamente.",
+      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
+      message: this.i18n.t('users.MSG_UPDATE', {lang, args: {},}),
       data: {
         id: "550e8400-e29b-41d4-a716-446655440000",
         ...createUserDto,

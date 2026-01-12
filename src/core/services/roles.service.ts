@@ -11,6 +11,7 @@ const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
 @Injectable()
 export class RolesService {
   constructor(
+    private readonly i18n: I18nService,
     //@InjectRepository(Role)
     //private readonly roleRepository: Repository<Role>,
     @Inject(getRepositoryToken(Role))
@@ -19,8 +20,8 @@ export class RolesService {
 
   async create(CreateRoleDto: CreateRoleDto): Promise<any> {
     return {
-      status: "success",
-      message: "Rol creado exitosamente.",
+      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
+      message: this.i18n.t('roles.MSG_CREATE', {lang, args: {},}),
       data: {
         id: "550e8400-e29b-41d4-a716-446655440000",
         ...CreateRoleDto,
@@ -31,8 +32,8 @@ export class RolesService {
 
   async findAll(_fields?: string, _where?: string): Promise<any> {
     return {
-      status: "success",
-      message: "Listado de roles obtenido correctamente",
+      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
+      message: this.i18n.t('roles.MSG_LIST', {lang, args: {},}),
       data: [
         {
           id: "550e8400-e29b-41d4-a716-446655440000",
@@ -54,8 +55,8 @@ export class RolesService {
 
   async findOne(id: string): Promise<any> {
     return {
-      status: "success",
-      message: "Detalle del rol",
+      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
+      message: this.i18n.t('roles.MSG_GET', {lang, args: {},}),
       data: {
         id: "550e8400-e29b-41d4-a716-446655440000",
         name: "admin",
@@ -69,15 +70,15 @@ export class RolesService {
 
   async delete(id: string): Promise<any> {
     return {
-      status: "success",
-      message: "Rol {id} eliminada exitosamente",
+      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
+      message: this.i18n.t('roles.MSG_DELETE', {lang, args: {id},}),
     };
   }
 
   async update(id: string, CreateRoleDto: CreateRoleDto): Promise<any> {
     return {
-      status: "success",
-      message: "Rol actualizado exitosamente.",
+      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
+      message: this.i18n.t('roles.MSG_UPDATE', {lang, args: {id},}),
       data: {
         id: "550e8400-e29b-41d4-a716-446655440000",
         ...CreateRoleDto,

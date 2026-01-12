@@ -41,6 +41,6 @@
   "MSG_GET": "Detalle del usuario obtenido correctamente.",
   "MSG_UPDATE": "Usuario actualizado exitosamente.",
   "MSG_LIST": "Listado de usuarios obtenido correctamente.",
-  "MSG_DELETE": "Usuario eliminado exitosamente.",
+  "MSG_DELETE": "Usuario {id} eliminado exitosamente.",
   "MSG_ERROR_DATA": "Los datos informados son incorrectos o el usuario ya existe."
 }

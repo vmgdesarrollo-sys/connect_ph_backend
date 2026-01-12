@@ -24,7 +24,7 @@
   "MSG_GET": "Detalle del rol obtenido.",
   "MSG_UPDATE": "Rol actualizado exitosamente.",
   "MSG_LIST": "Listado de roles obtenido correctamente",
-  "MSG_DELETE": "Rol eliminado exitosamente",
+  "MSG_DELETE": "Rol {id} eliminado exitosamente",
   "MSG_ERROR_DATA": "Los datos informados son incorrectos.",
   "STATUS_SUCCESS": "success",
   "ID_EXAMPLE": "550e8400-e29b-41d4-a716-446655440000",
