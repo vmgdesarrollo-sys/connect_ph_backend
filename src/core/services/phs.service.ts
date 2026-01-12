@@ -73,7 +73,7 @@ export class PhsService {
   async findAll(_fields?: string, _where?: string): Promise<any[]> {
     return [
       {
-        id: "uuid-123-456",
+        id: "550e8400-e29b-41d4-a716-446655440000",
         name: "Conjunto Residencial Los Álamos",
         tax_id: "900123456-1",
         address: "Calle 123 # 45-67, Bogotá",
@@ -95,7 +95,7 @@ export class PhsService {
       status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
       message: this.i18n.t('phs.DETALLE_COPROPIEDAD', {lang, args: {},}),
       data: {
-        id: "uuid-123-456",
+        id: "550e8400-e29b-41d4-a716-446655440000",
         name: "Conjunto Residencial Los Álamos",
         tax_id: "900123456-1",
         address: "Calle 123 # 45-67, Bogotá",

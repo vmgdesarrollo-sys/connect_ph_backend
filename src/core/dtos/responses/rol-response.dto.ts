@@ -28,16 +28,16 @@ class RolDataDto {
 }
 
 export class PaginationMetaDto {
-  @ApiProperty({ example: 100, description: t('TOTAL') })
+  @ApiProperty({ example: 1, description: g('TOTAL') })
   total_items: number;
 
-  @ApiProperty({ example: 10, description: t('PER_PAGE') })
+  @ApiProperty({ example: 10, description: g('PER_PAGE') })
   items_per_page: number;
 
-  @ApiProperty({ example: 1, description: t('CURRENT') })
+  @ApiProperty({ example: 1, description: g('CURRENT') })
   current_page: number;
 
-  @ApiProperty({ example: 10, description: t('TOTAL_PAGES') })
+  @ApiProperty({ example: 1, description: g('TOTAL_PAGES') })
   total_pages: number;
 }
 

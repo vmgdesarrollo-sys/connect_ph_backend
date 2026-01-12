@@ -27,11 +27,7 @@
   "MSG_DELETE": "Rol eliminado exitosamente",
   "MSG_ERROR_DATA": "Los datos informados son incorrectos.",
   "STATUS_SUCCESS": "success",
-  "TOTAL": "Total de ítems encontrados",
-  "PER_PAGE": "Ítems por página",
-  "CURRENT": "Página actual",
-  "TOTAL_PAGES": "Total de páginas disponibles",
-  "ID_EXAMPLE": "1",
+  "ID_EXAMPLE": "550e8400-e29b-41d4-a716-446655440000",
   "CREATED_AT_DESC": "Fecha de creación del registro",
   "EXAMPLE_SCOPE": "admin/read"
 }

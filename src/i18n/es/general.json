@@ -13,5 +13,9 @@
   "BAD_REQUEST": "Bad Request",
   "TOKEN_EXPIRED": "El token de autorización ha expirado o es inválido",
   "INVALID_CREDENTIALS": "Credenciales invalidas", 
-  "HEADERS_INITIAL_REQUIRED": "Cabeceras de client-id y client-secret son requeridas."
+  "HEADERS_INITIAL_REQUIRED": "Cabeceras de client-id y client-secret son requeridas.",
+  "TOTAL": "Total de ítems encontrados",
+  "PER_PAGE": "Ítems por página",
+  "CURRENT": "Página actual",
+  "TOTAL_PAGES": "Total de páginas disponibles"
 }

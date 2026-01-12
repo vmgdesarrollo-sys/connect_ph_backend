@@ -94,7 +94,7 @@ export class CreatePhResponseErrorTaxIdDto {
 }
 
 export class PaginationMetaDto {
-  @ApiProperty({ example: 100 })
+  @ApiProperty({ example: 1 })
   total_items: number;
 
   @ApiProperty({ example: 10 })
@@ -103,7 +103,7 @@ export class PaginationMetaDto {
   @ApiProperty({ example: 1 })
   current_page: number;
 
-  @ApiProperty({ example: 10 })
+  @ApiProperty({ example: 1 })
   total_pages: number;
 }
 

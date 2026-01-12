@@ -56,7 +56,7 @@ export class RolesController {
 
   @Put(":id")
   @ApiOperation({ summary: t("UPDATE_SUMMARY") })
-  @ApiParam({ name: "id", description: t("PARAM_ID"), example: "uuid-v4" })
+  @ApiParam({ name: "id", description: t("PARAM_ID"), example: "550e8400-e29b-41d4-a716-446655440000" })
   @ApiResponse({ status: 200, description: t("UPDATE_DESC"), type: UpdateRolResponseDto })
   async update(@Param("id", ParseUUIDPipe) id: string, @Body() createRoleDto: CreateRoleDto) {
     return await this.rolesService.update(id, createRoleDto);
@@ -75,7 +75,7 @@ export class RolesController {
 
   @Get(":id")
   @ApiOperation({ summary: t("GET_DETAIL_SUMMARY") })
-  @ApiParam({ name: "id", description: t("PARAM_ID") })
+  @ApiParam({ name: "id", description: t("PARAM_ID"), example: "550e8400-e29b-41d4-a716-446655440000" })
   @ApiResponse({ status: 200, description: t("GET_DETAIL_DESC"), type: GetRolResponseDto })
   async getRegister(@Param("id", ParseUUIDPipe) id: string) {
     return await this.rolesService.findOne(id);
@@ -83,7 +83,7 @@ export class RolesController {
 
   @Delete(":id")
   @ApiOperation({ summary: t("DELETE_SUMMARY") })
-  @ApiParam({ name: "id", description: t("PARAM_ID") })
+  @ApiParam({ name: "id", description: t("PARAM_ID"), example: "550e8400-e29b-41d4-a716-446655440000" })
   @ApiResponse({ status: 200, description: t("DELETE_DESC"), type: DeleteRolResponseDto })
   async delete(@Param("id", ParseUUIDPipe) id: string) {
     return await this.rolesService.delete(id);
