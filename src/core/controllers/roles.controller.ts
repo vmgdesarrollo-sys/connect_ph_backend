@@ -19,7 +19,7 @@ import {
   ApiQuery,
 } from "@nestjs/swagger";
 import { RolesService } from "../services/roles.service";
-import { CreateRoleDto } from "../dtos/payload/create-rol.dto";
+import { CreateRoleDto } from "../dtos/payload/rol-payload.dto";
 import { AuthGuard } from "../utils/auth.guard";
 import { AuthErrorDto } from "../dtos/general.dto";
 import {

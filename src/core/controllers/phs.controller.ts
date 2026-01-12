@@ -19,7 +19,7 @@ import {
   ApiParam,
 } from "@nestjs/swagger";
 import { PhsService } from "../services/phs.service";
-import { CreatePhDto } from "../dtos/payload/create-ph.dto";
+import { CreatePhDto } from "../dtos/payload/ph-payload.dto";
 import { AuthGuard } from "../utils/auth.guard";
 import {
   CreatePhResponseDto,

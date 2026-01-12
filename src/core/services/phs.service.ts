@@ -7,7 +7,7 @@ import {
 //import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from "typeorm";
 import { Ph } from "../entities/ph.entity";
-import { CreatePhDto } from "../dtos/payload/create-ph.dto";
+import { CreatePhDto } from "../dtos/payload/ph-payload.dto";
 import { getRepositoryToken } from "@nestjs/typeorm";
 
 import { I18nContext, I18nService } from 'nestjs-i18n';

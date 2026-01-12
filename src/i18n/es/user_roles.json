@@ -1,0 +1,16 @@
+{
+  "TITLE": "Gestión de Roles a Usuarios",
+
+  "ROLES_DESC": "Nombres del usuario",
+  "ROLES_REQ": "El listado de roles es obligatorio",
+  "USERS_ID_DESC": "Id del registro de usuario creado en la aplicación.",
+  "ROLES_ID_DESC": "Id del registro de roles creado en la aplicación.",
+
+  "ID_EXAMPLE": "550e8400-e29b-41d4-a716-446655440000",
+  "CREATED_AT_DESC": "Fecha y hora de creación del registro",
+  "MSG_CREATE": "Rol asignado exitosamente.",
+  "MSG_GET": "Detalle del roles asociados al usuario obtenido correctamente.",
+  "MSG_ERROR_DATA": "Los datos informados son incorrectos o el rol ya existe.",
+  "LIST_DESC": "LIsta de roles usuario.",
+  "PARAM_USERID": "Id de usuario creado en la aplicación."
+}
