@@ -68,6 +68,26 @@ export class AuthService {
       const finalSessionToken = await this.jwtService.signAsync({
         sub: "user_uuid_123",
         email: fields.email,
+        userProfile: {
+          email: "miemail@dominio.com",
+          firstName: "Gabriel",
+          lastName: "Martinez",
+          document: "123456787",
+          documentType: "CC",
+          phone: "3012223432",
+          avatar: "https://example.com/profiles/user.jpg",
+          roles: ["admin"]
+        },
+        userId: "user_uuid_123",
+        ownership: {
+          id: "1",
+          name: "Conjunto Los Soles",
+          tax_id: "12222212-2",
+          address: "calle 123 # 12-23",
+          city: "Bogotá DC",
+          country: "Colombia",
+          state: "Bogotá DC"
+        },
         scope: "full_access",
       });
 

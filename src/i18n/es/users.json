@@ -33,6 +33,7 @@
   "AVATAR": "https://example.com/profiles/user.jpg",
   "EMAIL": "gabriel@dominio.com",
   "DOC_NUM": "123456789",
+  "DOC_NUM_TYPE": "CC",
   "PHONE": "3019999999",
 
   "ID_EXAMPLE": "550e8400-e29b-41d4-a716-446655440000",
@@ -42,5 +43,7 @@
   "MSG_UPDATE": "Usuario actualizado exitosamente.",
   "MSG_LIST": "Listado de usuarios obtenido correctamente.",
   "MSG_DELETE": "Usuario {id} eliminado exitosamente.",
-  "MSG_ERROR_DATA": "Los datos informados son incorrectos o el usuario ya existe."
+  "MSG_ERROR_DATA": "Los datos informados son incorrectos o el usuario ya existe.",
+  "GET_PROFILE_SUMMARY": "Obtener detalle del perfil autenticado",
+  "GET_DETAIL_PROFILE_DESC": "Detalle del perfil autenticado."
 }

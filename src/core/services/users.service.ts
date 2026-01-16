@@ -2,6 +2,7 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  UnauthorizedException,
   Inject,
 } from "@nestjs/common";
 //import { InjectRepository } from '@nestjs/typeorm';
@@ -10,6 +11,7 @@ import { User } from "../entities/user.entity";
 import { CreateUserDto } from "../dtos/payload/user-payload.dto";
 import * as bcrypt from "bcrypt";
 import { getRepositoryToken } from "@nestjs/typeorm";
+
 
 import { I18nContext, I18nService } from "nestjs-i18n";
 const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
@@ -27,8 +29,8 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto): Promise<any> {
     return {
-      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('users.MSG_CREATE', {lang, args: {},}),
+      status: this.i18n.t("general.SUCCESS", { lang, args: {} }),
+      message: this.i18n.t("users.MSG_CREATE", { lang, args: {} }),
       data: {
         id: "550e8400-e29b-41d4-a716-446655440000",
         ...createUserDto,
@@ -65,8 +67,8 @@ export class UsersService {
 
   async findAll(_fields?: string, _where?: string): Promise<any> {
     return {
-      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('users.MSG_LIST', {lang, args: {},}),
+      status: this.i18n.t("general.SUCCESS", { lang, args: {} }),
+      message: this.i18n.t("users.MSG_LIST", { lang, args: {} }),
       data: [
         {
           id: "550e8400-e29b-41d4-a716-446655440000",
@@ -97,8 +99,8 @@ export class UsersService {
 
   async findOne(id: string): Promise<any> {
     return {
-      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('users.MSG_GET', {lang, args: {},}),
+      status: this.i18n.t("general.SUCCESS", { lang, args: {} }),
+      message: this.i18n.t("users.MSG_GET", { lang, args: {} }),
       data: {
         id: "550e8400-e29b-41d4-a716-446655440000",
         first_name: "Gabriel",
@@ -118,8 +120,8 @@ export class UsersService {
 
   async findByEmail(email: string): Promise<any | null> {
     return {
-      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('users.MSG_GET', {lang, args: {},}),
+      status: this.i18n.t("general.SUCCESS", { lang, args: {} }),
+      message: this.i18n.t("users.MSG_GET", { lang, args: {} }),
       data: {
         id: "550e8400-e29b-41d4-a716-446655440000",
         first_name: "Gabriel",
@@ -139,20 +141,55 @@ export class UsersService {
 
   async delete(id: string): Promise<any> {
     return {
-      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('users.MSG_DELETE', {lang, args: {id},}),
+      status: this.i18n.t("general.SUCCESS", { lang, args: {} }),
+      message: this.i18n.t("users.MSG_DELETE", { lang, args: { id } }),
     };
   }
 
   async update(id: string, createUserDto: CreateUserDto): Promise<any> {
     return {
-      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('users.MSG_UPDATE', {lang, args: {},}),
+      status: this.i18n.t("general.SUCCESS", { lang, args: {} }),
+      message: this.i18n.t("users.MSG_UPDATE", { lang, args: {} }),
       data: {
         id: "550e8400-e29b-41d4-a716-446655440000",
         ...createUserDto,
         created_at: "2025-12-25T13:45:00Z",
       },
     };
+  }
+
+  async getProfile(payload: object): Promise<any> {
+    try {
+      
+      console.log(payload);
+      return {
+        userProfile: {
+          email: "gabriel@dominio.com",
+          firstName: "Gabriel",
+          lastName: "Gomez",
+          document: "123456789",
+          documentType: "CC",
+          phone: "3019999999",
+          avatar: "https://example.com/profiles/user.jpg",
+          roles: ["admin"],
+        },
+        userId: "123",
+        ownership: {
+          id: "ID_EXAMPLE",
+          name: "Conjunto Residencial Los Álamos",
+          tax_id: "900123456-1",
+          address: "Calle 123 # 45-67, Bogotá",
+          city: "Bogotá DC",
+          country: "Colombia",
+          state: "Bogotá DC",
+        },
+        scope: "read/write",
+      };
+    } catch (error) {
+      // Si el token del header expiró o es inválido
+      throw new UnauthorizedException(
+        this.i18n.t("general.TOKEN_EXPIRED", { lang, args: {} })
+      );
+    }
   }
 }

@@ -5,6 +5,7 @@ import { getSwaggerText } from "../../../utils/swagger-i18n.loader";
 const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
 const t = (key: string) => getSwaggerText("users", key, lang);
 const g = (key: string) => getSwaggerText("general", key, lang);
+const p = (key: string) => getSwaggerText("phs", key, lang);
 
 class UserDataDto {
   @ApiProperty({ example: t("ID_EXAMPLE") })
@@ -143,4 +144,67 @@ export class DeleteUserResponseDto {
 
   @ApiProperty({ example: t("MSG_DELETE") })
   message: string;
+}
+
+export class Ownership{
+  @ApiProperty({ example: p("ID_EXAMPLE") })
+  id: string;
+
+  @ApiProperty({ example: p("EXAMPLE_PH_NAME") })
+  name: string;
+
+  @ApiProperty({ example: p("EXAMPLE_PH_TAX") })
+  tax_id: string;
+
+  @ApiProperty({ example: p("EXAMPLE_PH_ADDRESS") })
+  address: string;
+
+  @ApiProperty({ example: p("EXAMPLE_CITY") })
+  city: string;
+
+  @ApiProperty({ example: p("EXAMPLE_COUNTRY") })
+  country: string;
+
+  @ApiProperty({ example: p("EXAMPLE_STATE") })
+  state: string;
+}
+
+export class UserProfileResponseDto{
+  @ApiProperty({ example: t("EMAIL") })
+  email: string;
+
+  @ApiProperty({ example: t("FIRST_NAME") })
+  firstName: string;
+
+  @ApiProperty({ example: t("LAST_NAME") })
+  lastName: string;
+
+  @ApiProperty({ example: t("DOC_NUM") })
+  document: string;
+
+  @ApiProperty({ example: t("DOC_NUM_TYPE") })
+  documentType: string;
+
+  @ApiProperty({ example: t("PHONE") })
+  phone: string;
+
+  @ApiProperty({ example: t("AVATAR") })
+  avatar: string;
+
+  @ApiProperty({ example: ["admin"] })
+  roles: string[];
+}
+
+export class GetUserProfileResponseDto{
+  @ApiProperty({ type: UserProfileResponseDto })
+  userProfile: UserProfileResponseDto;
+
+  @ApiProperty({ example: "550e8400-e29b-41d4-a716-446655440000" })
+  userId: string;
+
+  @ApiProperty({ type: Ownership })
+  ownership: Ownership;
+
+  @ApiProperty({ example: "read/write" })
+  scope: string;
 }

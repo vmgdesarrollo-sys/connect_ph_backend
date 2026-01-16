@@ -143,7 +143,7 @@ export class AuthController {
     @Headers("authorization") authHeader: string,
     @Body() body: { token: string; fields: any }
   ) {
-    console.log('authHeader',authHeader );
+    
     const token = authHeader?.replace("Bearer ", "");
 
     if (!token) {
