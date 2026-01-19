@@ -157,39 +157,4 @@ export class UsersService {
       },
     };
   }
-
-  async getProfile(payload: object): Promise<any> {
-    try {
-      
-      console.log(payload);
-      return {
-        userProfile: {
-          email: "gabriel@dominio.com",
-          firstName: "Gabriel",
-          lastName: "Gomez",
-          document: "123456789",
-          documentType: "CC",
-          phone: "3019999999",
-          avatar: "https://example.com/profiles/user.jpg",
-          roles: ["admin"],
-        },
-        userId: "123",
-        ownership: {
-          id: "ID_EXAMPLE",
-          name: "Conjunto Residencial Los Álamos",
-          tax_id: "900123456-1",
-          address: "Calle 123 # 45-67, Bogotá",
-          city: "Bogotá DC",
-          country: "Colombia",
-          state: "Bogotá DC",
-        },
-        scope: "read/write",
-      };
-    } catch (error) {
-      // Si el token del header expiró o es inválido
-      throw new UnauthorizedException(
-        this.i18n.t("general.TOKEN_EXPIRED", { lang, args: {} })
-      );
-    }
-  }
 }

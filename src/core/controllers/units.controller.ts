@@ -20,7 +20,7 @@ import {
   ApiResponse,
   ApiQuery,
 } from "@nestjs/swagger";
-import { UsersService } from "../services/users.service";
+import { UnitsService } from "../services/units.service";
 import { CreateUserDto } from "../dtos/payload/user-payload.dto";
 import { AuthGuard } from "../utils/auth.guard";
 import { AuthErrorDto } from "../dtos/general.dto";
@@ -34,30 +34,28 @@ import {
   DeleteUserResponseDto,
   GetUserProfileResponseDto,
 } from "../dtos/responses/user-response.dto";
-import { JwtService } from "@nestjs/jwt";
 
 import { I18nContext, I18nService } from "nestjs-i18n";
 import { getSwaggerText } from "../../utils/swagger-i18n.loader";
 const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
 const KEY_JWT = process.env.JWT_SECRET || "CLAVE_SECRETA_PROVISIONAL";
 
-const t = (key: string) => getSwaggerText("users", key, lang);
+const t = (key: string) => getSwaggerText("units", key, lang);
 const g = (key: string) => getSwaggerText("general", key, lang);
 
 @UseGuards(AuthGuard)
 @ApiTags(t("TITLE"))
 @ApiBearerAuth("access-token")
-@Controller("users")
+@Controller("units")
 @ApiResponse({ status: 403, description: g("AUTH_ERROR"), type: AuthErrorDto })
 @ApiResponse({
   status: 401,
   description: g("DATA_ERROR"),
   type: CreateUserResponseErrorDto,
 })
-export class UsersController {
+export class UnitsController {
   constructor(
-    private readonly usersService: UsersService,
-    private readonly jwtService: JwtService
+    private readonly unitsService: UnitsService
   ) {}
 
   @Post("register")
@@ -68,7 +66,7 @@ export class UsersController {
     type: CreateUserResponseDto,
   })
   async register(@Body() createUserDto: CreateUserDto) {
-    return await this.usersService.create(createUserDto);
+    return await this.unitsService.create(createUserDto);
   }
 
   @Put(":id")
@@ -87,7 +85,7 @@ export class UsersController {
     @Param("id", ParseUUIDPipe) id: string,
     @Body() createUserDto: CreateUserDto
   ) {
-    return await this.usersService.update(id, createUserDto);
+    return await this.unitsService.update(id, createUserDto);
   }
 
   @Get()
@@ -109,7 +107,7 @@ export class UsersController {
     @Query("_fields") _fields?: string,
     @Query("_where") _where?: string
   ) {
-    return await this.usersService.findAll(_fields, _where);
+    return await this.unitsService.findAll(_fields, _where);
   }
 
   @Get("id/:id")
@@ -125,23 +123,7 @@ export class UsersController {
     type: GetUserResponseDto,
   })
   async findOne(@Param("id", ParseUUIDPipe) id: string) {
-    return await this.usersService.findOne(id);
-  }
-
-  @Get("email/:email")
-  @ApiOperation({ summary: t("GET_EMAIL_SUMMARY") })
-  @ApiParam({
-    name: "email",
-    description: t("PARAM_EMAIL"),
-    example: "usuario@ejemplo.com",
-  })
-  @ApiResponse({
-    status: 200,
-    description: t("GET_DETAIL_DESC"),
-    type: GetUserResponseDto,
-  })
-  async findByEmail(@Param("email") email: string) {
-    return await this.usersService.findByEmail(email);
+    return await this.unitsService.findOne(id);
   }
 
   @Delete(":id")
@@ -157,36 +139,6 @@ export class UsersController {
     type: DeleteUserResponseDto,
   })
   async delete(@Param("id", ParseUUIDPipe) id: string) {
-    return await this.usersService.delete(id);
-  }
-
-  @Get("getProfile")
-  @ApiOperation({ summary: t("GET_PROFILE_SUMMARY") })
-  @ApiResponse({
-    status: 200,
-    description: t("GET_DETAIL_PROFILE_DESC"),
-    type: GetUserProfileResponseDto,
-  })
-  async getProfile(@Headers("authorization") authHeader: string) {
-    const token = authHeader?.replace("Bearer ", "");
-    if (!token) {
-      throw new UnauthorizedException(g("ERROR_TOKEN_AUTH"));
-    }
-
-    try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: KEY_JWT,
-      });
-
-      return {
-        userProfile: payload?.userProfile,
-        userId: payload?.userId,
-        ownership: payload?.ownership,
-        scope: payload?.scope,
-      };
-      // return await this.usersService.getProfile(payload);
-    } catch (error) {
-      throw new UnauthorizedException(g("ERROR_TOKEN_INVALID"));
-    }
+    return await this.unitsService.delete(id);
   }
 }
