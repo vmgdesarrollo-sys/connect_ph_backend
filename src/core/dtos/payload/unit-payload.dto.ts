@@ -4,48 +4,46 @@ import { I18nContext } from 'nestjs-i18n';
 import { getSwaggerText } from "../../../utils/swagger-i18n.loader";
 
 const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
-const t = (key: string) => getSwaggerText('unit', key, lang);
+const t = (key: string) => getSwaggerText('units', key, lang);
 
 export class CreateUnitDto {
-  
-  @ApiProperty({ example: t('FIRST_NAME'), description: t('FIRST_NAME_DESC') })
-  @IsString()
-  @IsNotEmpty({ message: t('FIRST_NAME_REQ') })
-  first_name: string;
 
-  @ApiProperty({ example: t('LAST_NAME'), description: t('LAST_NAME_DESC') })
+  @ApiProperty({ example: t('BOLCK_EXAM'), description: t('BLOCK_DESC') })
   @IsString()
-  @IsNotEmpty({ message: t('LAST_NAME_REQ') })
-  last_name: string;
+  @IsNotEmpty({ message: t('BLOCK_REQ') })
+  block: string;
 
-  @ApiProperty({ example: "Natural", description: t('TYPE_DESC') })
+  @ApiProperty({ example: t("UNIT_NUMBER_EXAM"), description: t('UNIT_NUMBER_DESC') })
   @IsString()
   @IsNotEmpty()
-  type_person: string;
+  unit_number: string;
 
-  @ApiProperty({ example: "M", description: t('GENDER_DESC') })
+  @ApiProperty({ example: t("TYPE_EXAM"), description: t('TYPE_DESC') })
   @IsString()
-  gender: string;
+  type: string;
 
-  @ApiProperty({ example: t('AVATAR'), description: t('AVATAR_DESC') })
+  @ApiProperty({ example: t('COEFFICIENT_EXAM'), description: t('COEFFICIENT_DESC') })
   @IsString()
   @IsOptional()
-  avatar_url: string;
+  coefficient: string;
 
-  @ApiProperty({ example: t('EMAIL'), description: t('EMAIL_DESC'), required: true })
-  @IsEmail({}, { message: t('EMAIL_INVALID') })
+  @ApiProperty({ example: t('FLOOR_EXAM'), description: t('FLOOR_DESC'), required: true })
   @IsNotEmpty()
-  email: string;
+  floor: string;
 
-  @ApiProperty({ example: "CC", description: t('DOC_TYPE_DESC'), required: false })
+  @ApiProperty({ example: t("AREA_EXAM"), description: t('AREA_DESC'), required: false })
   @IsOptional()
-  document_type?: string;
+  area?: string;
 
-  @ApiProperty({ example: t('DOC_NUM'), description: t('DOC_NUM_DESC'), required: false })
+  @ApiProperty({ example: t('TAX_RESPONSABLE_EXAM'), description: t('TAX_RESPONSABLE_DESC'), required: false })
   @IsOptional()
-  document_number?: string;
+  tax_responsible?: string;
 
-  @ApiProperty({ example: t('PHONE'), description: t('PHONE_DESC'), required: false })
+  @ApiProperty({ example: t('TAX_RESPONSABLE_DOC_TYPE_EXAM'), description: t('TAX_RESPONSABLE_DOC_TYPE_DESC'), required: false })
   @IsOptional()
-  phone_number?: string;
+  tax_responsible_document_type?: string;
+
+  @ApiProperty({ example: t('TAX_RESPONSABLE_DOC_EXAM'), description: t('TAX_RESPONSABLE_DOC_DESC'), required: false })
+  @IsOptional()
+  tax_responsible_document?: string;
 }

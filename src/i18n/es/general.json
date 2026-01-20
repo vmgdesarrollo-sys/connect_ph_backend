@@ -17,5 +17,7 @@
   "TOTAL": "Total de ítems encontrados",
   "PER_PAGE": "Ítems por página",
   "CURRENT": "Página actual",
-  "TOTAL_PAGES": "Total de páginas disponibles"
+  "TOTAL_PAGES": "Total de páginas disponibles", 
+  "QUERY_FIELDS": "Propiedad para especificar las propiedades que desea retorne el servicio de listar.",
+  "QUERY_WHERE": "Propiedad para indicar una condición sobre la consulta de los registros almacenados en bases de datos."
 }

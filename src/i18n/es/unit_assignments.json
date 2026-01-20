@@ -1,5 +1,5 @@
 {
-  "TITLE": "Gestión de Roles a Usuarios",
+  "TITLE": "Asignacion de unidades a usuarios.",
   "REGISTER_SUMMARY": "Servicio para la asignacion de roles a los usuarios de la aplicación",
   "REGISTER_DESC": "Asignacion de rol exitosa.",
   "GET_DETAIL_SUMMARY": "Servicio para obtener el detalle de la asunacion del rol a un usuairo especifico.",

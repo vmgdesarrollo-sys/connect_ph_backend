@@ -8,6 +8,7 @@ import { UserRol } from './entities/user_rol.entity';
 import { Role } from './entities/role.entity';
 import { Ph } from './entities/ph.entity';
 import { Unit } from './entities/unit.entity';
+import { UnitAssignment } from './entities/unit_assignment.entity';
 
 // Controladores
 import { UsersController } from './controllers/users.controller';
@@ -15,6 +16,7 @@ import { UserRolesController } from './controllers/user_roles.controller';
 import { RolesController } from './controllers/roles.controller';
 import { PhsController } from './controllers/phs.controller';
 import { UnitsController } from './controllers/units.controller';
+import { UnitAssignmentsController } from './controllers/unit_assignments.controller';
 
 // Servicios
 import { UsersService } from './services/users.service';
@@ -22,6 +24,7 @@ import { UserRolesService } from './services/user_roles.service';
 import { RolesService } from './services/roles.service';
 import { PhsService } from './services/phs.service';
 import { UnitsService } from './services/units.service';
+import { UnitAssignmentsService } from './services/unit_assignments.service';
 
 /**
  * Borrarme porque soy simulacion
@@ -59,6 +62,7 @@ const mockRepository = {
     RolesController,
     UserRolesController, 
     UnitsController,
+    UnitAssignmentsController, 
   ],
   providers: [  
     AuthService,
@@ -67,6 +71,7 @@ const mockRepository = {
     RolesService,
     UserRolesService,
     UnitsService,
+    UnitAssignmentsService, 
 
     // Proveedores falsos para que no pida DataSource
     { provide: getRepositoryToken(User), useValue: mockRepository },
@@ -74,6 +79,7 @@ const mockRepository = {
     { provide: getRepositoryToken(Ph), useValue: mockRepository },
     { provide: getRepositoryToken(UserRol), useValue: mockRepository },
     { provide: getRepositoryToken(Unit), useValue: mockRepository },
+    { provide: getRepositoryToken(UnitAssignment), useValue: mockRepository },
   ],
   //exports: [
     //UsersService, 

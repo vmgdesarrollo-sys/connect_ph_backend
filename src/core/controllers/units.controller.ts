@@ -21,19 +21,18 @@ import {
   ApiQuery,
 } from "@nestjs/swagger";
 import { UnitsService } from "../services/units.service";
-import { CreateUserDto } from "../dtos/payload/user-payload.dto";
+import { CreateUnitDto } from "../dtos/payload/unit-payload.dto";
 import { AuthGuard } from "../utils/auth.guard";
 import { AuthErrorDto } from "../dtos/general.dto";
 
 import {
-  CreateUserResponseErrorDto,
-  CreateUserResponseDto,
-  UpdateUserResponseDto,
-  UsersListResponseDto,
-  GetUserResponseDto,
-  DeleteUserResponseDto,
-  GetUserProfileResponseDto,
-} from "../dtos/responses/user-response.dto";
+  CreateUnitResponseErrorDto,
+  CreateUnitResponseDto,
+  UpdateUnitResponseDto,
+  UnitsListResponseDto,
+  GetUnitResponseDto,
+  DeleteUnitResponseDto
+} from "../dtos/responses/unit-response.dto";
 
 import { I18nContext, I18nService } from "nestjs-i18n";
 import { getSwaggerText } from "../../utils/swagger-i18n.loader";
@@ -51,26 +50,36 @@ const g = (key: string) => getSwaggerText("general", key, lang);
 @ApiResponse({
   status: 401,
   description: g("DATA_ERROR"),
-  type: CreateUserResponseErrorDto,
+  type: CreateUnitResponseErrorDto,
 })
 export class UnitsController {
   constructor(
     private readonly unitsService: UnitsService
   ) {}
 
-  @Post("register")
+  @Post("/register/:phs_id")
   @ApiOperation({ summary: t("REGISTER_SUMMARY") })
+  @ApiParam({
+    name: "phs_id",
+    description: t("PARAM_PHS_ID"),
+    example: "550e8400-e29b-41d4-a716-446655440000",
+  })
   @ApiResponse({
     status: 201,
     description: t("REGISTER_DESC"),
-    type: CreateUserResponseDto,
+    type: CreateUnitResponseDto,
   })
-  async register(@Body() createUserDto: CreateUserDto) {
-    return await this.unitsService.create(createUserDto);
+  async register(@Param("phs_id", ParseUUIDPipe) phs_id: string, @Body() createUnitDto: CreateUnitDto) {
+    return await this.unitsService.create(phs_id, createUnitDto);
   }
 
-  @Put(":id")
+  @Put("/:phs_id/:id")
   @ApiOperation({ summary: t("UPDATE_SUMMARY") })
+  @ApiParam({
+    name: "phs_id",
+    description: t("PARAM_PHS_ID"),
+    example: "550e8400-e29b-41d4-a716-446655440000",
+  })
   @ApiParam({
     name: "id",
     description: t("PARAM_ID"),
@@ -79,39 +88,51 @@ export class UnitsController {
   @ApiResponse({
     status: 200,
     description: t("UPDATE_DESC"),
-    type: UpdateUserResponseDto,
+    type: UpdateUnitResponseDto,
   })
   async update(
+    @Param("phs_id", ParseUUIDPipe) phs_id: string,
     @Param("id", ParseUUIDPipe) id: string,
-    @Body() createUserDto: CreateUserDto
+    @Body() createUserDto: CreateUnitDto
   ) {
-    return await this.unitsService.update(id, createUserDto);
+    return await this.unitsService.update(phs_id, id, createUserDto);
   }
 
-  @Get()
+  @Get("list/:phs_id")
+  @ApiParam({
+    name: "phs_id",
+    description: t("PARAM_PHS_ID"),
+    example: "550e8400-e29b-41d4-a716-446655440000",
+  })
   @ApiOperation({ summary: t("LIST_SUMMARY") })
   @ApiQuery({ name: "page", required: false, example: 1 })
   @ApiQuery({ name: "limit", required: false, example: 100 })
   @ApiQuery({
     name: "_fields",
     required: false,
-    description: t("QUERY_FIELDS"),
+    description: g("QUERY_FIELDS"),
   })
-  @ApiQuery({ name: "_where", required: false, description: t("QUERY_WHERE") })
+  @ApiQuery({ name: "_where", required: false, description: g("QUERY_WHERE") })
   @ApiResponse({
     status: 200,
     description: t("LIST_DESC"),
-    type: UsersListResponseDto,
+    type: UnitsListResponseDto,
   })
   async findAll(
+    @Param("phs_id", ParseUUIDPipe) phs_id: string,
     @Query("_fields") _fields?: string,
     @Query("_where") _where?: string
   ) {
-    return await this.unitsService.findAll(_fields, _where);
+    return await this.unitsService.findAll(phs_id, _fields, _where);
   }
 
-  @Get("id/:id")
+  @Get("get/:phs_id/:id")
   @ApiOperation({ summary: t("GET_DETAIL_SUMMARY") })
+  @ApiParam({
+    name: "phs_id",
+    description: t("PARAM_PHS_ID"),
+    example: "550e8400-e29b-41d4-a716-446655440000",
+  })
   @ApiParam({
     name: "id",
     description: t("PARAM_ID"),
@@ -120,14 +141,19 @@ export class UnitsController {
   @ApiResponse({
     status: 200,
     description: t("GET_DETAIL_DESC"),
-    type: GetUserResponseDto,
+    type: GetUnitResponseDto,
   })
-  async findOne(@Param("id", ParseUUIDPipe) id: string) {
-    return await this.unitsService.findOne(id);
+  async findOne(@Param("phs_id", ParseUUIDPipe) phs_id: string, @Param("id", ParseUUIDPipe) id: string) {
+    return await this.unitsService.findOne(phs_id, id);
   }
 
-  @Delete(":id")
+  @Delete("/:phs_id/:id")
   @ApiOperation({ summary: t("DELETE_SUMMARY") })
+  @ApiParam({
+    name: "phs_id",
+    description: t("PARAM_PHS_ID"),
+    example: "550e8400-e29b-41d4-a716-446655440000",
+  })
   @ApiParam({
     name: "id",
     description: t("PARAM_ID"),
@@ -136,9 +162,9 @@ export class UnitsController {
   @ApiResponse({
     status: 200,
     description: t("DELETE_DESC"),
-    type: DeleteUserResponseDto,
+    type: DeleteUnitResponseDto,
   })
-  async delete(@Param("id", ParseUUIDPipe) id: string) {
-    return await this.unitsService.delete(id);
+  async delete(@Param("phs_id", ParseUUIDPipe) phs_id: string, @Param("id", ParseUUIDPipe) id: string) {
+    return await this.unitsService.delete(phs_id, id);
   }
 }
