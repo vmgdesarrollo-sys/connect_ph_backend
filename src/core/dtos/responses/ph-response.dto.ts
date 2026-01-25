@@ -1,48 +1,108 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
-import { I18nContext } from 'nestjs-i18n';
-import {getSwaggerText} from "../../../utils/swagger-i18n.loader"
-const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
+import { I18nContext } from "nestjs-i18n";
+import { getSwaggerText } from "../../../utils/swagger-i18n.loader";
+const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
+const t = (key: string) => getSwaggerText('phs', key, lang);
+const g = (key: string) => getSwaggerText('general', key, lang);
 
 class PhDataDto {
-  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_UUID", lang) })
+  @ApiProperty({ example: t("EXAMPLE_UUID") })
   id: string;
 
-  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_PH_NAME", lang) })
+  @ApiProperty({ example: t("EXAMPLE_PH_NAME") })
   name: string;
 
-  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_PH_TAX", lang), description: getSwaggerText("phs", "DESP_PH_TAX", lang) })
+  @ApiProperty({
+    example: t("EXAMPLE_PH_TAX"),
+    description: t("DESP_PH_TAX"),
+  })
   tax_id: string;
 
-  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_PH_ADDRESS", lang) })
+  @ApiProperty({ example: t("EXAMPLE_PH_ADDRESS") })
   address?: string;
 
-  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_PH_PHONE_NUMBER", lang) })
+  @ApiProperty({
+    example: t("EXAMPLE_PH_PHONE_NUMBER"),
+  })
   phone_number?: string;
 
-  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_PH_EMAIL", lang) })
+  @ApiProperty({ example: t("EXAMPLE_PH_EMAIL") })
   email?: string;
 
-  @ApiProperty({ 
-    example: getSwaggerText("phs", "EXAMPLE_PH_LOGO_URL", lang)
+  @ApiProperty({
+    example: t("EXAMPLE_PH_LOGO_URL"),
   })
   logo_url?: string;
 
-  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_PH_LEGAL_REPRESENTATIVE", lang) })
+  @ApiProperty({
+    example: t("EXAMPLE_PH_LEGAL_REPRESENTATIVE"),
+  })
   legal_representative?: string;
+
+  @ApiProperty({
+    example: t("EXAMPLE_CITY"),
+    description: t("DESP_CITY"),
+    required: false,
+  })
+  city?: string;
+
+  @ApiProperty({
+    example: t("EXAMPLE_STATE"),
+    description: t("DESP_STATE"),
+    required: false,
+  })
+  state?: string;
+
+  @ApiProperty({
+    example: t("EXAMPLE_COUNTRY"),
+    description: t("DESP_COUNTRY"),
+    required: false,
+  })
+  country?: string;
+
+  @ApiProperty({
+    example: t("EXAMPLE_STRATUM"),
+    description: t("DESP_STRATUM"),
+    required: false,
+  })
+  stratum?: string;
+
+  @ApiProperty({
+    example: t("EXAMPLE_NUMBER_OF_TOWERS"),
+    description: t("DESP_NUMBER_OF_TOWERS"),
+    required: false,
+  })
+  number_of_towers?: string;
+
+  @ApiProperty({
+    example: t("EXAMPLE_AMOUNT_OF_REAL_ESTATE"),
+    description: t("DESP_AMOUNT_OF_REAL_ESTATE"),
+    required: false,
+  })
+  amount_of_real_estate?: string;
+
+  @ApiProperty({
+    example: t("EXAMPLE_HORIZONTAL_PROPERTY_REGULATIONS"),
+    description: t("DESP_HORIZONTAL_PROPERTY_REGULATIONS"),
+    required: false,
+  })
+  horizontal_property_regulations?: string;
 
   @ApiProperty({ example: true })
   is_active?: boolean;
 
-  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_CREATED_AT", lang) })
+  @ApiProperty({ example: t("EXAMPLE_CREATED_AT") })
   created_at: Date;
 }
 
 export class CreatePhResponseDto {
-  @ApiProperty({ example: getSwaggerText("general", "SUCCESS", lang) })
+  @ApiProperty({ example: g("SUCCESS") })
   status: string;
 
-  @ApiProperty({ example: getSwaggerText("phs", "CREAR_COPROPIEDAD_RES", lang) })
+  @ApiProperty({
+    example: t("CREAR_COPROPIEDAD_RES"),
+  })
   message: string;
 
   @ApiProperty({ type: PhDataDto })
@@ -50,10 +110,10 @@ export class CreatePhResponseDto {
 }
 
 export class GetPhResponseDto {
-  @ApiProperty({ example: getSwaggerText("general", "SUCCESS", lang) })
+  @ApiProperty({ example: g("SUCCESS") })
   status: string;
 
-  @ApiProperty({ example: getSwaggerText("phs", "DETALLE_COPROPIEDAD", lang) })
+  @ApiProperty({ example: t("DETALLE_COPROPIEDAD") })
   message: string;
 
   @ApiProperty({ type: PhDataDto })
@@ -61,10 +121,12 @@ export class GetPhResponseDto {
 }
 
 export class UpdatePhResponseDto {
-  @ApiProperty({ example: getSwaggerText("general", "SUCCESS", lang) })
+  @ApiProperty({ example: g("SUCCESS") })
   status: string;
 
-  @ApiProperty({ example: getSwaggerText("phs", "COPROPIEDAD_ACTUALIZADA", lang) })
+  @ApiProperty({
+    example: t("COPROPIEDAD_ACTUALIZADA"),
+  })
   message: string;
 
   @ApiProperty({ type: PhDataDto })
@@ -72,10 +134,10 @@ export class UpdatePhResponseDto {
 }
 
 export class CreatePhResponseErrorDto {
-  @ApiProperty({ example: getSwaggerText("general", "DATA_ERROR", lang) })
+  @ApiProperty({ example: g("DATA_ERROR") })
   message: string;
 
-  @ApiProperty({ example: getSwaggerText('general', 'BAD_REQUEST', lang) })
+  @ApiProperty({ example: g("BAD_REQUEST") })
   error: string;
 
   @ApiProperty({ example: 401 })
@@ -83,10 +145,10 @@ export class CreatePhResponseErrorDto {
 }
 
 export class CreatePhResponseErrorTaxIdDto {
-  @ApiProperty({ example: getSwaggerText("phs", "EXAMPLE_TAX_ID_EXIST", lang) })
+  @ApiProperty({ example: t("EXAMPLE_TAX_ID_EXIST") })
   message: string;
 
-  @ApiProperty({ example: getSwaggerText("general", "CONFLICTO", lang) })
+  @ApiProperty({ example: g("CONFLICTO") })
   error: string;
 
   @ApiProperty({ example: 409 })
@@ -108,10 +170,12 @@ export class PaginationMetaDto {
 }
 
 export class PhsListResponseDto {
-  @ApiProperty({ example: getSwaggerText("general", "SUCCESS", lang) })
+  @ApiProperty({ example: g("SUCCESS") })
   status: string;
 
-  @ApiProperty({ example: getSwaggerText("phs", "RESPUESTA_TODAS_LAS_COPROPIDADES", lang) })
+  @ApiProperty({
+    example: t("RESPUESTA_TODAS_LAS_COPROPIDADES"),
+  })
   message: string;
 
   @ApiProperty({ type: [PhDataDto] }) // El corchete [PhDto] indica que es un array
@@ -122,9 +186,11 @@ export class PhsListResponseDto {
 }
 
 export class DeletePhResponseDto {
-  @ApiProperty({ example: getSwaggerText("general", "SUCCESS", lang) })
+  @ApiProperty({ example: g("SUCCESS") })
   status: string;
 
-  @ApiProperty({ example: getSwaggerText('phs', 'COPROPIEDAD_ELIMINADA', lang) })
+  @ApiProperty({
+    example: t("COPROPIEDAD_ELIMINADA"),
+  })
   message: string;
 }

@@ -11,6 +11,9 @@ import { Unit } from './entities/unit.entity';
 import { UnitAssignment } from './entities/unit_assignment.entity';
 import { Agenda } from './entities/agenda.entity';
 import { Assembly } from './entities/assemblies.entity';
+import { AssemblyAnnouncement } from './entities/assembly_announcements.entity';
+import { AssemblyAttendance } from './entities/assembly_attendances.entity';
+import { QaEntry } from './entities/qa_entries.entity';
 
 // Controladores
 import { UsersController } from './controllers/users.controller';
@@ -119,6 +122,9 @@ const mockRepository = {
     { provide: getRepositoryToken(UnitAssignment), useValue: mockRepository },
     { provide: getRepositoryToken(Agenda), useValue: mockRepository },
     { provide: getRepositoryToken(Assembly), useValue: mockRepository },
+    { provide: getRepositoryToken(AssemblyAnnouncement), useValue: mockRepository },
+    { provide: getRepositoryToken(AssemblyAttendance), useValue: mockRepository },
+    { provide: getRepositoryToken(QaEntry), useValue: mockRepository },
   ],
   //exports: [
     //UsersService, 

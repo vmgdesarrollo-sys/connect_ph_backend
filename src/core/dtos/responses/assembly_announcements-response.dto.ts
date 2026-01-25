@@ -1,67 +1,50 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { I18nContext } from "nestjs-i18n";
+import { PaginationMetaDto } from "../../dtos/general.dto";
 import { getSwaggerText } from "../../../utils/swagger-i18n.loader";
 
-const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
-const t = (key: string) => getSwaggerText("users", key, lang);
-const g = (key: string) => getSwaggerText("general", key, lang);
+const lang = "es";
+const t = (key: string) => getSwaggerText('assembly_announcements', key, lang);
+const g = (key: string) => getSwaggerText('general', key, lang);
 
-class UserRolDataDto {
-  @ApiProperty({ example: t("ID_EXAMPLE") })
+class AnnouncementDataDto {
+  @ApiProperty({ example: t("UUID") })
   id: string;
-
-  @ApiProperty({ example: t("USERS_ID"), description: t("USERS_ID_DESC") })
-  users_id: string;
-
-  @ApiProperty({ example: t("ROLES_ID"), description: t("ROLES_ID_DESC") })
-  roles_id: string;
-
+  @ApiProperty({ example: t("TITLE") })
+  title: string;
+  @ApiProperty({ example: t("MESSAGE") })
+  message: string;
   @ApiProperty({ example: true })
-  is_active?: boolean;
-
-  @ApiProperty({
-    example: "2026-01-08 12:00:00",
-    description: t("CREATED_AT_DESC"),
-  })
+  is_sticky: boolean;
+  @ApiProperty({ example: "2026-01-25T13:00:00Z" })
   created_at: Date;
 }
 
-export class ListRolesDto {
-  @ApiProperty({ example: ["admin", "supervisor"], description: g("LIST_DESC") })
-  roles: String[];
+export class CreateAnnouncementResponseDto {
+  @ApiProperty({ example: g("SUCCESS") }) status: string;
+  @ApiProperty({ example: t("CREAR_RES") }) message: string;
+  @ApiProperty({ type: AnnouncementDataDto }) data: AnnouncementDataDto;
 }
 
-
-export class CreateUserRolResponseDto {
-  @ApiProperty({ example: g("SUCCESS") })
-  status: string;
-
-  @ApiProperty({ example: t("MSG_CREATE") })
-  message: string;
-
-  @ApiProperty({ type: ListRolesDto })
-  data: ListRolesDto;
+export class AnnouncementListResponseDto {
+  @ApiProperty({ example: g("SUCCESS") }) status: string;
+  @ApiProperty({ example: t("LISTAR_RES") }) message: string;
+  @ApiProperty({ type: [AnnouncementDataDto] }) data: AnnouncementDataDto[];
+  @ApiProperty({ type: PaginationMetaDto }) properties: PaginationMetaDto;
 }
 
-
-export class CreateUserRolResponseErrorDto {
-  @ApiProperty({ example: t("MSG_ERROR_DATA") })
-  message: string;
-
-  @ApiProperty({ example: g("BAD_REQUEST") })
-  error: string;
-
-  @ApiProperty({ example: 401 })
-  statusCode: number;
+export class GetAnnouncementResponseDto {
+  @ApiProperty({ example: g("SUCCESS") }) status: string;
+  @ApiProperty({ example: t("DETALLE_RES") }) message: string;
+  @ApiProperty({ type: AnnouncementDataDto }) data: AnnouncementDataDto;
 }
 
-export class GetUserRolResponseDto {
-  @ApiProperty({ example: g("SUCCESS") })
-  status: string;
+export class DeleteAnnouncementResponseDto {
+  @ApiProperty({ example: g("SUCCESS") }) status: string;
+  @ApiProperty({ example: t("ELIMINADA_RES") }) message: string;
+}
 
-  @ApiProperty({ example: t("MSG_GET") })
-  message: string;
-
-  @ApiProperty({ type: ListRolesDto })
-  data: ListRolesDto;
+export class UpdateAnnouncementResponseDto {
+  @ApiProperty({ example: g("SUCCESS") }) status: string;
+  @ApiProperty({ example: t("UPDATE_SUCCESS") }) message: string;
+  @ApiProperty({ type: AnnouncementDataDto }) data: AnnouncementDataDto;
 }

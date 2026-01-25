@@ -1,17 +1,34 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity('user_roles')
-export class UserRol {
+@Entity('assembly_attendances')
+export class AssemblyAttendance {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  users_id: string;
+  @Column({ type: 'uuid' })
+  assemblies_id: string;
 
-  @Column()
-  roles_id: string;
+  @Column({ type: 'uuid' })
+  unit_assignments_id: string;
 
-  @Column({ default: true })
-  is_active: boolean;
+  @Column({ type: 'timestamp', nullable: true })
+  arrival_at: Date;
 
+  @Column({ type: 'timestamp', nullable: true })
+  departure_at: Date;
+
+  @Column({ default: false })
+  is_present: boolean;
+
+  @Column({ type: 'uuid', nullable: true })
+  proxy_file_id: string;
+
+  @Column({ type: 'text', nullable: true })
+  notes: string;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
 }
