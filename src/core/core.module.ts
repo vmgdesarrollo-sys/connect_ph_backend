@@ -78,6 +78,17 @@ const mockRepository = {
   //    User, 
   //    Role, 
   //    Ph
+  //    UserRol,
+  //    Unit,
+  //    UnitAssignment,
+  //    Agenda,
+  //    Assembly,
+  //    AssemblyAnnouncement,
+  //    AssemblyAttendance,
+  //    QaEntry,
+  //    QuestionOption,
+  //    VotingQuestion,
+  //    Vote,
   //  ]), 
   //],
   controllers: [
