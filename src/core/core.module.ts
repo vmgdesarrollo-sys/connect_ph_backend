@@ -14,6 +14,9 @@ import { Assembly } from './entities/assemblies.entity';
 import { AssemblyAnnouncement } from './entities/assembly_announcements.entity';
 import { AssemblyAttendance } from './entities/assembly_attendances.entity';
 import { QaEntry } from './entities/qa_entries.entity';
+import { QuestionOption } from './entities/questions_options.entity';
+import { VotingQuestion } from './entities/voting_questions.entity';
+import { Vote } from './entities/votes.entity';
 
 // Controladores
 import { UsersController } from './controllers/users.controller';
@@ -125,6 +128,9 @@ const mockRepository = {
     { provide: getRepositoryToken(AssemblyAnnouncement), useValue: mockRepository },
     { provide: getRepositoryToken(AssemblyAttendance), useValue: mockRepository },
     { provide: getRepositoryToken(QaEntry), useValue: mockRepository },
+    { provide: getRepositoryToken(QuestionOption), useValue: mockRepository },
+    { provide: getRepositoryToken(VotingQuestion), useValue: mockRepository },
+    { provide: getRepositoryToken(Vote), useValue: mockRepository },
   ],
   //exports: [
     //UsersService, 

@@ -1,44 +1,38 @@
-import {
-  Injectable,
-  ConflictException,
-  NotFoundException,
-  Inject,
-} from "@nestjs/common";
-//import { InjectRepository } from '@nestjs/typeorm';
+import { Injectable, Inject } from "@nestjs/common";
 import { Repository } from "typeorm";
-import { User } from "../entities/user.entity";
-import { CreateUserRolDto } from "../dtos/payload/user_rol-payload.dto";
-import * as bcrypt from "bcrypt";
+import { QuestionOption } from "../entities/questions_options.entity";
+import { CreateQuestionOptionDto } from "../dtos/payload/questions_options-payload.dto";
 import { getRepositoryToken } from "@nestjs/typeorm";
-
-import { I18nContext, I18nService } from "nestjs-i18n";
-const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
+import { I18nService } from "nestjs-i18n";
 
 @Injectable()
 export class QuestionsOptionsService {
   constructor(
     private readonly i18n: I18nService,
-    //@InjectRepository(User)
-    //private readonly userRepository: Repository<User>,
-
-    @Inject(getRepositoryToken(User))
-    private readonly userRepository: Repository<User>
+    @Inject(getRepositoryToken(QuestionOption))
+    private readonly repository: Repository<QuestionOption>,
   ) {}
 
-  async assingRol(id: string, createUserRolDto: CreateUserRolDto): Promise<any> {
+  async create(dto: CreateQuestionOptionDto): Promise<any> {
     return {
-      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('user_roles.MSG_CREATE', {lang, args: {},}),
-      data: createUserRolDto
+      status: "success",
+      message: this.i18n.t("questions_options.CREAR_RES"),
+      data: { id: "uuid-opt-123", ...dto },
     };
   }
 
-  async getRolPerUserId(id: string): Promise<any> {
-    return {
-      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('user_roles.MSG_GET', {lang, args: {},}),
-      data: [ "admin", "supervisor"]
-    };
+  async findAll(_where?: string): Promise<any[]> {
+    return [
+      { id: "uuid-opt-123", question_id: "uuid-q-1", option_text: "A favor", order_index: 1, is_active: true },
+      { id: "uuid-opt-124", question_id: "uuid-q-1", option_text: "En contra", order_index: 2, is_active: true }
+    ];
   }
 
+  async update(id: string, dto: CreateQuestionOptionDto): Promise<any> {
+    return { status: "success", message: this.i18n.t("questions_options.ACTUALIZADA_RES"), data: { id, ...dto } };
+  }
+
+  async delete(id: string): Promise<any> {
+    return { status: "success", message: this.i18n.t("questions_options.ELIMINADA_RES") };
+  }
 }

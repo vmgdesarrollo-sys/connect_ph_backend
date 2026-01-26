@@ -1,45 +1,50 @@
-import { Controller, Get, Post, Body, Param, ParseUUIDPipe, UseGuards, Delete, Put, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiResponse, ApiQuery } from '@nestjs/swagger';
-import { QuestionsOptionsService } from '../services/questions_options.service';
-import { CreateUserRolDto } from '../dtos/payload/questions_options-payload.dto';
-import { AuthGuard } from '../utils/auth.guard';
-import { AuthErrorDto } from "../dtos/general.dto";
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, ParseUUIDPipe } from "@nestjs/common";
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from "@nestjs/swagger";
+import { QuestionsOptionsService } from "../services/questions_options.service";
+import { CreateQuestionOptionDto } from "../dtos/payload/questions_options-payload.dto";
+import { AuthGuard } from "../utils/auth.guard";
+import { CreateQuestionOptionResponseDto, QuestionOptionListResponseDto } from "../dtos/responses/questions_options-response.dto";
+import { getSwaggerText } from "../../utils/swagger-i18n.loader";
 
-import {
-  CreateUserRolResponseDto,
-  GetUserRolResponseDto,
-  CreateUserRolResponseErrorDto
-} from "../dtos/responses/questions_options-response.dto";
-
-import { I18nContext, I18nService } from 'nestjs-i18n';
-import {getSwaggerText} from "../../utils/swagger-i18n.loader"
-const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
-
-const t = (key: string) => getSwaggerText("questions_options", key, lang);
-const g = (key: string) => getSwaggerText("general", key, lang);
+const lang = "es";
+const t = (key: string) => getSwaggerText('questions_options', key, lang);
 
 @UseGuards(AuthGuard)
-@ApiTags(t("TITLE"))
+@ApiTags(t('TITULO'))
 @ApiBearerAuth("access-token")
-@Controller("questions_options")
-@ApiResponse({ status: 403, description: g("AUTH_ERROR"), type: AuthErrorDto })
-@ApiResponse({ status: 401, description: g("DATA_ERROR"), type: CreateUserRolResponseErrorDto })
+@Controller("question-options")
 export class QuestionsOptionsController {
-  constructor(private readonly userRolesService: QuestionsOptionsService) {}
+  constructor(private readonly service: QuestionsOptionsService) {}
 
-  @Post('assing/:userId')
-  @ApiOperation({ summary: t("REGISTER_SUMMARY") })
-  @ApiParam({ name: "userId", description: t("PARAM_USERID"), example: "550e8400-e29b-41d4-a716-446655440000" })
-  @ApiResponse({ status: 201, description: t("REGISTER_DESC"), type: CreateUserRolResponseDto })
-  async assingRol(@Param("userId", ParseUUIDPipe) id: string, @Body() createUserRolDto: CreateUserRolDto) {
-    return await this.userRolesService.assingRol(id, createUserRolDto); 
+  @Post()
+  @ApiOperation({ summary: t('CREAR_RES') })
+  @ApiResponse({ status: 201, type: CreateQuestionOptionResponseDto })
+  async create(@Body() dto: CreateQuestionOptionDto) {
+    return await this.service.create(dto);
   }
 
-  @Get(':userId')
-  @ApiOperation({ summary: t("GET_DETAIL_SUMMARY") })
-  @ApiParam({ name: "userId", description: t("PARAM_USERID"), example: "550e8400-e29b-41d4-a716-446655440000" })
-  @ApiResponse({ status: 200, description: t("GET_DETAIL_DESC"), type: GetUserRolResponseDto })
-  async findOne(@Param('userId', ParseUUIDPipe) id: string) {
-    return await this.userRolesService.getRolPerUserId(id);
+  @Get()
+  @ApiOperation({ summary: t('LISTAR_RES') })
+  @ApiResponse({ status: 200, type: QuestionOptionListResponseDto })
+  async findAll(@Query("_where") _where?: string) {
+    const data = await this.service.findAll(_where);
+    return {
+      status: "success",
+      message: t('LISTAR_RES'),
+      data,
+      properties: { total_items: data.length, items_per_page: 100, current_page: 1, total_pages: 1 }
+    };
+  }
+
+  @Put(":id")
+  @ApiResponse({ status: 200 })
+  async update(@Param("id", ParseUUIDPipe) id: string, @Body() dto: CreateQuestionOptionDto) {
+    return await this.service.update(id, dto);
+  }
+
+  @Delete(":id")
+  @ApiResponse({ status: 200 })
+  async delete(@Param("id", ParseUUIDPipe) id: string) {
+    return await this.service.delete(id);
   }
 }

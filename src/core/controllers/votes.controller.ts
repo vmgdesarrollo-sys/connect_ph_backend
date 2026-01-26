@@ -1,45 +1,41 @@
-import { Controller, Get, Post, Body, Param, ParseUUIDPipe, UseGuards, Delete, Put, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiResponse, ApiQuery } from '@nestjs/swagger';
-import { VotesService } from '../services/votes.service';
-import { CreateUserRolDto } from '../dtos/payload/user_rol-payload.dto';
-import { AuthGuard } from '../utils/auth.guard';
-import { AuthErrorDto } from "../dtos/general.dto";
+import { Controller, Get, Post, Body, Query, UseGuards, Req } from "@nestjs/common";
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
+import { VotesService } from "../services/votes.service";
+import { CreateVoteDto } from "../dtos/payload/votes-payload.dto";
+import { AuthGuard } from "../utils/auth.guard";
+import { CreateVoteResponseDto, VoteListResponseDto } from "../dtos/responses/votes-response.dto";
+import { getSwaggerText } from "../../utils/swagger-i18n.loader";
 
-import {
-  CreateUserRolResponseDto,
-  GetUserRolResponseDto,
-  CreateUserRolResponseErrorDto
-} from "../dtos/responses/user_rol-response.dto";
-
-import { I18nContext, I18nService } from 'nestjs-i18n';
-import {getSwaggerText} from "../../utils/swagger-i18n.loader"
-const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
-
-const t = (key: string) => getSwaggerText("votes", key, lang);
-const g = (key: string) => getSwaggerText("general", key, lang);
+const lang = "es";
+const t = (key: string) => getSwaggerText('votes', key, lang);
 
 @UseGuards(AuthGuard)
-@ApiTags(t("TITLE"))
+@ApiTags(t('TITULO'))
 @ApiBearerAuth("access-token")
 @Controller("votes")
-@ApiResponse({ status: 403, description: g("AUTH_ERROR"), type: AuthErrorDto })
-@ApiResponse({ status: 401, description: g("DATA_ERROR"), type: CreateUserRolResponseErrorDto })
 export class VotesController {
-  constructor(private readonly userRolesService: VotesService) {}
+  constructor(private readonly votesService: VotesService) {}
 
-  @Post('assing/:userId')
-  @ApiOperation({ summary: t("REGISTER_SUMMARY") })
-  @ApiParam({ name: "userId", description: t("PARAM_USERID"), example: "550e8400-e29b-41d4-a716-446655440000" })
-  @ApiResponse({ status: 201, description: t("REGISTER_DESC"), type: CreateUserRolResponseDto })
-  async assingRol(@Param("userId", ParseUUIDPipe) id: string, @Body() createUserRolDto: CreateUserRolDto) {
-    return await this.userRolesService.assingRol(id, createUserRolDto); 
+  @Post()
+  @ApiOperation({ summary: t('CREAR_RES') })
+  @ApiResponse({ status: 201, type: CreateVoteResponseDto })
+  async create(@Body() dto: CreateVoteDto, @Req() req: any) {
+    // Capturamos IP y User Agent automáticamente si no vienen en el DTO
+    dto.ip_address = dto.ip_address || req.ip;
+    dto.user_agent = dto.user_agent || req.headers['user-agent'];
+    return await this.votesService.create(dto);
   }
 
-  @Get(':userId')
-  @ApiOperation({ summary: t("GET_DETAIL_SUMMARY") })
-  @ApiParam({ name: "userId", description: t("PARAM_USERID"), example: "550e8400-e29b-41d4-a716-446655440000" })
-  @ApiResponse({ status: 200, description: t("GET_DETAIL_DESC"), type: GetUserRolResponseDto })
-  async findOne(@Param('userId', ParseUUIDPipe) id: string) {
-    return await this.userRolesService.getRolPerUserId(id);
+  @Get()
+  @ApiOperation({ summary: t('LISTAR_RES') })
+  @ApiResponse({ status: 200, type: VoteListResponseDto })
+  async findAll(@Query("_where") _where?: string) {
+    const data = await this.votesService.findAll(_where);
+    return {
+      status: "success",
+      message: t('LISTAR_RES'),
+      data,
+      properties: { total_items: data.length, items_per_page: 100, current_page: 1, total_pages: 1 }
+    };
   }
 }

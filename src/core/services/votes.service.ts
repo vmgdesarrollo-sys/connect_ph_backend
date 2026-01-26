@@ -1,44 +1,43 @@
-import {
-  Injectable,
-  ConflictException,
-  NotFoundException,
-  Inject,
-} from "@nestjs/common";
-//import { InjectRepository } from '@nestjs/typeorm';
+import { Injectable, Inject } from "@nestjs/common";
 import { Repository } from "typeorm";
-import { User } from "../entities/user.entity";
-import { CreateUserRolDto } from "../dtos/payload/user_rol-payload.dto";
-import * as bcrypt from "bcrypt";
+import { Vote } from "../entities/votes.entity";
+import { CreateVoteDto } from "../dtos/payload/votes-payload.dto";
 import { getRepositoryToken } from "@nestjs/typeorm";
-
-import { I18nContext, I18nService } from "nestjs-i18n";
-const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
+import { I18nService } from "nestjs-i18n";
 
 @Injectable()
 export class VotesService {
   constructor(
     private readonly i18n: I18nService,
-    //@InjectRepository(User)
-    //private readonly userRepository: Repository<User>,
-
-    @Inject(getRepositoryToken(User))
-    private readonly userRepository: Repository<User>
+    @Inject(getRepositoryToken(Vote))
+    private readonly repository: Repository<Vote>,
   ) {}
 
-  async assingRol(id: string, createUserRolDto: CreateUserRolDto): Promise<any> {
+  async create(dto: CreateVoteDto): Promise<any> {
     return {
-      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('user_roles.MSG_CREATE', {lang, args: {},}),
-      data: createUserRolDto
+      status: "success",
+      message: this.i18n.t("votes.CREAR_RES"),
+      data: { 
+        id: "uuid-vote-789", 
+        ...dto, 
+        created_at: new Date() 
+      },
     };
   }
 
-  async getRolPerUserId(id: string): Promise<any> {
-    return {
-      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('user_roles.MSG_GET', {lang, args: {},}),
-      data: [ "admin", "supervisor"]
-    };
+  async findAll(_where?: string): Promise<any[]> {
+    return [
+      {
+        id: "uuid-vote-789",
+        voting_questions_id: "uuid-q-1",
+        questions_options_id: "uuid-opt-yes",
+        coefficient_at_voting: 0.012540,
+        created_at: new Date(),
+      }
+    ];
   }
 
+  async delete(id: string): Promise<any> {
+    return { status: "success", message: this.i18n.t("votes.ELIMINADA_RES") };
+  }
 }

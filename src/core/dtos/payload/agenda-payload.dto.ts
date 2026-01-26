@@ -7,7 +7,7 @@ const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
 const t = (key: string) => getSwaggerText('agenda', `${key}`, lang);
 
 export class CreateAgendaDto {
-  @ApiProperty({ description: t('ASSEMBLY_ID_DESC'), example: '550e8400-e29b-41d4-a716-446655440000' })
+  @ApiProperty({ description: t('ASSEMBLY_ID_DESC'), example: 'd290f1ee-6c54-4b01-90e6-d701748f0851' })
   @IsUUID()
   @IsNotEmpty()
   assembly_id: string;
