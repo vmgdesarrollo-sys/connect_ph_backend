@@ -1,0 +1,17 @@
+{
+  "TITULO": "Registro de Votos",
+  "ID_DESC": "Identificador único del voto (UUID)",
+  "QUESTION_ID_DESC": "ID de la pregunta de votación",
+  "OPTION_ID_DESC": "ID de la opción seleccionada",
+  "ATTENDANCE_ID_DESC": "ID de la asistencia del votante",
+  "COEFFICIENT_DESC": "Coeficiente de la unidad al momento de votar",
+  "IP_DESC": "Dirección IP desde donde se emitió el voto",
+  "AGENT_DESC": "Información del navegador/dispositivo del votante",
+  "IP": "192.168.1.45",
+  "AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)...",
+  "CREAR_RES": "Voto registrado exitosamente.",
+  "ACTUALIZADA_RES": "Voto modificado (si aplica configuración).",
+  "DETALLE_RES": "Detalle del voto obtenido.",
+  "LISTAR_RES": "Listado de votos obtenido.",
+  "ELIMINADA_RES": "Voto anulado correctamente."
+}

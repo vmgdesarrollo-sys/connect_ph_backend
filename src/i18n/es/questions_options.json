@@ -1,0 +1,15 @@
+{
+  "TITULO": "Opciones de Pregunta",
+  "ID_DESC": "Identificador único de la opción (UUID)",
+  "QUESTION_ID_DESC": "ID de la pregunta (punto de agenda) a la que pertenece",
+  "OPTION_TEXT_DESC": "Texto de la opción (ej: Sí, No, Abstención)",
+  "ORDER_INDEX_DESC": "Posición en la que se mostrará la opción",
+  "IS_ACTIVE_DESC": "Estado de la opción para ser mostrada",
+  "OPTION": "Aprobado",
+  "ORDER": 1,
+  "CREAR_RES": "Opción creada exitosamente.",
+  "ACTUALIZADA_RES": "Opción actualizada correctamente.",
+  "DETALLE_RES": "Detalle de la opción obtenido.",
+  "LISTAR_RES": "Listado de opciones obtenido.",
+  "ELIMINADA_RES": "Opción eliminada correctamente."
+}

@@ -27,6 +27,27 @@ export class Ph {
   @Column({ nullable: true })
   legal_representative?: string;
 
+  @Column({ nullable: true })
+  city?: string;
+
+  @Column({ nullable: true })
+  state?: string;
+
+  @Column({ nullable: true })
+  country?: string;
+
+  @Column({ nullable: true })
+  stratum?: string;
+
+  @Column({ nullable: true })
+  number_of_towers?: string;
+
+  @Column({ nullable: true })
+  amount_of_real_estate?: string;
+
+  @Column({ nullable: true })
+  horizontal_property_regulations?: string;
+
   @Column({ default: true })
   is_active: boolean;
 

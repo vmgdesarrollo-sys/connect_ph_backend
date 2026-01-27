@@ -1,0 +1,31 @@
+{
+  "TITULO": "Asambleas",
+
+  "ID_DESC": "Identificador único de la asamblea (UUID)",
+  "PHS_ID_DESC": "ID de la copropiedad a la que pertenece la asamblea",
+  "NAME_DESC": "Nombre o título de la asamblea",
+  "DESCRIPTION_DESC": "Descripción detallada del propósito de la reunión",
+  "TYPE_DESC": "Tipo de asamblea (Ordinaria, Extraordinaria)",
+  "STATUS_DESC": "Estado actual (Programada, En curso, Finalizada, Cancelada)",
+  "SCHEDULED_AT_DESC": "Fecha y hora programada de inicio",
+  "STARTED_AT_DESC": "Fecha y hora real de inicio",
+  "FINISHED_AT_DESC": "Fecha y hora de finalización",
+  "LIVEKIT_DESC": "Nombre de la sala asignada en LiveKit",
+  "QUORUM_REQ_DESC": "Porcentaje de coeficiente necesario para quórum",
+  "IS_ACTIVE_DESC": "Estado de activación del registro",
+  "UUID": "550e8400-e29b-41d4-a716-446655440000",
+  "NAME": "Asamblea General Ordinaria 2026",
+  "DESCRIPTION": "Reunión anual para aprobación de presupuestos y estados financieros.",
+  "TYPE": "Ordinaria",
+  "STATUS": "Programada",
+  "SCHEDULED": "2026-03-15T08:00:00Z",
+  "LIVEKIT": "sala-ph-alamo-2026",
+  "QUORUM": "51.00",
+  "CREATED_AT": "2026-01-25 13:00:00",
+
+  "CREAR_RES": "Asamblea programada exitosamente.",
+  "ACTUALIZADA_RES": "Asamblea actualizada exitosamente.",
+  "DETALLE_RES": "Detalle de la asamblea obtenido.",
+  "LISTAR_RES": "Listado de asambleas obtenido correctamente.",
+  "ELIMINADA_RES": "Asamblea eliminada exitosamente."
+}

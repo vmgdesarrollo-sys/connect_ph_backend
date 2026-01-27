@@ -1,0 +1,23 @@
+{
+  "TITULO": "Preguntas de Votación",
+  "ID_DESC": "Identificador único de la pregunta de votación (UUID)",
+  "ASSEMBLY_ID_DESC": "ID de la asamblea a la que pertenece la pregunta",
+  "QUESTION_TEXT_DESC": "El texto principal de la pregunta a votar",
+  "DESCRIPTION_DESC": "Información adicional o contexto para el votante",
+  "TYPE_DESC": "Categoría: Nominal | Coeficiente",
+  "STATUS_DESC": "Estado: Pendiente | Abierta | Cerrada | Anulada",
+  "RESULT_TYPE_DESC": "Tipo de selección: Única | Múltiple",
+  "MIN_SEL_DESC": "Mínimo de opciones que debe marcar el usuario",
+  "MAX_SEL_DESC": "Máximo de opciones permitidas",
+  "OPENED_AT_DESC": "Fecha y hora exacta de apertura de la urna virtual",
+  "CLOSED_AT_DESC": "Fecha y hora exacta de cierre de la urna virtual",
+  "IS_ACTIVE_DESC": "Si la pregunta está disponible en el sistema",
+  "QUESTION": "¿Aprueba usted el presupuesto para el periodo 2026?",
+  "DESCRIPTION": "Consulte el PDF adjunto en el punto 4 de la agenda.",
+  "STATUS": "Abierta",
+  "CREAR_RES": "Pregunta de votación creada exitosamente.",
+  "ACTUALIZADA_RES": "Votación actualizada correctamente.",
+  "DETALLE_RES": "Detalle de la votación obtenido.",
+  "LISTAR_RES": "Listado de preguntas de votación obtenido.",
+  "ELIMINADA_RES": "Pregunta de votación eliminada."
+}

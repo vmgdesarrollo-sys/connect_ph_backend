@@ -28,7 +28,7 @@ class UserRolDataDto {
 
 export class ListRolesDto {
   @ApiProperty({ example: ["admin", "supervisor"], description: g("LIST_DESC") })
-  roles: UserRolDataDto[];
+  roles: String[];
 }
 
 

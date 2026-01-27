@@ -9,6 +9,14 @@ import { Role } from './entities/role.entity';
 import { Ph } from './entities/ph.entity';
 import { Unit } from './entities/unit.entity';
 import { UnitAssignment } from './entities/unit_assignment.entity';
+import { Agenda } from './entities/agenda.entity';
+import { Assembly } from './entities/assemblies.entity';
+import { AssemblyAnnouncement } from './entities/assembly_announcements.entity';
+import { AssemblyAttendance } from './entities/assembly_attendances.entity';
+import { QaEntry } from './entities/qa_entries.entity';
+import { QuestionOption } from './entities/questions_options.entity';
+import { VotingQuestion } from './entities/voting_questions.entity';
+import { Vote } from './entities/votes.entity';
 
 // Controladores
 import { UsersController } from './controllers/users.controller';
@@ -17,6 +25,14 @@ import { RolesController } from './controllers/roles.controller';
 import { PhsController } from './controllers/phs.controller';
 import { UnitsController } from './controllers/units.controller';
 import { UnitAssignmentsController } from './controllers/unit_assignments.controller';
+import { AgendaController } from './controllers/agenda.controller';
+import { AssembliesController } from './controllers/assemblies.controller';
+import { AssemblyAnnouncementsController } from './controllers/assembly_announcements.controller';
+import { AssemblyAttendancesController } from './controllers/assembly_attendances.controller';
+import { QaEntriesController } from './controllers/qa_entries.controller';
+import { QuestionsOptionsController } from './controllers/questions_options.controller';
+import { VotesController } from './controllers/votes.controller';
+import { VotingQuestionsController } from './controllers/voting_questions.controller';
 
 // Servicios
 import { UsersService } from './services/users.service';
@@ -25,13 +41,22 @@ import { RolesService } from './services/roles.service';
 import { PhsService } from './services/phs.service';
 import { UnitsService } from './services/units.service';
 import { UnitAssignmentsService } from './services/unit_assignments.service';
+import { AgendaService } from './services/agenda.service';
+import { AssembliesService } from './services/assemblies.service';
+import { AssemblyAnnouncementsService } from './services/assembly_announcements.service';
+import { AssemblyAttendancesService } from './services/assembly_attendances.service';
+import { QaEntriesService } from './services/qa_entries.service';
+import { QuestionsOptionsService } from './services/questions_options.service';
+import { VotesService } from './services/votes.service';
+import { VotingQuestionsService } from './services/voting_questions.service';
+
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { AuthController } from './controllers/auth.controller';
+import { AuthService } from './services/auth/auth.service';
 
 /**
  * Borrarme porque soy simulacion
  */
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { AuthController } from './controllers/auth.controller';
-import { AuthService } from './services/auth/auth.service';
 const mockRepository = {
   find: () => [],
   findOne: () => ({}),
@@ -53,6 +78,17 @@ const mockRepository = {
   //    User, 
   //    Role, 
   //    Ph
+  //    UserRol,
+  //    Unit,
+  //    UnitAssignment,
+  //    Agenda,
+  //    Assembly,
+  //    AssemblyAnnouncement,
+  //    AssemblyAttendance,
+  //    QaEntry,
+  //    QuestionOption,
+  //    VotingQuestion,
+  //    Vote,
   //  ]), 
   //],
   controllers: [
@@ -63,6 +99,15 @@ const mockRepository = {
     UserRolesController, 
     UnitsController,
     UnitAssignmentsController, 
+    AgendaController,
+    AssembliesController,
+    AssemblyAnnouncementsController,
+    AssemblyAttendancesController,
+    QaEntriesController,
+    QuestionsOptionsController,
+    VotesController,
+    VotingQuestionsController,
+
   ],
   providers: [  
     AuthService,
@@ -72,6 +117,15 @@ const mockRepository = {
     UserRolesService,
     UnitsService,
     UnitAssignmentsService, 
+    AgendaService,
+    AssembliesService,
+    AssemblyAnnouncementsService,
+    AssemblyAttendancesService,
+    QaEntriesService,
+    QuestionsOptionsService,
+    VotesService,
+    VotingQuestionsService,
+
 
     // Proveedores falsos para que no pida DataSource
     { provide: getRepositoryToken(User), useValue: mockRepository },
@@ -80,6 +134,14 @@ const mockRepository = {
     { provide: getRepositoryToken(UserRol), useValue: mockRepository },
     { provide: getRepositoryToken(Unit), useValue: mockRepository },
     { provide: getRepositoryToken(UnitAssignment), useValue: mockRepository },
+    { provide: getRepositoryToken(Agenda), useValue: mockRepository },
+    { provide: getRepositoryToken(Assembly), useValue: mockRepository },
+    { provide: getRepositoryToken(AssemblyAnnouncement), useValue: mockRepository },
+    { provide: getRepositoryToken(AssemblyAttendance), useValue: mockRepository },
+    { provide: getRepositoryToken(QaEntry), useValue: mockRepository },
+    { provide: getRepositoryToken(QuestionOption), useValue: mockRepository },
+    { provide: getRepositoryToken(VotingQuestion), useValue: mockRepository },
+    { provide: getRepositoryToken(Vote), useValue: mockRepository },
   ],
   //exports: [
     //UsersService, 

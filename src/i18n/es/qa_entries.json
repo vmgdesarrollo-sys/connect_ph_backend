@@ -1,0 +1,19 @@
+{
+  "TITULO": "Preguntas y Respuestas (Q&A)",
+  "ID_DESC": "Identificador único de la pregunta (UUID)",
+  "ATTENDANCE_ID_DESC": "ID de la asistencia del participante que pregunta",
+  "QUESTION_DESC": "Texto detallado de la pregunta",
+  "MODERATED_DESC": "Indica si la pregunta ya pasó por revisión",
+  "STATUS_DESC": "Estado: Pendiente | Aprobada | Rechazada | Respondida",
+  "ANSWER_DESC": "Texto de la respuesta proporcionada",
+  "PRIVATE_DESC": "Si la pregunta solo es visible para moderadores",
+  "UPVOTES_DESC": "Cantidad de votos de interés de otros participantes",
+  "QUESTION": "¿Cuál es el incremento propuesto para el fondo de reserva?",
+  "ANSWER": "Se propone un incremento del 5% anual.",
+  "STATUS": "Respondida",
+  "CREAR_RES": "Pregunta enviada correctamente.",
+  "ACTUALIZADA_RES": "Pregunta actualizada/moderada exitosamente.",
+  "DETALLE_RES": "Detalle de la pregunta obtenido.",
+  "LISTAR_RES": "Listado de preguntas obtenido.",
+  "ELIMINADA_RES": "Pregunta eliminada correctamente."
+}

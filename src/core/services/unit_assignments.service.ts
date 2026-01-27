@@ -7,7 +7,7 @@ import {
 //import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from "typeorm";
 import { User } from "../entities/user.entity";
-import { CreateUserRolDto } from "../dtos/payload/user_rol-payload.dto";
+import { CreateAssingmentUnitDto } from "../dtos/payload/unit_assignment-payload.dto";
 import * as bcrypt from "bcrypt";
 import { getRepositoryToken } from "@nestjs/typeorm";
 
@@ -25,18 +25,18 @@ export class UnitAssignmentsService {
     private readonly userRepository: Repository<User>
   ) {}
 
-  async assingRol(id: string, createUserRolDto: CreateUserRolDto): Promise<any> {
+  async assingRol(id: string, createAssingmentUnitDto: CreateAssingmentUnitDto): Promise<any> {
     return {
       status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('user_roles.MSG_CREATE', {lang, args: {},}),
-      data: createUserRolDto
+      message: this.i18n.t('unit_assignments.MSG_CREATE', {lang, args: {},}),
+      data: createAssingmentUnitDto
     };
   }
 
   async getRolPerUserId(id: string): Promise<any> {
     return {
       status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('user_roles.MSG_GET', {lang, args: {},}),
+      message: this.i18n.t('unit_assignments.MSG_GET', {lang, args: {},}),
       data: [ "admin", "supervisor"]
     };
   }
