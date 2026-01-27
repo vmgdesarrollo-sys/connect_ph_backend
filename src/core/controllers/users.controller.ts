@@ -9,8 +9,7 @@ import {
   Delete,
   Put,
   Query,
-  Headers,
-  UnauthorizedException,
+  Req,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -20,10 +19,10 @@ import {
   ApiResponse,
   ApiQuery,
 } from "@nestjs/swagger";
+
 import { UsersService } from "../services/users.service";
 import { CreateUserDto } from "../dtos/payload/user-payload.dto";
-import { AuthGuard } from "../utils/auth.guard";
-import { AuthErrorDto } from "../dtos/general.dto";
+import { JwtAuthGuard } from "../services/auth/guards/jwt-auth.guard";
 
 import {
   CreateUserResponseErrorDto,
@@ -34,19 +33,18 @@ import {
   DeleteUserResponseDto,
   GetUserProfileResponseDto,
 } from "../dtos/responses/user-response.dto";
-import { JwtService } from "@nestjs/jwt";
+import { AuthErrorDto } from "../dtos/general.dto";
 
-import { I18nContext, I18nService } from "nestjs-i18n";
+import { I18nContext } from "nestjs-i18n";
 import { getSwaggerText } from "../../utils/swagger-i18n.loader";
-const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
-const KEY_JWT = process.env.JWT_SECRET || "CLAVE_SECRETA_PROVISIONAL";
 
+const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
 const t = (key: string) => getSwaggerText("users", key, lang);
 const g = (key: string) => getSwaggerText("general", key, lang);
 
-@UseGuards(AuthGuard)
 @ApiTags(t("TITLE"))
 @ApiBearerAuth("access-token")
+@UseGuards(JwtAuthGuard) // 🔐 PROTECCIÓN JWT GLOBAL
 @Controller("users")
 @ApiResponse({ status: 403, description: g("AUTH_ERROR"), type: AuthErrorDto })
 @ApiResponse({
@@ -55,11 +53,9 @@ const g = (key: string) => getSwaggerText("general", key, lang);
   type: CreateUserResponseErrorDto,
 })
 export class UsersController {
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly jwtService: JwtService
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
+  // 🔹 CREAR USUARIO
   @Post("register")
   @ApiOperation({ summary: t("REGISTER_SUMMARY") })
   @ApiResponse({
@@ -71,6 +67,7 @@ export class UsersController {
     return await this.usersService.create(createUserDto);
   }
 
+  // 🔹 ACTUALIZAR USUARIO
   @Put(":id")
   @ApiOperation({ summary: t("UPDATE_SUMMARY") })
   @ApiParam({
@@ -90,6 +87,7 @@ export class UsersController {
     return await this.usersService.update(id, createUserDto);
   }
 
+  // 🔹 LISTAR USUARIOS
   @Get()
   @ApiOperation({ summary: t("LIST_SUMMARY") })
   @ApiQuery({ name: "page", required: false, example: 1 })
@@ -112,6 +110,7 @@ export class UsersController {
     return await this.usersService.findAll(_fields, _where);
   }
 
+  // 🔹 BUSCAR POR ID
   @Get("id/:id")
   @ApiOperation({ summary: t("GET_DETAIL_SUMMARY") })
   @ApiParam({
@@ -128,6 +127,7 @@ export class UsersController {
     return await this.usersService.findOne(id);
   }
 
+  // 🔹 BUSCAR POR EMAIL
   @Get("email/:email")
   @ApiOperation({ summary: t("GET_EMAIL_SUMMARY") })
   @ApiParam({
@@ -144,6 +144,7 @@ export class UsersController {
     return await this.usersService.findByEmail(email);
   }
 
+  // 🔹 ELIMINAR USUARIO
   @Delete(":id")
   @ApiOperation({ summary: t("DELETE_SUMMARY") })
   @ApiParam({
@@ -160,6 +161,7 @@ export class UsersController {
     return await this.usersService.delete(id);
   }
 
+  // 🔐 PERFIL DEL USUARIO AUTENTICADO
   @Get("getProfile")
   @ApiOperation({ summary: t("GET_PROFILE_SUMMARY") })
   @ApiResponse({
@@ -167,26 +169,12 @@ export class UsersController {
     description: t("GET_DETAIL_PROFILE_DESC"),
     type: GetUserProfileResponseDto,
   })
-  async getProfile(@Headers("authorization") authHeader: string) {
-    const token = authHeader?.replace("Bearer ", "");
-    if (!token) {
-      throw new UnauthorizedException(g("ERROR_TOKEN_AUTH"));
-    }
-
-    try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: KEY_JWT,
-      });
-
-      return {
-        userProfile: payload?.userProfile,
-        userId: payload?.userId,
-        ownership: payload?.ownership,
-        scope: payload?.scope,
-      };
-      // return await this.usersService.getProfile(payload);
-    } catch (error) {
-      throw new UnauthorizedException(g("ERROR_TOKEN_INVALID"));
-    }
+  async getProfile(@Req() req) {
+    return {
+      userProfile: req.user.userProfile,
+      userId: req.user.userId,
+      ownership: req.user.ownership,
+      scope: req.user.scope,
+    };
   }
 }

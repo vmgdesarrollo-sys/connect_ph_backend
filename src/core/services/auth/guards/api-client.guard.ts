@@ -18,20 +18,46 @@ export class ApiClientGuard implements CanActivate {
   constructor(private readonly i18n: I18nService, private configService: ConfigService) {}
   
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest();
-    
-    // Extraer de las cabeceras
-    const clientId = this.configService.get<string>('AUTH_CLIENT_ID');
-    const clientSecret = request.headers['client-secret'];
+  const request = context.switchToHttp().getRequest();
 
-    if (!clientId || !clientSecret) {
-      throw new UnauthorizedException(this.i18n.t('general.HEADERS_INITIAL_REQUIRED', {lang, args: {},}));
-    }
+  // ✅ leer headers
+  const headerClientId = request.headers['client-id'];
+  const headerClientSecret = request.headers['client-secret'];
 
-    if (clientId !== this.VALID_CLIENT_ID || clientSecret !== this.VALID_CLIENT_SECRET) {
-      throw new UnauthorizedException(this.i18n.t('general.INVALID_CREDENTIALS', {lang, args: {},}));
-    }
+  // ✅ leer .env
+  const envClientId = this.configService.get<string>('AUTH_CLIENT_ID');
+  const envClientSecret = this.configService.get<string>('AUTH_CLIENT_SECRET');
 
-    return true;
+  if (!headerClientId || !headerClientSecret) {
+    throw new UnauthorizedException('Missing client headers');
   }
+
+  if (
+    headerClientId !== envClientId ||
+    headerClientSecret !== envClientSecret
+  ) {
+    throw new UnauthorizedException('Invalid client credentials');
+  }
+
+  return true;
+}
+
+
+  // canActivate(context: ExecutionContext): boolean {
+  //   const request = context.switchToHttp().getRequest();
+    
+  //   // Extraer de las cabeceras
+  //   const clientId = this.configService.get<string>('AUTH_CLIENT_ID');
+  //   const clientSecret = request.headers['client-secret'];
+
+  //   if (!clientId || !clientSecret) {
+  //     throw new UnauthorizedException(this.i18n.t('general.HEADERS_INITIAL_REQUIRED', {lang, args: {},}));
+  //   }
+
+  //   if (clientId !== this.VALID_CLIENT_ID || clientSecret !== this.VALID_CLIENT_SECRET) {
+  //     throw new UnauthorizedException(this.i18n.t('general.INVALID_CREDENTIALS', {lang, args: {},}));
+  //   }
+
+  //   return true;
+  // }
 }

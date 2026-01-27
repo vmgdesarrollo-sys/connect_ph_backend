@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import * as cookieParser from 'cookie-parser';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
@@ -9,6 +10,23 @@ const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Habilitar cookie-parser para leer cookies en los requests
+  //app.use(cookieParser());
+  app.use(cookieParser.default());
+   // ✅ AQUÍ VA CORS (JUSTO AQUÍ)
+  app.enableCors({
+    origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'client-id',
+      'client-secret',
+    ],
+    credentials: true,
+  });
+  
   app.setGlobalPrefix(process.env.API_VERSION ?? 'api/v1');
   
   app.useGlobalPipes(new ValidationPipe({
@@ -37,7 +55,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3001);
 }
 bootstrap();
 

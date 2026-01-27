@@ -23,10 +23,13 @@ import {getSwaggerText} from "../../utils/swagger-i18n.loader"
 const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
 
 @ApiTags(getSwaggerText('auth', 'TITLE', lang))
-@Controller("api/v1/auth")
+@Controller("auth")
+
 // Aplicamos los headers requeridos para todo el controlador
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  
 
   @Get("options")
   @UseGuards(ApiClientGuard)
@@ -151,4 +154,41 @@ export class AuthController {
     }
     return await this.authService.validateStep(token, body.fields);
   }
+
+    @Get("profile")
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Obtener perfil del usuario autenticado' })
+  @ApiResponse({
+    status: 200,
+    description: 'Perfil del usuario autenticado',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token inválido o expirado',
+  })
+  async getProfile(@Headers("authorization") authHeader: string) {
+    if (!authHeader) {
+      throw new UnauthorizedException('Token requerido');
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+
+    try {
+      const payload = await this.authService.verifyToken(token);
+
+      return {
+        state: 'success',
+        result: {
+          userId: payload.userId,
+          email: payload.email,
+          userProfile: payload.userProfile,
+          ownership: payload.ownership,
+          scope: payload.scope,
+        },
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Token inválido o expirado');
+    }
+  }
+
 }
