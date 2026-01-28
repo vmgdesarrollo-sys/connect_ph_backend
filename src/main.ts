@@ -9,6 +9,12 @@ const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  // Configuración básica de CORS
+  app.enableCors({
+    origin: '*', // Cambia esto según tus necesidades
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
   app.setGlobalPrefix(process.env.API_VERSION ?? 'api/v1');
   
   app.useGlobalPipes(new ValidationPipe({
