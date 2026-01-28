@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
   Inject,
 } from "@nestjs/common";
-//import { InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from "typeorm";
 import { User } from "../entities/user.entity";
 import { CreateUserDto } from "../dtos/payload/user-payload.dto";
@@ -28,15 +28,7 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<any> {
-    return {
-      status: this.i18n.t("general.SUCCESS", { lang, args: {} }),
-      message: this.i18n.t("users.MSG_CREATE", { lang, args: {} }),
-      data: {
-        id: "550e8400-e29b-41d4-a716-446655440000",
-        ...createUserDto,
-        created_at: "2025-12-25T13:45:00Z",
-      },
-    };
+    
     const { email } = createUserDto;
     const password: string = "12345678";
 
@@ -62,10 +54,26 @@ export class UsersService {
 
     // Eliminamos el password del objeto de respuesta por seguridad
     const { password: _, ...userWithoutPassword } = savedUser;
+
+    return {
+      status: this.i18n.t("general.SUCCESS", { lang, args: {} }),
+      message: this.i18n.t("users.MSG_CREATE", { lang, args: {} }),
+      data: {
+        id: "550e8400-e29b-41d4-a716-446655440000",
+        ...createUserDto,
+        created_at: "2025-12-25T13:45:00Z",
+      },
+    };
     return savedUser;
   }
 
   async findAll(_fields?: string, _where?: string): Promise<any> {
+
+    const dataUser= await this.userRepository.find({
+      where: { is_active: true },
+    });
+
+    console.log('dataUser', dataUser);
     return {
       status: this.i18n.t("general.SUCCESS", { lang, args: {} }),
       message: this.i18n.t("users.MSG_LIST", { lang, args: {} }),

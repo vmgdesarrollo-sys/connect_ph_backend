@@ -72,10 +72,8 @@ const mockRepository = {
       secret: process.env.JWT_SECRET || 'CLAVE_SECRETA_PROVISIONAL',
       signOptions: { expiresIn: '1h' },
     }),
-  ],
-  //imports: [
-  //  TypeOrmModule.forFeature([
-  //    User, 
+    TypeOrmModule.forFeature([
+      User, 
   //    Role, 
   //    Ph
   //    UserRol,
@@ -89,8 +87,8 @@ const mockRepository = {
   //    QuestionOption,
   //    VotingQuestion,
   //    Vote,
-  //  ]), 
-  //],
+    ]), 
+  ],
   controllers: [
     AuthController,
     PhsController, 
@@ -128,7 +126,6 @@ const mockRepository = {
 
 
     // Proveedores falsos para que no pida DataSource
-    { provide: getRepositoryToken(User), useValue: mockRepository },
     { provide: getRepositoryToken(Role), useValue: mockRepository },
     { provide: getRepositoryToken(Ph), useValue: mockRepository },
     { provide: getRepositoryToken(UserRol), useValue: mockRepository },
