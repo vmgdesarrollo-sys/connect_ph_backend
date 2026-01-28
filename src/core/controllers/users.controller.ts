@@ -32,14 +32,11 @@ import {
   UsersListResponseDto,
   GetUserResponseDto,
   DeleteUserResponseDto,
-  GetUserProfileResponseDto,
 } from "../dtos/responses/user-response.dto";
-import { JwtService } from "@nestjs/jwt";
 
 import { I18nContext, I18nService } from "nestjs-i18n";
 import { getSwaggerText } from "../../utils/swagger-i18n.loader";
 const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
-const KEY_JWT = process.env.JWT_SECRET || "CLAVE_SECRETA_PROVISIONAL";
 
 const t = (key: string) => getSwaggerText("users", key, lang);
 const g = (key: string) => getSwaggerText("general", key, lang);
@@ -57,7 +54,6 @@ const g = (key: string) => getSwaggerText("general", key, lang);
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly jwtService: JwtService
   ) {}
 
   @Post("register")
@@ -158,35 +154,5 @@ export class UsersController {
   })
   async delete(@Param("id", ParseUUIDPipe) id: string) {
     return await this.usersService.delete(id);
-  }
-
-  @Get("getProfile")
-  @ApiOperation({ summary: t("GET_PROFILE_SUMMARY") })
-  @ApiResponse({
-    status: 200,
-    description: t("GET_DETAIL_PROFILE_DESC"),
-    type: GetUserProfileResponseDto,
-  })
-  async getProfile(@Headers("authorization") authHeader: string) {
-    const token = authHeader?.replace("Bearer ", "");
-    if (!token) {
-      throw new UnauthorizedException(g("ERROR_TOKEN_AUTH"));
-    }
-
-    try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: KEY_JWT,
-      });
-
-      return {
-        userProfile: payload?.userProfile,
-        userId: payload?.userId,
-        ownership: payload?.ownership,
-        scope: payload?.scope,
-      };
-      // return await this.usersService.getProfile(payload);
-    } catch (error) {
-      throw new UnauthorizedException(g("ERROR_TOKEN_INVALID"));
-    }
   }
 }

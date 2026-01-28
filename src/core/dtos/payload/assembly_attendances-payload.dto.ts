@@ -4,7 +4,7 @@ import { I18nContext } from 'nestjs-i18n';
 import { getSwaggerText } from "../../../utils/swagger-i18n.loader";
 
 const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
-const t = (key: string) => getSwaggerText('_assembly_attendances', key, lang);
+const t = (key: string) => getSwaggerText('assembly_attendances', key, lang);
 
 export class CreateAttendanceDto {
   @ApiProperty({ description: t('ASSEMBLY_ID_DESC') })
