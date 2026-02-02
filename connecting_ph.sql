@@ -1,5 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS "connecting-ph";
-
+---Prueba---
 --- 1. TABLAS MAESTRAS (Nivel 1) ---
 
 CREATE TABLE roles (
