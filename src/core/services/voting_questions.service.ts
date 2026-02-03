@@ -1,48 +1,72 @@
-import { Injectable, Inject } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from "typeorm";
 import { VotingQuestion } from "../entities/voting_questions.entity";
 import { CreateVotingQuestionDto } from "../dtos/payload/voting_questions-payload.dto";
-import { getRepositoryToken } from "@nestjs/typeorm";
 import { I18nService } from "nestjs-i18n";
-
+// Servicio para gestionar las preguntas de votación en una asamblea
 @Injectable()
 export class VotingQuestionsService {
   constructor(
     private readonly i18n: I18nService,
-    @Inject(getRepositoryToken(VotingQuestion))
+    @InjectRepository(VotingQuestion)
     private readonly repository: Repository<VotingQuestion>,
   ) {}
-
+// Crear una nueva pregunta de votación
   async create(dto: CreateVotingQuestionDto): Promise<any> {
+    const newVotingQuestion = this.repository.create(dto);
+    const savedVotingQuestion = await this.repository.save(newVotingQuestion);
+    
     return {
       status: "success",
       message: this.i18n.t("voting_questions.CREAR_RES"),
-      data: { id: "uuid-vote-q-123", ...dto, created_at: new Date() },
+      data: savedVotingQuestion,
     };
   }
-
+// Listar todas las preguntas de votación activas
   async findAll(_where?: string): Promise<any[]> {
-    return [
-      {
-        id: "uuid-vote-q-123",
-        question_text: "¿Aprueba el presupuesto 2026?",
-        status: "Abierta",
-        result_type: "Única",
-        opened_at: new Date(),
-        closed_at: null,
-      }
-    ];
+    const votingQuestions = await this.repository.find({ 
+      where: { is_active: true } 
+    });
+    return votingQuestions;
   }
 
+  // Actualizar una pregunta de votación por ID
   async update(id: string, dto: CreateVotingQuestionDto): Promise<any> {
+    const votingQuestion = await this.repository.findOne({ 
+      where: { id, is_active: true } 
+    });
+    
+    if (!votingQuestion) {
+      throw new NotFoundException(
+        this.i18n.t("voting_questions.NO_ENCONTRADA")
+      );
+    }
+
+    Object.assign(votingQuestion, dto);
+    const updatedVotingQuestion = await this.repository.save(votingQuestion);
+    
     return {
       status: "success",
       message: this.i18n.t("voting_questions.ACTUALIZADA_RES"),
-      data: { id, ...dto },
+      data: updatedVotingQuestion,
     };
   }
-
+// Eliminar una pregunta de votación por ID (soft delete)
   async delete(id: string): Promise<any> {
+    const votingQuestion = await this.repository.findOne({ 
+      where: { id, is_active: true } 
+    });
+    
+    if (!votingQuestion) {
+      throw new NotFoundException(
+        this.i18n.t("voting_questions.NO_ENCONTRADA")
+      );
+    }
+
+    votingQuestion.is_active = false;
+    await this.repository.save(votingQuestion);
+    
     return { 
       status: "success", 
       message: this.i18n.t("voting_questions.ELIMINADA_RES") 
