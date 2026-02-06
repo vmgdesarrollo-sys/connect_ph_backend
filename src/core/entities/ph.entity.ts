@@ -1,15 +1,20 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Role } from './role.entity';
+import { Unit } from './unit.entity';
+import { Assembly } from './assemblies.entity';
 
 @Entity('phs')
 export class Ph {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ length: 150 })
-  name?: string;
+   @Column({ type: 'uuid', nullable: true })
+  created_by?: string;
 
-  @Column({ unique: true, nullable: true })
+  @Column({ length: 150 })
+  name: string;
+
+  @Column({ unique: true, nullable: true, length: 20 })
   tax_id: string;
 
   @Column({ type: 'text', nullable: true })
@@ -39,14 +44,20 @@ export class Ph {
   @Column({ nullable: true })
   stratum?: string;
 
-  @Column({ nullable: true })
-  number_of_towers?: string;
+  @Column({ type:'int', nullable: true })
+  number_of_towers?: number;
 
-  @Column({ nullable: true })
-  amount_of_real_estate?: string;
+  @Column({ type:'int',nullable: true })
+  amount_of_real_estate?: number;
 
   @Column({ nullable: true })
   horizontal_property_regulations?: string;
+
+  @OneToMany(() => Unit, (unit) => unit.ph)
+  units: Unit[];
+
+  @OneToMany(() => Assembly, (assembly) => assembly.ph)
+  assemblies: Assembly[];
 
   @Column({ default: true })
   is_active: boolean;

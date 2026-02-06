@@ -169,7 +169,7 @@ CREATE TABLE assembly_attendances (
 
 CREATE TABLE voting_questions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    assemblies_id UUID REFERENCES assemblies(id),
+    agenda_id UUID REFERENCES agenda(id) ON DELETE CASCADE,
     question_text TEXT NOT NULL,
     description TEXT,
     type VARCHAR(30),

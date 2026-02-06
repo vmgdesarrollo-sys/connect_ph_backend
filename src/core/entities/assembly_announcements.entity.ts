@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Assembly } from './assemblies.entity';
 
 @Entity('assembly_announcements')
 export class AssemblyAnnouncement {
@@ -7,6 +8,10 @@ export class AssemblyAnnouncement {
 
   @Column({ type: 'uuid' })
   assemblies_id: string;
+
+  @ManyToOne(() => Assembly, (assembly) => assembly.announcements, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'assemblies_id' })
+  assembly: Assembly;
 
   @Column({ length: 255 })
   title: string;

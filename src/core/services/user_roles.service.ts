@@ -37,6 +37,26 @@ export class UserRolesService {
       );
     }
 
+    // Buscar los roles por nombre para obtener sus UUIDs
+    const roles = await this.roleRepository.find({
+      where: { 
+        name: In(createUserRolDto.roles),
+        is_active: true 
+      }
+    });
+
+    // Validar que todos los roles existen
+    if (roles.length !== createUserRolDto.roles.length) {
+      const foundRoleNames = roles.map(r => r.name);
+      const notFoundRoles = createUserRolDto.roles.filter(name => !foundRoleNames.includes(name));
+      throw new NotFoundException(
+        `Los siguientes roles no fueron encontrados: ${notFoundRoles.join(', ')}`
+      );
+    }
+
+    // Obtener los UUIDs de los roles
+    const roleIds = roles.map(r => r.id);
+
     // Verificar roles ya asignados (evitar duplicados)
     const existingRoles = await this.userRolRepository.find({
       where: { 
@@ -46,7 +66,7 @@ export class UserRolesService {
     });
     // Filtrar los roles que ya están asignados
     const existingRoleIds = new Set(existingRoles.map(ur => ur.roles_id));
-    const newRoleIds = createUserRolDto.roles.filter(roleId => !existingRoleIds.has(roleId));
+    const newRoleIds = roleIds.filter(roleId => !existingRoleIds.has(roleId));
 
     // Crear todas las asignaciones de una vez (batch insert)
     if (newRoleIds.length > 0) {
@@ -64,7 +84,7 @@ export class UserRolesService {
     let message: string;
     if (newRoleIds.length === 0) {
       message = this.i18n.t('user_roles.MSG_ALREADY_ASSIGNED', {lang}) || "Los roles ya estaban asignados";
-    } else if (createUserRolDto.roles.length - newRoleIds.length > 0) {
+    } else if (roleIds.length - newRoleIds.length > 0) {
       message = this.i18n.t('user_roles.MSG_PARTIAL', {lang}) || "Algunos roles ya estaban asignados";
     } else {
       message = this.i18n.t('user_roles.MSG_CREATE', {lang}) || "Roles asignados correctamente"; 
@@ -76,8 +96,8 @@ export class UserRolesService {
       data: {
         user_id: id,
         roles_assigned: newRoleIds.length,
-        roles_already_existed: createUserRolDto.roles.length - newRoleIds.length,
-        total_roles: createUserRolDto.roles.length
+        roles_already_existed: roleIds.length - newRoleIds.length,
+        total_roles: roleIds.length
       }
     };
   }

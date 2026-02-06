@@ -26,7 +26,7 @@ export class VotingQuestionsService {
 // Listar todas las preguntas de votación activas
   async findAll(_where?: string): Promise<any[]> {
     const votingQuestions = await this.repository.find({ 
-      where: { is_active: true } 
+      where: { is_active: false } 
     });
     return votingQuestions;
   }
