@@ -50,20 +50,8 @@ import { QuestionsOptionsService } from './services/questions_options.service';
 import { VotesService } from './services/votes.service';
 import { VotingQuestionsService } from './services/voting_questions.service';
 
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { AuthController } from './controllers/auth.controller';
 import { AuthService } from './services/auth/auth.service';
-
-/**
- * Borrarme porque soy simulacion
- */
-const mockRepository = {
-  find: () => [],
-  findOne: () => ({}),
-  create: (dto) => dto,
-  save: (dto) => ({ id: 'uuid-generado', ...dto }),
-};
-/** FIN simulacion */
 
 @Module({
   imports:[
@@ -74,19 +62,19 @@ const mockRepository = {
     }),
     TypeOrmModule.forFeature([
       User, 
-  //    Role, 
-  //    Ph
-  //    UserRol,
-  //    Unit,
-  //    UnitAssignment,
-  //    Agenda,
-  //    Assembly,
-  //    AssemblyAnnouncement,
-  //    AssemblyAttendance,
-  //    QaEntry,
-  //    QuestionOption,
-  //    VotingQuestion,
-  //    Vote,
+      Role, 
+      Ph,
+      UserRol,
+      Unit,
+      UnitAssignment,
+      Agenda,
+      Assembly,
+      AssemblyAnnouncement,
+      AssemblyAttendance,
+      QaEntry,
+      QuestionOption,
+      VotingQuestion,
+      Vote,
     ]), 
   ],
   controllers: [
@@ -123,27 +111,6 @@ const mockRepository = {
     QuestionsOptionsService,
     VotesService,
     VotingQuestionsService,
-
-
-    // Proveedores falsos para que no pida DataSource
-    { provide: getRepositoryToken(Role), useValue: mockRepository },
-    { provide: getRepositoryToken(Ph), useValue: mockRepository },
-    { provide: getRepositoryToken(UserRol), useValue: mockRepository },
-    { provide: getRepositoryToken(Unit), useValue: mockRepository },
-    { provide: getRepositoryToken(UnitAssignment), useValue: mockRepository },
-    { provide: getRepositoryToken(Agenda), useValue: mockRepository },
-    { provide: getRepositoryToken(Assembly), useValue: mockRepository },
-    { provide: getRepositoryToken(AssemblyAnnouncement), useValue: mockRepository },
-    { provide: getRepositoryToken(AssemblyAttendance), useValue: mockRepository },
-    { provide: getRepositoryToken(QaEntry), useValue: mockRepository },
-    { provide: getRepositoryToken(QuestionOption), useValue: mockRepository },
-    { provide: getRepositoryToken(VotingQuestion), useValue: mockRepository },
-    { provide: getRepositoryToken(Vote), useValue: mockRepository },
   ],
-  //exports: [
-    //UsersService, 
-    //PhsService, 
-    //TypeOrmModule
-  //],
 })
 export class CoreModule {}

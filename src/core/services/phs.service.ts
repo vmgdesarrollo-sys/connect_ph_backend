@@ -2,13 +2,11 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
-  Inject,
 } from "@nestjs/common";
-//import { InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from "typeorm";
 import { Ph } from "../entities/ph.entity";
 import { CreatePhDto } from "../dtos/payload/ph-payload.dto";
-import { getRepositoryToken } from "@nestjs/typeorm";
 
 import { I18nContext, I18nService } from 'nestjs-i18n';
 const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
@@ -17,112 +15,110 @@ const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
 export class PhsService {
   constructor(
     private readonly i18n: I18nService,
-    //@InjectRepository(Ph)
-    //private readonly phRepository: Repository<Ph>,
-
-    @Inject(getRepositoryToken(Ph))
+    @InjectRepository(Ph)
     private readonly phRepository: Repository<Ph>
   ) {}
-
+// Crear una nueva copropiedad (PH)
   async create(createPhDto: CreatePhDto): Promise<any> {
+    // Verificar si el NIT (tax_id) ya existe
+    const existingPh = await this.phRepository.findOne({
+      where: { tax_id: createPhDto.tax_id },
+    });
+
+    if (existingPh) {
+      throw new ConflictException(this.i18n.t('phs.ERROR_TAX', {lang, args: {},}));
+    }
+
+    const newPh = this.phRepository.create(createPhDto);
+    const savedPh = await this.phRepository.save(newPh);
+
     return {
       status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
       message: this.i18n.t('phs.COPROPIEDAD_CREADA', {lang, args: {},}),
-      data: {
-        id: "550e8400-e29b-41d4-a716-446655440000",
-        ...createPhDto,
-        created_at: "2025-12-25T13:45:00Z",
-      },
+      data: savedPh,
     };
-    // Verificar si el NIT (tax_id) ya existe
-    const existingPh = await this.phRepository.findOne({
-      where: { tax_id: createPhDto.tax_id },
-    });
-
-    if (existingPh) {
-      throw new ConflictException(this.i18n.t('phs.ERROR_TAX', {lang, args: {},}));
+  }
+  // Actualizar una copropiedad (PH) por ID
+  async update(id: string, createPhDto: CreatePhDto): Promise<any> {
+    const ph = await this.phRepository.findOne({ where: { id } });
+    
+    if (!ph) {
+      throw new NotFoundException(this.i18n.t('phs.COPROPIEDAD_NO_EXISTE', {lang, args: {id},}));
     }
 
-    const newPh = this.phRepository.create(createPhDto);
-    return await this.phRepository.save(newPh);
-  }
-  async update(id: string, createPhDto: CreatePhDto): Promise<any> {
+    // Si está cambiando el tax_id, verificar que no exista en otra PH
+    if (createPhDto.tax_id && createPhDto.tax_id !== ph.tax_id) {
+      const existingPh = await this.phRepository.findOne({
+        where: { tax_id: createPhDto.tax_id },
+      });
+      
+      if (existingPh) {
+        throw new ConflictException(this.i18n.t('phs.ERROR_TAX', {lang, args: {},}));
+      }
+    }
+
+    // Actualizar campos
+    Object.assign(ph, createPhDto);
+    
+    const updatedPh = await this.phRepository.save(ph);
+
     return {
       status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
       message: this.i18n.t('phs.COPROPIEDAD_ACTUALIZADA', {lang, args: {},}),
-      data: {
-        id: "550e8400-e29b-41d4-a716-446655440000",
-        ...createPhDto,
-        created_at: "2025-12-25T13:45:00Z",
-        updated_at: "2025-12-25T13:45:00Z",
-      },
+      data: updatedPh,
     };
-    // Verificar si el NIT (tax_id) ya existe
-    const existingPh = await this.phRepository.findOne({
-      where: { tax_id: createPhDto.tax_id },
-    });
-
-    if (existingPh) {
-      throw new ConflictException(this.i18n.t('phs.ERROR_TAX', {lang, args: {},}));
-    }
-
-    const newPh = this.phRepository.create(createPhDto);
-    return await this.phRepository.save(newPh);
   }
-
-  async findAll(_fields?: string, _where?: string): Promise<any[]> {
-    return [
-      {
-        id: "550e8400-e29b-41d4-a716-446655440000",
-        name: "Conjunto Residencial Los Álamos",
-        tax_id: "900123456-1",
-        address: "Calle 123 # 45-67, Bogotá",
-        phone_number: "+576012345678",
-        email: "administracion@alamos.com",
-        logo_url: "https://storage.googleapis.com/tu-bucket/logos/logo.png",
-        legal_representative: "Carlos Mario Restrepo",
-        is_active: true,
-        created_at: new Date("2025-12-25T13:45:00Z"),
-      },
-    ] as Ph[];
-    return await this.phRepository.find({
+// Listar todas las copropiedades (PH) activas
+  async findAll(_fields?: string, _where?: string): Promise<any> {
+    const phs = await this.phRepository.find({
       where: { is_active: true },
     });
-  }
 
-  async findOne(id: string): Promise<any> {
     return {
       status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('phs.DETALLE_COPROPIEDAD', {lang, args: {},}),
-      data: {
-        id: "550e8400-e29b-41d4-a716-446655440000",
-        name: "Conjunto Residencial Los Álamos",
-        tax_id: "900123456-1",
-        address: "Calle 123 # 45-67, Bogotá",
-        phone_number: "+576012345678",
-        email: "administracion@alamos.com",
-        logo_url: "https://storage.googleapis.com/tu-bucket/logos/logo.png",
-        legal_representative: "Carlos Mario Restrepo",
-        is_active: true,
-        created_at: "2025-12-25T13:45:00Z",
+      message: this.i18n.t('phs.MSG_LIST', {lang, args: {},}),
+      data: phs,
+      properties: {
+        total_items: phs.length,
+        items_per_page: 10,
+        current_page: 1,
+        total_pages: Math.ceil(phs.length / 10),
       },
     };
+  }
+// Obtener detalle de una copropiedad (PH) por ID
+  async findOne(id: string): Promise<any> {
     const ph = await this.phRepository.findOne({
       where: { id, is_active: true },
     });
-    if (!ph) throw new NotFoundException(this.i18n.t('phs.COPROPIEDAD_NO_EXISTE', {lang, args: {id},}));
-    // return ph;
+
+    if (!ph) {
+      throw new NotFoundException(this.i18n.t('phs.COPROPIEDAD_NO_EXISTE', {lang, args: {id},}));
+    }
+
+    return {
+      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
+      message: this.i18n.t('phs.DETALLE_COPROPIEDAD', {lang, args: {},}),
+      data: ph,
+    };
   }
 
   async delete(id: string): Promise<any> {
+    const ph = await this.phRepository.findOne({
+      where: { id, is_active: true },
+    });
+
+    if (!ph) {
+      throw new NotFoundException(this.i18n.t('phs.COPROPIEDAD_NO_EXISTE', {lang, args: {id},}));
+    }
+
+    // Soft delete: cambiar is_active a false
+    ph.is_active = false;
+    await this.phRepository.save(ph);
+
     return {
       status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
       message: this.i18n.t('phs.COPROPIEDAD_ELIMINADA', {lang, args: {id},}),
     };
-    const ph = await this.phRepository.findOne({
-      where: { id, is_active: true },
-    });
-    if (!ph) throw new NotFoundException(this.i18n.t('phs.COPROPIEDAD_NO_EXISTE', {lang, args: {id},}));
-    // return ph;
   }
 }

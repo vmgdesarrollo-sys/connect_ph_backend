@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { VotingQuestion } from './voting_questions.entity';
+import { Vote } from './votes.entity';
 
 @Entity('questions_options')
 export class QuestionOption {
@@ -7,6 +9,14 @@ export class QuestionOption {
 
   @Column({ type: 'uuid' })
   question_id: string;
+
+  @ManyToOne(() => VotingQuestion, (votingQuestion) => votingQuestion.options, { onDelete: 'CASCADE' }
+)
+  @JoinColumn({ name: 'question_id' })
+  votingQuestion: VotingQuestion;
+
+  @OneToMany(() => Vote, (vote) => vote.questionOption)
+  votes: Vote[];
 
   @Column({ length: 255 })
   option_text: string;
