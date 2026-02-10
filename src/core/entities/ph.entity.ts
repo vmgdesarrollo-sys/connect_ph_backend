@@ -8,8 +8,11 @@ export class Ph {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-   @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'uuid', nullable: true })
   created_by?: string;
+
+  @Column({ type: 'uuid', nullable: true })
+  updated_by?: string;
 
   @Column({ length: 150 })
   name: string;

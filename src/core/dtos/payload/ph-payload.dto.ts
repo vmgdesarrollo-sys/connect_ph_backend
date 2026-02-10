@@ -146,14 +146,4 @@ export class CreatePhDto {
   @IsBoolean()
   @IsOptional()
   is_active?: boolean;
-
-  @ApiProperty({
-    example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
-    description: t("DESP_PH_CREATED_BY"),
-  })
-  @IsUUID("4", {
-    message: t("VALID_PH_CREATED_BY"),
-  })
-  @IsNotEmpty()
-  created_by: string;
 }
