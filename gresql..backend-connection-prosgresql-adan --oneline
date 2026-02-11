@@ -1,0 +1,483 @@
+[1mdiff --git a/connecting_ph.sql b/connecting_ph.sql[m
+[1mindex e5d5505..1e7c57d 100644[m
+[1m--- a/connecting_ph.sql[m
+[1m+++ b/connecting_ph.sql[m
+[36m@@ -1,5 +1,5 @@[m
+ CREATE EXTENSION IF NOT EXISTS "connecting-ph";[m
+[31m-[m
+[32m+[m[32m---Prueba---[m
+ --- 1. TABLAS MAESTRAS (Nivel 1) ---[m
+ [m
+ CREATE TABLE roles ([m
+[36m@@ -8,6 +8,8 @@[m [mCREATE TABLE roles ([m
+     description TEXT,[m
+     scopes TEXT,[m
+     is_active BOOLEAN DEFAULT true,[m
+[32m+[m[32m    created_by UUID REFERENCES users(id),[m
+[32m+[m[32m    updated_by UUID REFERENCES users(id),[m
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,[m
+     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+[36m@@ -22,6 +24,15 @@[m [mCREATE TABLE phs ([m
+     logo_url VARCHAR(255),[m
+     legal_representative VARCHAR(150),[m
+     is_active BOOLEAN DEFAULT true,[m
+[32m+[m[32m    city VARCHAR(100),[m
+[32m+[m[32m    state VARCHAR(100),[m
+[32m+[m[32m    country VARCHAR(100),[m
+[32m+[m[32m    stratum VARCHAR(50),[m
+[32m+[m[32m    number_of_towers INTEGER,[m
+[32m+[m[32m    amount_of_real_state INTEGER,[m
+[32m+[m[32m    horizontal_property_regulations TEXT,[m
+[32m+[m[32m    created_by UUID REFERENCES users(id),[m
+[32m+[m[32m    updated_by UUID REFERENCES users(id),[m
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,[m
+     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+[36m@@ -38,10 +49,27 @@[m [mCREATE TABLE users ([m
+     avatar_url VARCHAR(255),[m
+     last_login TIMESTAMP,[m
+     is_active BOOLEAN DEFAULT true,[m
+[32m+[m[32m    person_type VARCHAR(20),[m
+[32m+[m[32m    gender VARCHAR(20),[m
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,[m
+     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+ [m
+[32m+[m[32m    CREATE TABLE agenda ([m
+[32m+[m[32m    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),[m
+[32m+[m[32m    assembly_id UUID REFERENCES assemblies(id) ON DELETE CASCADE,[m
+[32m+[m[32m    sort_order INTEGER,[m
+[32m+[m[32m    title VARCHAR(200) NOT NULL,[m
+[32m+[m[32m    description TEXT,[m
+[32m+[m[32m    is_votable BOOLEAN DEFAULT false,[m
+[32m+[m[32m    required_quorum DECIMAL(5,2),[m
+[32m+[m[32m    is_active BOOLEAN DEFAULT true,[m
+[32m+[m[32m    created_by UUID REFERENCES users(id),[m
+[32m+[m[32m    updated_by UUID REFERENCES users(id),[m
+[32m+[m[32m    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,[m
+[32m+[m[32m    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+[32m+[m[32m    );[m
+[32m+[m
+ --- 2. TABLAS DE RELACIÓN DE USUARIOS Y UNIDADES ---[m
+ [m
+ CREATE TABLE user_roles ([m
+[36m@@ -49,7 +77,10 @@[m [mCREATE TABLE user_roles ([m
+     users_id UUID REFERENCES users(id) ON DELETE CASCADE,[m
+     roles_id UUID REFERENCES roles(id),[m
+     is_active BOOLEAN DEFAULT true,[m
+[31m-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+[32m+[m[32m    created_by UUID REFERENCES users(id),[m
+[32m+[m[32m    updated_by UUID REFERENCES users(id),[m
+[32m+[m[32m    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,[m
+[32m+[m[32m    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+ [m
+ CREATE TABLE units ([m
+[36m@@ -62,7 +93,13 @@[m [mCREATE TABLE units ([m
+     floor INTEGER,[m
+     area DECIMAL(10,2),[m
+     is_active BOOLEAN DEFAULT true,[m
+[31m-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+[32m+[m[32m    tax_responsible VARCHAR(150),[m
+[32m+[m[32m    rf_document_type VARCHAR(20),[m
+[32m+[m[32m    rf_document_number VARCHAR(50),[m
+[32m+[m[32m    created_by UUID REFERENCES users(id),[m
+[32m+[m[32m    updated_by UUID REFERENCES users(id),[m
+[32m+[m[32m    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,[m
+[32m+[m[32m    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+ [m
+ CREATE TABLE unit_assignments ([m
+[36m@@ -72,7 +109,10 @@[m [mCREATE TABLE unit_assignments ([m
+     is_main_resident BOOLEAN DEFAULT false,[m
+     can_vote BOOLEAN DEFAULT false,[m
+     is_active BOOLEAN DEFAULT true,[m
+[31m-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+[32m+[m[32m    created_by UUID REFERENCES users(id),[m
+[32m+[m[32m    updated_by UUID REFERENCES users(id),[m
+[32m+[m[32m    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,[m
+[32m+[m[32m    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+ [m
+ --- 3. GESTIÓN DE ARCHIVOS ---[m
+[36m@@ -80,6 +120,8 @@[m [mCREATE TABLE unit_assignments ([m
+ CREATE TABLE files ([m
+     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),[m
+     phs_id UUID REFERENCES phs(id),[m
+[32m+[m[32m    created_by UUID REFERENCES users(id),[m
+[32m+[m[32m    updated_by UUID REFERENCES users(id),[m
+     original_name VARCHAR(255),[m
+     storage_path VARCHAR(500) NOT NULL,[m
+     mimetype VARCHAR(100),[m
+[36m@@ -88,7 +130,8 @@[m [mCREATE TABLE files ([m
+     checksum VARCHAR(255),[m
+     is_public BOOLEAN DEFAULT false,[m
+     is_active BOOLEAN DEFAULT true,[m
+[31m-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+[32m+[m[32m    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,[m
+[32m+[m[32m    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+ [m
+ --- 4. MÓDULO DE ASAMBLEAS (Votaciones y Q&A) ---[m
+[36m@@ -106,7 +149,9 @@[m [mCREATE TABLE assemblies ([m
+     livekit_room_name VARCHAR(100),[m
+     quorum_requirement DECIMAL(5,2),[m
+     is_active BOOLEAN DEFAULT true,[m
+[31m-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+[32m+[m[32m    created_by UUID REFERENCES users(id),[m
+[32m+[m[32m    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,[m
+[32m+[m[32m    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+ [m
+ CREATE TABLE assembly_attendances ([m
+[36m@@ -118,18 +163,26 @@[m [mCREATE TABLE assembly_attendances ([m
+     is_present BOOLEAN DEFAULT true,[m
+     proxy_file_id UUID REFERENCES files(id),[m
+     notes TEXT,[m
+[31m-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+[32m+[m[32m    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,[m
+[32m+[m[32m    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+ [m
+ CREATE TABLE voting_questions ([m
+     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),[m
+[31m-    assemblies_id UUID REFERENCES assemblies(id),[m
+[32m+[m[32m    agenda_id UUID REFERENCES agenda(id) ON DELETE CASCADE,[m
+     question_text TEXT NOT NULL,[m
+[32m+[m[32m    description TEXT,[m
+     type VARCHAR(30),[m
+     status VARCHAR(20),[m
+[32m+[m[32m    result_type VARCHAR(20),[m
+[32m+[m[32m    min_selections INTEGER,[m
+[32m+[m[32m    max_selections INTEGER,[m
+     opened_at TIMESTAMP,[m
+     closed_at TIMESTAMP,[m
+[31m-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+[32m+[m[32m    is_active BOOLEAN DEFAULT false,[m
+[32m+[m[32m    created_by UUID REFERENCES users(id),[m[41m   [m
+[32m+[m[32m    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,[m
+[32m+[m[32m    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+ [m
+ CREATE TABLE questions_options ([m
+[36m@@ -138,7 +191,8 @@[m [mCREATE TABLE questions_options ([m
+     option_text VARCHAR(255) NOT NULL,[m
+     order_index INTEGER,[m
+     is_active BOOLEAN DEFAULT true,[m
+[31m-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+[32m+[m[32m    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,[m
+[32m+[m[32m    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+ [m
+ CREATE TABLE votes ([m
+[36m@@ -148,6 +202,7 @@[m [mCREATE TABLE votes ([m
+     assembly_attendances_id UUID REFERENCES assembly_attendances(id),[m
+     coefficient_at_voting DECIMAL(10,6),[m
+     ip_address VARCHAR(45),[m
+[32m+[m[32m    user_agent TEXT,[m
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+ [m
+[36m@@ -158,16 +213,26 @@[m [mCREATE TABLE guard_assignments ([m
+     user_roles_id UUID REFERENCES user_roles(id),[m
+     phs_id UUID REFERENCES phs(id),[m
+     station_name VARCHAR(50),[m
+[32m+[m[32m    shift_start TIME,[m
+[32m+[m[32m    shift_end TIME,[m
+     is_active BOOLEAN DEFAULT true,[m
+[31m-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+[32m+[m[32m    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,[m
+[32m+[m[32m    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+[32m+[m
+ );[m
+ [m
+ CREATE TABLE visitor_access_permits ([m
+     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),[m
+     unit_assignments_id UUID REFERENCES unit_assignments(id),[m
+     visitor_name VARCHAR(150),[m
+[32m+[m[32m    visitor_id_number VARCHAR(50),[m
+[32m+[m[32m    visitor_type VARCHAR(30),[m
+     qr_code_token VARCHAR(255),[m
+[32m+[m[32m    starts_at TIMESTAMP,[m
+[32m+[m[32m    expires_at TIMESTAMP,[m
+[32m+[m[32m    observations TEXT,[m
+     status VARCHAR(20),[m
+[32m+[m[32m    is_active BOOLEAN DEFAULT false,[m
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+ [m
+[36m@@ -176,9 +241,14 @@[m [mCREATE TABLE access_logs ([m
+     unit_assignments_id UUID REFERENCES unit_assignments(id),[m
+     visitor_access_permits_id UUID REFERENCES visitor_access_permits(id),[m
+     visitor_name VARCHAR(150),[m
+[32m+[m[32m    visitor_id_number VARCHAR(50),[m
+     entry_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,[m
+     exit_at TIMESTAMP,[m
+[31m-    registered_by UUID REFERENCES users(id)[m
+[32m+[m[32m    vehicle_plate VARCHAR(20),[m
+[32m+[m[32m    entry_observation TEXT,[m
+[32m+[m[32m    exit_observation TEXT,[m
+[32m+[m[32m    registered_by UUID REFERENCES users(id),[m
+[32m+[m[32m    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+ [m
+ CREATE TABLE packages ([m
+[36m@@ -186,8 +256,13 @@[m [mCREATE TABLE packages ([m
+     unit_assignments_id UUID REFERENCES unit_assignments(id),[m
+     courier_name VARCHAR(100),[m
+     description TEXT,[m
+[32m+[m[32m    tracking_number VARCHAR(100),[m
+[32m+[m[32m    package_type VARCHAR(30),[m
+     status VARCHAR(20),[m
+[31m-    received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+[32m+[m[32m    received_by UUID REFERENCES users(id),[m
+[32m+[m[32m    delivered_to_name VARCHAR(150),[m
+[32m+[m[32m    received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,[m
+[32m+[m[32m    delivered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+ [m
+ CREATE TABLE guard_shift_reports ([m
+[36m@@ -196,7 +271,9 @@[m [mCREATE TABLE guard_shift_reports ([m
+     unit_assignments_id UUID REFERENCES unit_assignments(id),[m
+     title VARCHAR(150),[m
+     description TEXT,[m
+[32m+[m[32m    category VARCHAR(20),[m
+     severity VARCHAR(20),[m
+[32m+[m[32m    location_detail VARCHAR(100),[m
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+ [m
+[36m@@ -204,6 +281,8 @@[m [mCREATE TABLE incident_photos ([m
+     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),[m
+     guard_shift_reports_id UUID REFERENCES guard_shift_reports(id),[m
+     files_id UUID REFERENCES files(id),[m
+[32m+[m[32m    caption VARCHAR(255),[m
+[32m+[m[32m    is_evidence BOOLEAN DEFAULT false,[m
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+ [m
+[36m@@ -213,12 +292,11 @@[m [mCREATE TABLE common_areas ([m
+     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),[m
+     phs_id UUID REFERENCES phs(id) ON DELETE CASCADE,[m
+     name VARCHAR(100) NOT NULL, -- Ej: 'Salón Social', 'Parqueadero V01'[m
+[31m-    type VARCHAR(50), -- Ej: 'PARKING', 'LOCKER', 'SOCIAL_ROOM', 'STORAGE'[m
+     location_details TEXT,[m
+[31m-    is_available BOOLEAN DEFAULT true,[m
+     is_active BOOLEAN DEFAULT true,[m
+     created_by UUID REFERENCES users(id),[m
+     updated_by UUID REFERENCES users(id),[m
+[32m+[m[32m    regulation TEXT,[m
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,[m
+     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+ );[m
+[36m@@ -320,6 +398,7 @@[m [mCREATE TABLE pqrs ([m
+     subject VARCHAR(200) NOT NULL,[m
+     description TEXT NOT NULL,[m
+     status VARCHAR(30) DEFAULT 'OPEN', -- Ej: 'OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'[m
+[32m+[m[32m    files_id UUID REFERENCES files(id),[m
+     is_active BOOLEAN DEFAULT true,[m
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,[m
+     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP[m
+[1mdiff --git a/src/core/core.module.ts b/src/core/core.module.ts[m
+[1mindex d7b2574..6dcfc6a 100644[m
+[1m--- a/src/core/core.module.ts[m
+[1m+++ b/src/core/core.module.ts[m
+[36m@@ -50,21 +50,9 @@[m [mimport { QuestionsOptionsService } from './services/questions_options.service';[m
+ import { VotesService } from './services/votes.service';[m
+ import { VotingQuestionsService } from './services/voting_questions.service';[m
+ [m
+[31m-import { getRepositoryToken } from '@nestjs/typeorm';[m
+ import { AuthController } from './controllers/auth.controller';[m
+ import { AuthService } from './services/auth/auth.service';[m
+ [m
+[31m-/**[m
+[31m- * Borrarme porque soy simulacion[m
+[31m- */[m
+[31m-const mockRepository = {[m
+[31m-  find: () => [],[m
+[31m-  findOne: () => ({}),[m
+[31m-  create: (dto) => dto,[m
+[31m-  save: (dto) => ({ id: 'uuid-generado', ...dto }),[m
+[31m-};[m
+[31m-/** FIN simulacion */[m
+[31m-[m
+ @Module({[m
+   imports:[[m
+     JwtModule.register({[m
+[36m@@ -74,19 +62,19 @@[m [mconst mockRepository = {[m
+     }),[m
+     TypeOrmModule.forFeature([[m
+       User, [m
+[31m-  //    Role, [m
+[31m-  //    Ph[m
+[31m-  //    UserRol,[m
+[31m-  //    Unit,[m
+[31m-  //    UnitAssignment,[m
+[31m-  //    Agenda,[m
+[31m-  //    Assembly,[m
+[31m-  //    AssemblyAnnouncement,[m
+[31m-  //    AssemblyAttendance,[m
+[31m-  //    QaEntry,[m
+[31m-  //    QuestionOption,[m
+[31m-  //    VotingQuestion,[m
+[31m-  //    Vote,[m
+[32m+[m[32m      Role,[m[41m [m
+[32m+[m[32m      Ph,[m
+[32m+[m[32m      UserRol,[m
+[32m+[m[32m      Unit,[m
+[32m+[m[32m      UnitAssignment,[m
+[32m+[m[32m      Agenda,[m
+[32m+[m[32m      Assembly,[m
+[32m+[m[32m      AssemblyAnnouncement,[m
+[32m+[m[32m      AssemblyAttendance,[m
+[32m+[m[32m      QaEntry,[m
+[32m+[m[32m      QuestionOption,[m
+[32m+[m[32m      VotingQuestion,[m
+[32m+[m[32m      Vote,[m
+     ]), [m
+   ],[m
+   controllers: [[m
+[36m@@ -123,27 +111,6 @@[m [mconst mockRepository = {[m
+     QuestionsOptionsService,[m
+     VotesService,[m
+     VotingQuestionsService,[m
+[31m-[m
+[31m-[m
+[31m-    // Proveedores falsos para que no pida DataSource[m
+[31m-    { provide: getRepositoryToken(Role), useValue: mockRepository },[m
+[31m-    { provide: getRepositoryToken(Ph), useValue: mockRepository },[m
+[31m-    { provide: getRepositoryToken(UserRol), useValue: mockRepository },[m
+[31m-    { provide: getRepositoryToken(Unit), useValue: mockRepository },[m
+[31m-    { provide: getRepositoryToken(UnitAssignment), useValue: mockRepository },[m
+[31m-    { provide: getRepositoryToken(Agenda), useValue: mockRepository },[m
+[31m-    { provide: getRepositoryToken(Assembly), useValue: mockRepository },[m
+[31m-    { provide: getRepositoryToken(AssemblyAnnouncement), useValue: mockRepository },[m
+[31m-    { provide: getRepositoryToken(AssemblyAttendance), useValue: mockRepository },[m
+[31m-    { provide: getRepositoryToken(QaEntry), useValue: mockRepository },[m
+[31m-    { provide: getRepositoryToken(QuestionOption), useValue: mockRepository },[m
+[31m-    { provide: getRepositoryToken(VotingQuestion), useValue: mockRepository },[m
+[31m-    { provide: getRepositoryToken(Vote), useValue: mockRepository },[m
+   ],[m
+[31m-  //exports: [[m
+[31m-    //UsersService, [m
+[31m-    //PhsService, [m
+[31m-    //TypeOrmModule[m
+[31m-  //],[m
+ })[m
+ export class CoreModule {}[m
+\ No newline at end of file[m
+[1mdiff --git a/src/core/dtos/payload/ph-payload.dto.ts b/src/core/dtos/payload/ph-payload.dto.ts[m
+[1mindex c114fa9..1f25a25 100644[m
+[1m--- a/src/core/dtos/payload/ph-payload.dto.ts[m
+[1m+++ b/src/core/dtos/payload/ph-payload.dto.ts[m
+[36m@@ -7,6 +7,7 @@[m [mimport {[m
+   IsString,[m
+   IsUrl,[m
+   IsUUID,[m
+[32m+[m[32m  IsNumber,[m
+ } from "class-validator";[m
+ [m
+ import { I18nContext } from "nestjs-i18n";[m
+[36m@@ -115,16 +116,18 @@[m [mexport class CreatePhDto {[m
+     description: t("DESP_NUMBER_OF_TOWERS"),[m
+     required: false,[m
+   })[m
+[31m-  @IsString()[m
+[31m-  number_of_towers?: string;[m
+[32m+[m[32m  @IsNumber()[m
+[32m+[m[32m  @IsOptional()[m
+[32m+[m[32m  number_of_towers?: number;[m
+ [m
+   @ApiProperty({[m
+     example: t("EXAMPLE_AMOUNT_OF_REAL_ESTATE"),[m
+     description: t("DESP_AMOUNT_OF_REAL_ESTATE"),[m
+     required: false,[m
+   })[m
+[31m-  @IsString()[m
+[31m-  amount_of_real_estate?: string;[m
+[32m+[m[32m  @IsNumber()[m
+[32m+[m[32m  @IsOptional()[m
+[32m+[m[32m  amount_of_real_estate?: number;[m
+ [m
+   @ApiProperty({[m
+     example: t("EXAMPLE_HORIZONTAL_PROPERTY_REGULATIONS"),[m
+[36m@@ -143,14 +146,4 @@[m [mexport class CreatePhDto {[m
+   @IsBoolean()[m
+   @IsOptional()[m
+   is_active?: boolean;[m
+[31m-[m
+[31m-  @ApiProperty({[m
+[31m-    example: "d290f1ee-6c54-4b01-90e6-d701748f0851",[m
+[31m-    description: t("DESP_PH_CREATED_BY"),[m
+[31m-  })[m
+[31m-  @IsUUID("4", {[m
+[31m-    message: t("VALID_PH_CREATED_BY"),[m
+[31m-  })[m
+[31m-  @IsNotEmpty()[m
+[31m-  created_by: string;[m
+ }[m
+[1mdiff --git a/src/core/dtos/payload/unit-payload.dto.ts b/src/core/dtos/payload/unit-payload.dto.ts[m
+[1mindex 7598181..f9a9b9d 100644[m
+[1m--- a/src/core/dtos/payload/unit-payload.dto.ts[m
+[1m+++ b/src/core/dtos/payload/unit-payload.dto.ts[m
+[36m@@ -1,5 +1,5 @@[m
+ import { ApiProperty } from '@nestjs/swagger';[m
+[31m-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';[m
+[32m+[m[32mimport { IsEmail, IsNotEmpty, IsOptional, IsString, IsNumber, IsUUID } from 'class-validator';[m
+ import { I18nContext } from 'nestjs-i18n';[m
+ import { getSwaggerText } from "../../../utils/swagger-i18n.loader";[m
+ [m
+[36m@@ -23,17 +23,19 @@[m [mexport class CreateUnitDto {[m
+   type: string;[m
+ [m
+   @ApiProperty({ example: t('COEFFICIENT_EXAM'), description: t('COEFFICIENT_DESC') })[m
+[31m-  @IsString()[m
+[32m+[m[32m  @IsNumber()[m
+   @IsOptional()[m
+[31m-  coefficient: string;[m
+[32m+[m[32m  coefficient?: number;[m
+ [m
+   @ApiProperty({ example: t('FLOOR_EXAM'), description: t('FLOOR_DESC'), required: true })[m
+[32m+[m[32m  @IsNumber()[m
+   @IsNotEmpty()[m
+[31m-  floor: string;[m
+[32m+[m[32m  floor: number;[m
+ [m
+   @ApiProperty({ example: t("AREA_EXAM"), description: t('AREA_DESC'), required: false })[m
+[32m+[m[32m  @IsNumber()[m
+   @IsOptional()[m
+[31m-  area?: string;[m
+[32m+[m[32m  area?: number;[m
+ [m
+   @ApiProperty({ example: t('TAX_RESPONSABLE_EXAM'), description: t('TAX_RESPONSABLE_DESC'), required: false })[m
+   @IsOptional()[m
+[36m@@ -46,4 +48,5 @@[m [mexport class CreateUnitDto {[m
+   @ApiProperty({ example: t('TAX_RESPONSABLE_DOC_EXAM'), description: t('TAX_RESPONSABLE_DOC_DESC'), required: false })[m
+   @IsOptional()[m
+   tax_responsible_document?: string;[m
+[32m+[m[41m  [m
+ }[m
+\ No newline at end of file[m
+[1mdiff --git a/src/core/dtos/payload/unit_assignment-payload.dto.ts b/src/core/dtos/payload/unit_assignment-payload.dto.ts[m
+[1mindex 0e681a7..88e4b76 100644[m
+[1m--- a/src/core/dtos/payload/unit_assignment-payload.dto.ts[m
+[1m+++ b/src/core/dtos/payload/unit_assignment-payload.dto.ts[m
+[36m@@ -1,5 +1,5 @@[m
+ import { ApiProperty } from '@nestjs/swagger';[m
+[31m-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';[m
+[32m+[m[32mimport { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';[m
+ import { I18nContext } from 'nestjs-i18n';[m
+ import { getSwaggerText } from "../../../utils/swagger-i18n.loader";[m
+ [m
+[36m@@ -8,9 +8,24 @@[m [mconst t = (key: string) => getSwaggerText('unit_assignments', key, lang);[m
+ [m
+ export class CreateAssingmentUnitDto {[m
+   [m
+[31m-  @ApiProperty({ example: [t("ID_EXAMPLE")], description: t('UNITS_DESC') })[m
+[31m-  @IsString()[m
+[31m-  @IsNotEmpty({ message: t('UNITS_REQ') })[m
+[31m-  units: string[];[m
+[32m+[m[32m  @ApiProperty({ example: "550e8400-e29b-41d4-a716-446655440000", description: t('UNIT_ID_DESC') })[m
+[32m+[m[32m  @IsUUID()[m
+[32m+

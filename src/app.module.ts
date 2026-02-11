@@ -33,9 +33,9 @@ import * as path from "path";
       type: "postgres",
       host: "localhost",
       port: 5432,
-      username: "victormanuelgarcia",
-      password: "",
-      database: "conectando_ph",
+      username: "postgres",
+      password: "1475369",
+      database: "connect_ph",
       entities: [__dirname + "/**/*.entity{.ts,.js}"],
       synchronize: true, //Solo para desarrollo
     }),

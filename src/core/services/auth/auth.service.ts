@@ -160,15 +160,17 @@ export class AuthService {
       where: { users_id: user.id, is_active: true },
       relations: ['role']
     });
-
+    // Extraer solo los nombres de los roles
     const roles = userRoles.map(ur => ur.role.name);
-    
-    // Obtener el scope del primer rol activo
-    const scope = userRoles.length > 0 && userRoles[0].role.scopes 
-      ? userRoles[0].role.scopes 
-      : "read_only"; // Scope por defecto si no tiene roles
+    // Extraer scopes de los roles (evitando duplicados)
+    const scopes = userRoles
+    .flatMap(ur => ur.role.scopes || []);
+    // Si no hay scopes asignados, asignar "read_only" por defecto
+    const uniqueScopes = scopes.length > 0 
+      ? [...new Set(scopes)] 
+      : ["read_only"];
 
-    // 5. Obtener asignaciones de unidades y PH
+    // Obtener asignaciones de unidades y PH
     let ownership: any = null;
     if (userRoles.length > 0) {
       const unitAssignment = await this.unitAssignmentRepository.findOne({
@@ -208,7 +210,7 @@ export class AuthService {
         roles: roles
       },
       ownership: ownership,
-      scope: scope
+      scope: uniqueScopes
     };
   }
 }
