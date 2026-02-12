@@ -24,8 +24,7 @@ export class UsersService {
 // Crear un nuevo usuario
   async create(createUserDto: CreateUserDto): Promise<any> {
     
-    const { email } = createUserDto;
-    const password: string = "12345678";
+    const { email, password } = createUserDto;
 
     // 1. Verificar si el usuario ya existe
     const existingUser = await this.userRepository.findOne({
