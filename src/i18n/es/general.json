@@ -12,7 +12,7 @@
   "CONFLICTO": "Conflict",
   "BAD_REQUEST": "Bad Request",
   "TOKEN_EXPIRED": "El token de autorización ha expirado o es inválido",
-  "INVALID_CREDENTIALS": "Credenciales invalidas", 
+  "INVALID_CREDENTIALS": "Credenciles inválidas. Verifica tu email y contraseña.", 
   "HEADERS_INITIAL_REQUIRED": "Cabeceras de client-id y client-secret son requeridas.",
   "TOTAL": "Total de ítems encontrados",
   "PER_PAGE": "Ítems por página",
