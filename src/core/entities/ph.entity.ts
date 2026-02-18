@@ -1,18 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
-import { Role } from './role.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { Unit } from './unit.entity';
 import { Assembly } from './assemblies.entity';
+import { User } from './user.entity';
 
 @Entity('phs')
 export class Ph {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-
-  @Column({ type: 'uuid', nullable: true })
-  created_by?: string;
-
-  @Column({ type: 'uuid', nullable: true })
-  updated_by?: string;
 
   @Column({ length: 150 })
   name: string;
@@ -64,6 +58,20 @@ export class Ph {
 
   @Column({ default: true })
   is_active: boolean;
+
+  @Column({ type: 'uuid', nullable: true })
+  created_by?: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'created_by' })
+  createdByUser?: User;
+
+  @Column({ type: 'uuid', nullable: true })
+  updated_by?: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'updated_by' })
+  updatedByUser?: User;
 
   @CreateDateColumn()
   created_at?: Date;

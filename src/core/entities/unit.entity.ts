@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { Ph } from './ph.entity';
 import { UnitAssignment } from './unit_assignment.entity';
+import { User } from './user.entity';
 
 @Entity('units')
 export class Unit {
@@ -46,6 +47,20 @@ export class Unit {
 
   @Column({ default: true })
   is_active: boolean;
+
+  @Column({ type: 'uuid', nullable: true })
+  created_by?: string;
+  
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'created_by' })
+  createdByUser?: User;
+  
+  @Column({ type: 'uuid', nullable: true })
+  updated_by?: string;
+  
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'updated_by' })
+  updatedByUser?: User;
 
   @CreateDateColumn()
   created_at?: Date;

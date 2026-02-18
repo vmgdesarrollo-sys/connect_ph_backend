@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { Agenda } from './agenda.entity';
 import { QuestionOption } from './questions_options.entity';
 import { Vote } from './votes.entity';
+import { User } from './user.entity';
 
 @Entity('voting_questions')
 export class VotingQuestion {
@@ -50,6 +51,20 @@ export class VotingQuestion {
 
   @Column({ default: false })
   is_active: boolean;
+  
+  @Column({ type: 'uuid', nullable: true })
+  created_by?: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'created_by' })
+  createdByUser?: User;
+
+  @Column({ type: 'uuid', nullable: true })
+  updated_by?: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'updated_by' })
+  updatedByUser?: User;
 
   @CreateDateColumn()
   created_at: Date;
