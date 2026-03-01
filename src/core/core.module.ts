@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 
@@ -53,6 +53,11 @@ import { VotingQuestionsService } from './services/voting_questions.service';
 import { AuthController } from './controllers/auth.controller';
 import { AuthService } from './services/auth/auth.service';
 
+// Utils para tracking automático de usuarios
+import { RequestContextService } from './utils/request-context.service';
+import { RequestContextMiddleware } from './utils/request-context.middleware';
+import { UserTrackingSubscriber } from './utils/user-tracking.subscriber';
+
 @Module({
   imports:[
     JwtModule.register({
@@ -96,6 +101,8 @@ import { AuthService } from './services/auth/auth.service';
 
   ],
   providers: [  
+    UserTrackingSubscriber,
+    RequestContextService,
     AuthService,
     PhsService, 
     UsersService, 
@@ -112,5 +119,20 @@ import { AuthService } from './services/auth/auth.service';
     VotesService,
     VotingQuestionsService,
   ],
+
+  exports: [
+    RequestContextService, // Permite que otros módulos usen el contexto
+    UserTrackingSubscriber, // Asegura que la instancia viva con el ciclo de vida del Core
+  ]
 })
-export class CoreModule {}
+
+// El módulo Core se encarga de configurar el middleware de contexto de petición para el tracking automático de usuarios,
+// y también de proporcionar el servicio de contexto y el subscriber necesario para que funcione correctamente.
+export class CoreModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(RequestContextMiddleware)
+      .exclude('auth/(.*)') // Excluye login/registro si no necesitan tracking
+      .forRoutes('*');      // Aplica a todo lo demás automáticamente
+  }
+}

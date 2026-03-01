@@ -28,6 +28,21 @@ export class UserRol {
   @Column({ default: true })
   is_active: boolean;
 
+  
+  @Column({ type: 'uuid', nullable: true })
+  created_by?: string;
+  
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'created_by' })
+  createdByUser?: User;
+  
+  @Column({ type: 'uuid', nullable: true })
+  updated_by?: string;
+  
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'updated_by' })
+  updatedByUser?: User;
+
   @CreateDateColumn()
   created_at: Date;
   

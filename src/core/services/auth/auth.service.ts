@@ -82,7 +82,6 @@ export class AuthService {
       const payload = await this.jwtService.verifyAsync(token);
 
       // Validar credenciales según el proveedor
-      console.log(`Validando para el proveedor: ${payload.provider}`);
 
       if (payload.provider === "accessEmail") {
         const { email, password } = fields;
@@ -115,7 +114,7 @@ export class AuthService {
           },
         };
       }
-
+1
       throw new UnauthorizedException(
         this.i18n.t('general.INVALID_CREDENTIALS', {lang, args: {},})
       );
