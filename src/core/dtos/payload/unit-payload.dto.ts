@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, IsNumber, IsUUID } from 'class-validator';
 import { I18nContext } from 'nestjs-i18n';
 import { getSwaggerText } from "../../../utils/swagger-i18n.loader";
 
@@ -23,17 +23,19 @@ export class CreateUnitDto {
   type: string;
 
   @ApiProperty({ example: t('COEFFICIENT_EXAM'), description: t('COEFFICIENT_DESC') })
-  @IsString()
+  @IsNumber()
   @IsOptional()
-  coefficient: string;
+  coefficient?: number;
 
   @ApiProperty({ example: t('FLOOR_EXAM'), description: t('FLOOR_DESC'), required: true })
+  @IsNumber()
   @IsNotEmpty()
-  floor: string;
+  floor: number;
 
   @ApiProperty({ example: t("AREA_EXAM"), description: t('AREA_DESC'), required: false })
+  @IsNumber()
   @IsOptional()
-  area?: string;
+  area?: number;
 
   @ApiProperty({ example: t('TAX_RESPONSABLE_EXAM'), description: t('TAX_RESPONSABLE_DESC'), required: false })
   @IsOptional()
@@ -46,4 +48,5 @@ export class CreateUnitDto {
   @ApiProperty({ example: t('TAX_RESPONSABLE_DOC_EXAM'), description: t('TAX_RESPONSABLE_DOC_DESC'), required: false })
   @IsOptional()
   tax_responsible_document?: string;
+  
 }

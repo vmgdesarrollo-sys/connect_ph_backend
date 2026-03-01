@@ -1,79 +1,59 @@
-import { Injectable, NotFoundException, Inject } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from "typeorm";
 import { AssemblyAnnouncement } from "../entities/assembly_announcements.entity";
 import { CreateAnnouncementDto } from "../dtos/payload/assembly_announcements-payload.dto";
-import { getRepositoryToken } from "@nestjs/typeorm";
 import { I18nContext, I18nService } from "nestjs-i18n";
 
 const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
-
+// Servicio para gestionar los anuncios de asambleas
 @Injectable()
 export class AssemblyAnnouncementsService {
   constructor(
     private readonly i18n: I18nService,
-    @Inject(getRepositoryToken(AssemblyAnnouncement))
+    @InjectRepository(AssemblyAnnouncement)
     private readonly announcementRepository: Repository<AssemblyAnnouncement>,
   ) {}
-
+// Crear un nuevo anuncio de asamblea
   async create(dto: CreateAnnouncementDto): Promise<any> {
-    // MOCK para desarrollo rápido
+    const newAnnouncement = this.announcementRepository.create(dto);
+    const savedAnnouncement = await this.announcementRepository.save(newAnnouncement);
+    
     return {
       status: this.i18n.t("general.SUCCESS", { lang }),
       message: this.i18n.t("assembly_announcements.CREAR_RES", { lang }),
-      data: {
-        id: "550e8400-e29b-41d4-a716-446655440000",
-        ...dto,
-        created_at: new Date().toISOString(),
-      },
+      data: savedAnnouncement,
     };
-
-    /* Lógica Real:
-    const newAnnouncement = this.announcementRepository.create(dto);
-    return await this.announcementRepository.save(newAnnouncement);
-    */
   }
-
+// Listar todos los anuncios de asambleas
   async findAll(_where?: string): Promise<any[]> {
-    // Simulación de listado filtrado por asamblea
-    return [
-      {
-        id: "550e8400-e29b-41d4-a716-446655440000",
-        assemblies_id: "uuid-asamblea-123",
-        title: "Inicio de Registro",
-        message: "El registro de participantes ha comenzado.",
-        type: "Informativo",
-        is_sticky: true,
-        created_at: new Date().toISOString(),
-      },
-      {
-        id: "661f9511-f30c-52e5-b827-557766551111",
-        assemblies_id: "uuid-asamblea-123",
-        title: "Urgente: Fallo de conexión",
-        message: "Estamos experimentando problemas técnicos con el audio.",
-        type: "Urgente",
-        is_sticky: false,
-        created_at: new Date().toISOString(),
-      }
-    ];
+    const announcements = await this.announcementRepository.find({
+      order: { created_at: 'DESC' },
+    });
+    return announcements;
   }
-
+// Actualizar un anuncio de asamblea por ID
   async update(id: string, dto: CreateAnnouncementDto): Promise<any> {
+    const announcement = await this.announcementRepository.findOne({ where: { id } });
+    
+    if (!announcement) {
+      throw new NotFoundException(
+        this.i18n.t("assembly_announcements.NO_EXISTE", { lang, args: { id } }),
+      );
+    }
+
+    Object.assign(announcement, dto);
+    const updatedAnnouncement = await this.announcementRepository.save(announcement);
+    
     return {
       status: this.i18n.t("general.SUCCESS", { lang }),
       message: this.i18n.t("assembly_announcements.ACTUALIZADA_RES", { lang }),
-      data: { id, ...dto },
+      data: updatedAnnouncement,
     };
   }
-
+// Obtener detalle de un anuncio de asamblea por ID 
   async findOne(id: string): Promise<any> {
-    const announcement = {
-      id,
-      assemblies_id: "uuid-asamblea-123",
-      title: "Anuncio de prueba",
-      message: "Contenido del mensaje de prueba",
-      type: "Informativo",
-      is_sticky: false,
-    };
+    const announcement = await this.announcementRepository.findOne({ where: { id } });
 
     if (!announcement) {
       throw new NotFoundException(
@@ -87,8 +67,18 @@ export class AssemblyAnnouncementsService {
       data: announcement,
     };
   }
-
+// Obtener detalle de un anuncio de asamblea por ID
   async delete(id: string): Promise<any> {
+    const announcement = await this.announcementRepository.findOne({ where: { id } });
+    
+    if (!announcement) {
+      throw new NotFoundException(
+        this.i18n.t("assembly_announcements.NO_EXISTE", { lang, args: { id } }),
+      );
+    }
+
+    await this.announcementRepository.remove(announcement);
+    
     return {
       status: this.i18n.t("general.SUCCESS", { lang }),
       message: this.i18n.t("assembly_announcements.ELIMINADA_RES", { lang, args: { id } }),

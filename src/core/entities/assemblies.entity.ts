@@ -1,12 +1,30 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
+import { Agenda } from './agenda.entity';
+import { AssemblyAnnouncement } from './assembly_announcements.entity';
+import { Ph } from './ph.entity';
+import { AssemblyAttendance } from './assembly_attendances.entity';
+import { User } from './user.entity';
 
 @Entity('assemblies')
 export class Assembly {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @OneToMany(() => Agenda, (agenda) => agenda.assembly)
+  agendaItems: Agenda[];
+
+  @OneToMany(() => AssemblyAnnouncement, (announcement) => announcement.assembly)
+  announcements: AssemblyAnnouncement[];
+
+  @OneToMany(() => AssemblyAttendance, (attendance) => attendance.assembly)
+  attendances: AssemblyAttendance[];
+
   @Column({ type: 'uuid' })
   phs_id: string;
+
+  @ManyToOne(() => Ph, (ph) => ph.assemblies)
+  @JoinColumn({ name: 'phs_id' })
+  ph: Ph;
 
   @Column({ length: 255 })
   name: string;
@@ -37,6 +55,20 @@ export class Assembly {
 
   @Column({ default: true })
   is_active: boolean;
+
+  @Column({ type: 'uuid', nullable: true })
+  created_by?: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'created_by' })
+  createdByUser?: User;
+
+  @Column({ type: 'uuid', nullable: true })
+  updated_by?: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'updated_by' })
+  updatedByUser?: User;
 
   @CreateDateColumn()
   created_at: Date;

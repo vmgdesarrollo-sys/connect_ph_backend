@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 
@@ -50,20 +50,13 @@ import { QuestionsOptionsService } from './services/questions_options.service';
 import { VotesService } from './services/votes.service';
 import { VotingQuestionsService } from './services/voting_questions.service';
 
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { AuthController } from './controllers/auth.controller';
 import { AuthService } from './services/auth/auth.service';
 
-/**
- * Borrarme porque soy simulacion
- */
-const mockRepository = {
-  find: () => [],
-  findOne: () => ({}),
-  create: (dto) => dto,
-  save: (dto) => ({ id: 'uuid-generado', ...dto }),
-};
-/** FIN simulacion */
+// Utils para tracking automático de usuarios
+import { RequestContextService } from './utils/request-context.service';
+import { RequestContextMiddleware } from './utils/request-context.middleware';
+import { UserTrackingSubscriber } from './utils/user-tracking.subscriber';
 
 @Module({
   imports:[
@@ -72,25 +65,23 @@ const mockRepository = {
       secret: process.env.JWT_SECRET || 'CLAVE_SECRETA_PROVISIONAL',
       signOptions: { expiresIn: '1h' },
     }),
+    TypeOrmModule.forFeature([
+      User, 
+      Role, 
+      Ph,
+      UserRol,
+      Unit,
+      UnitAssignment,
+      Agenda,
+      Assembly,
+      AssemblyAnnouncement,
+      AssemblyAttendance,
+      QaEntry,
+      QuestionOption,
+      VotingQuestion,
+      Vote,
+    ]), 
   ],
-  //imports: [
-  //  TypeOrmModule.forFeature([
-  //    User, 
-  //    Role, 
-  //    Ph
-  //    UserRol,
-  //    Unit,
-  //    UnitAssignment,
-  //    Agenda,
-  //    Assembly,
-  //    AssemblyAnnouncement,
-  //    AssemblyAttendance,
-  //    QaEntry,
-  //    QuestionOption,
-  //    VotingQuestion,
-  //    Vote,
-  //  ]), 
-  //],
   controllers: [
     AuthController,
     PhsController, 
@@ -110,6 +101,8 @@ const mockRepository = {
 
   ],
   providers: [  
+    UserTrackingSubscriber,
+    RequestContextService,
     AuthService,
     PhsService, 
     UsersService, 
@@ -125,28 +118,21 @@ const mockRepository = {
     QuestionsOptionsService,
     VotesService,
     VotingQuestionsService,
-
-
-    // Proveedores falsos para que no pida DataSource
-    { provide: getRepositoryToken(User), useValue: mockRepository },
-    { provide: getRepositoryToken(Role), useValue: mockRepository },
-    { provide: getRepositoryToken(Ph), useValue: mockRepository },
-    { provide: getRepositoryToken(UserRol), useValue: mockRepository },
-    { provide: getRepositoryToken(Unit), useValue: mockRepository },
-    { provide: getRepositoryToken(UnitAssignment), useValue: mockRepository },
-    { provide: getRepositoryToken(Agenda), useValue: mockRepository },
-    { provide: getRepositoryToken(Assembly), useValue: mockRepository },
-    { provide: getRepositoryToken(AssemblyAnnouncement), useValue: mockRepository },
-    { provide: getRepositoryToken(AssemblyAttendance), useValue: mockRepository },
-    { provide: getRepositoryToken(QaEntry), useValue: mockRepository },
-    { provide: getRepositoryToken(QuestionOption), useValue: mockRepository },
-    { provide: getRepositoryToken(VotingQuestion), useValue: mockRepository },
-    { provide: getRepositoryToken(Vote), useValue: mockRepository },
   ],
-  //exports: [
-    //UsersService, 
-    //PhsService, 
-    //TypeOrmModule
-  //],
+
+  exports: [
+    RequestContextService, // Permite que otros módulos usen el contexto
+    UserTrackingSubscriber, // Asegura que la instancia viva con el ciclo de vida del Core
+  ]
 })
-export class CoreModule {}
+
+// El módulo Core se encarga de configurar el middleware de contexto de petición para el tracking automático de usuarios,
+// y también de proporcionar el servicio de contexto y el subscriber necesario para que funcione correctamente.
+export class CoreModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(RequestContextMiddleware)
+      .exclude('auth/(.*)') // Excluye login/registro si no necesitan tracking
+      .forRoutes('*');      // Aplica a todo lo demás automáticamente
+  }
+}

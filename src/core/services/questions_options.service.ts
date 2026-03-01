@@ -1,38 +1,71 @@
-import { Injectable, Inject } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from "typeorm";
 import { QuestionOption } from "../entities/questions_options.entity";
 import { CreateQuestionOptionDto } from "../dtos/payload/questions_options-payload.dto";
-import { getRepositoryToken } from "@nestjs/typeorm";
 import { I18nService } from "nestjs-i18n";
 
+// Servicio para gestionar las opciones de preguntas en una votación
 @Injectable()
 export class QuestionsOptionsService {
   constructor(
     private readonly i18n: I18nService,
-    @Inject(getRepositoryToken(QuestionOption))
+    @InjectRepository(QuestionOption)
     private readonly repository: Repository<QuestionOption>,
   ) {}
 
+  // Crear una nueva opción de pregunta
   async create(dto: CreateQuestionOptionDto): Promise<any> {
+    const newOption = this.repository.create(dto);
+    const savedOption = await this.repository.save(newOption);
+    
     return {
       status: "success",
       message: this.i18n.t("questions_options.CREAR_RES"),
-      data: { id: "uuid-opt-123", ...dto },
+      data: savedOption,
     };
   }
 
+  // Listar todas las opciones de preguntas activas
   async findAll(_where?: string): Promise<any[]> {
-    return [
-      { id: "uuid-opt-123", question_id: "uuid-q-1", option_text: "A favor", order_index: 1, is_active: true },
-      { id: "uuid-opt-124", question_id: "uuid-q-1", option_text: "En contra", order_index: 2, is_active: true }
-    ];
+    const options = await this.repository.find({
+      where: { is_active: true },
+      order: { order_index: 'ASC' },
+    });
+    return options;
   }
 
+  // Actualizar una opción de pregunta por ID
   async update(id: string, dto: CreateQuestionOptionDto): Promise<any> {
-    return { status: "success", message: this.i18n.t("questions_options.ACTUALIZADA_RES"), data: { id, ...dto } };
-  }
+    const option = await this.repository.findOne({ where: { id, is_active: true } });
+    
+    if (!option) {
+      throw new NotFoundException(this.i18n.t("questions_options.NO_ENCONTRADA"));
+    }
 
+    Object.assign(option, dto);
+    const updatedOption = await this.repository.save(option);
+    
+    return { 
+      status: "success", 
+      message: this.i18n.t("questions_options.ACTUALIZADA_RES"), 
+      data: updatedOption 
+    };
+  }
+// Eliminar una opción de pregunta por ID (soft delete)
   async delete(id: string): Promise<any> {
-    return { status: "success", message: this.i18n.t("questions_options.ELIMINADA_RES") };
+    const option = await this.repository.findOne({ where: { id, is_active: true } });
+    
+    if (!option) {
+      throw new NotFoundException(this.i18n.t("questions_options.NO_ENCONTRADA"));
+    }
+
+    option.is_active = false;
+    await this.repository.save(option);
+    
+    return { 
+      status: "success", 
+      message: this.i18n.t("questions_options.ELIMINADA_RES") 
+    };
   }
 }

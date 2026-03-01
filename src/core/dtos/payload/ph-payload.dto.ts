@@ -7,6 +7,7 @@ import {
   IsString,
   IsUrl,
   IsUUID,
+  IsNumber,
 } from "class-validator";
 
 import { I18nContext } from "nestjs-i18n";
@@ -115,16 +116,18 @@ export class CreatePhDto {
     description: t("DESP_NUMBER_OF_TOWERS"),
     required: false,
   })
-  @IsString()
-  number_of_towers?: string;
+  @IsNumber()
+  @IsOptional()
+  number_of_towers?: number;
 
   @ApiProperty({
     example: t("EXAMPLE_AMOUNT_OF_REAL_ESTATE"),
     description: t("DESP_AMOUNT_OF_REAL_ESTATE"),
     required: false,
   })
-  @IsString()
-  amount_of_real_estate?: string;
+  @IsNumber()
+  @IsOptional()
+  amount_of_real_estate?: number;
 
   @ApiProperty({
     example: t("EXAMPLE_HORIZONTAL_PROPERTY_REGULATIONS"),
@@ -143,14 +146,4 @@ export class CreatePhDto {
   @IsBoolean()
   @IsOptional()
   is_active?: boolean;
-
-  @ApiProperty({
-    example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
-    description: t("DESP_PH_CREATED_BY"),
-  })
-  @IsUUID("4", {
-    message: t("VALID_PH_CREATED_BY"),
-  })
-  @IsNotEmpty()
-  created_by: string;
 }

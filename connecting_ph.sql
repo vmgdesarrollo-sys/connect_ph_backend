@@ -1,5 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS "connecting-ph";
-
+---Prueba---
 --- 1. TABLAS MAESTRAS (Nivel 1) ---
 
 CREATE TABLE roles (
@@ -8,6 +8,8 @@ CREATE TABLE roles (
     description TEXT,
     scopes TEXT,
     is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES users(id),
+    updated_by UUID REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -22,6 +24,15 @@ CREATE TABLE phs (
     logo_url VARCHAR(255),
     legal_representative VARCHAR(150),
     is_active BOOLEAN DEFAULT true,
+    city VARCHAR(100),
+    state VARCHAR(100),
+    country VARCHAR(100),
+    stratum VARCHAR(50),
+    number_of_towers INTEGER,
+    amount_of_real_state INTEGER,
+    horizontal_property_regulations TEXT,
+    created_by UUID REFERENCES users(id),
+    updated_by UUID REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -38,9 +49,26 @@ CREATE TABLE users (
     avatar_url VARCHAR(255),
     last_login TIMESTAMP,
     is_active BOOLEAN DEFAULT true,
+    person_type VARCHAR(20),
+    gender VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+    CREATE TABLE agenda (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    assembly_id UUID REFERENCES assemblies(id) ON DELETE CASCADE,
+    sort_order INTEGER,
+    title VARCHAR(200) NOT NULL,
+    description TEXT,
+    is_votable BOOLEAN DEFAULT false,
+    required_quorum DECIMAL(5,2),
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES users(id),
+    updated_by UUID REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
 
 --- 2. TABLAS DE RELACIÓN DE USUARIOS Y UNIDADES ---
 
@@ -49,7 +77,10 @@ CREATE TABLE user_roles (
     users_id UUID REFERENCES users(id) ON DELETE CASCADE,
     roles_id UUID REFERENCES roles(id),
     is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_by UUID REFERENCES users(id),
+    updated_by UUID REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE units (
@@ -62,7 +93,13 @@ CREATE TABLE units (
     floor INTEGER,
     area DECIMAL(10,2),
     is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    tax_responsible VARCHAR(150),
+    rf_document_type VARCHAR(20),
+    rf_document_number VARCHAR(50),
+    created_by UUID REFERENCES users(id),
+    updated_by UUID REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE unit_assignments (
@@ -72,7 +109,10 @@ CREATE TABLE unit_assignments (
     is_main_resident BOOLEAN DEFAULT false,
     can_vote BOOLEAN DEFAULT false,
     is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_by UUID REFERENCES users(id),
+    updated_by UUID REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 --- 3. GESTIÓN DE ARCHIVOS ---
@@ -80,6 +120,8 @@ CREATE TABLE unit_assignments (
 CREATE TABLE files (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     phs_id UUID REFERENCES phs(id),
+    created_by UUID REFERENCES users(id),
+    updated_by UUID REFERENCES users(id),
     original_name VARCHAR(255),
     storage_path VARCHAR(500) NOT NULL,
     mimetype VARCHAR(100),
@@ -88,7 +130,8 @@ CREATE TABLE files (
     checksum VARCHAR(255),
     is_public BOOLEAN DEFAULT false,
     is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 --- 4. MÓDULO DE ASAMBLEAS (Votaciones y Q&A) ---
@@ -106,7 +149,9 @@ CREATE TABLE assemblies (
     livekit_room_name VARCHAR(100),
     quorum_requirement DECIMAL(5,2),
     is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_by UUID REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE assembly_attendances (
@@ -118,18 +163,26 @@ CREATE TABLE assembly_attendances (
     is_present BOOLEAN DEFAULT true,
     proxy_file_id UUID REFERENCES files(id),
     notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE voting_questions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    assemblies_id UUID REFERENCES assemblies(id),
+    agenda_id UUID REFERENCES agenda(id) ON DELETE CASCADE,
     question_text TEXT NOT NULL,
+    description TEXT,
     type VARCHAR(30),
     status VARCHAR(20),
+    result_type VARCHAR(20),
+    min_selections INTEGER,
+    max_selections INTEGER,
     opened_at TIMESTAMP,
     closed_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    is_active BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES users(id),   
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE questions_options (
@@ -138,7 +191,8 @@ CREATE TABLE questions_options (
     option_text VARCHAR(255) NOT NULL,
     order_index INTEGER,
     is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE votes (
@@ -148,6 +202,7 @@ CREATE TABLE votes (
     assembly_attendances_id UUID REFERENCES assembly_attendances(id),
     coefficient_at_voting DECIMAL(10,6),
     ip_address VARCHAR(45),
+    user_agent TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -158,16 +213,26 @@ CREATE TABLE guard_assignments (
     user_roles_id UUID REFERENCES user_roles(id),
     phs_id UUID REFERENCES phs(id),
     station_name VARCHAR(50),
+    shift_start TIME,
+    shift_end TIME,
     is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
 );
 
 CREATE TABLE visitor_access_permits (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     unit_assignments_id UUID REFERENCES unit_assignments(id),
     visitor_name VARCHAR(150),
+    visitor_id_number VARCHAR(50),
+    visitor_type VARCHAR(30),
     qr_code_token VARCHAR(255),
+    starts_at TIMESTAMP,
+    expires_at TIMESTAMP,
+    observations TEXT,
     status VARCHAR(20),
+    is_active BOOLEAN DEFAULT false,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -176,9 +241,14 @@ CREATE TABLE access_logs (
     unit_assignments_id UUID REFERENCES unit_assignments(id),
     visitor_access_permits_id UUID REFERENCES visitor_access_permits(id),
     visitor_name VARCHAR(150),
+    visitor_id_number VARCHAR(50),
     entry_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     exit_at TIMESTAMP,
-    registered_by UUID REFERENCES users(id)
+    vehicle_plate VARCHAR(20),
+    entry_observation TEXT,
+    exit_observation TEXT,
+    registered_by UUID REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE packages (
@@ -186,8 +256,13 @@ CREATE TABLE packages (
     unit_assignments_id UUID REFERENCES unit_assignments(id),
     courier_name VARCHAR(100),
     description TEXT,
+    tracking_number VARCHAR(100),
+    package_type VARCHAR(30),
     status VARCHAR(20),
-    received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    received_by UUID REFERENCES users(id),
+    delivered_to_name VARCHAR(150),
+    received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    delivered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE guard_shift_reports (
@@ -196,7 +271,9 @@ CREATE TABLE guard_shift_reports (
     unit_assignments_id UUID REFERENCES unit_assignments(id),
     title VARCHAR(150),
     description TEXT,
+    category VARCHAR(20),
     severity VARCHAR(20),
+    location_detail VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -204,6 +281,8 @@ CREATE TABLE incident_photos (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     guard_shift_reports_id UUID REFERENCES guard_shift_reports(id),
     files_id UUID REFERENCES files(id),
+    caption VARCHAR(255),
+    is_evidence BOOLEAN DEFAULT false,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -213,12 +292,11 @@ CREATE TABLE common_areas (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     phs_id UUID REFERENCES phs(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL, -- Ej: 'Salón Social', 'Parqueadero V01'
-    type VARCHAR(50), -- Ej: 'PARKING', 'LOCKER', 'SOCIAL_ROOM', 'STORAGE'
     location_details TEXT,
-    is_available BOOLEAN DEFAULT true,
     is_active BOOLEAN DEFAULT true,
     created_by UUID REFERENCES users(id),
     updated_by UUID REFERENCES users(id),
+    regulation TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -320,6 +398,7 @@ CREATE TABLE pqrs (
     subject VARCHAR(200) NOT NULL,
     description TEXT NOT NULL,
     status VARCHAR(30) DEFAULT 'OPEN', -- Ej: 'OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'
+    files_id UUID REFERENCES files(id),
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

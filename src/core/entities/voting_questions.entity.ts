@@ -1,4 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Agenda } from './agenda.entity';
+import { QuestionOption } from './questions_options.entity';
+import { Vote } from './votes.entity';
+import { User } from './user.entity';
 
 @Entity('voting_questions')
 export class VotingQuestion {
@@ -7,6 +11,16 @@ export class VotingQuestion {
 
   @Column({ type: 'uuid' })
   agenda_id: string;
+
+  @ManyToOne(() => Agenda, (agenda) => agenda.votingQuestions, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'agenda_id' })
+  agenda: Agenda;
+
+  @OneToMany(() => QuestionOption, (option) => option.votingQuestion)
+  options: QuestionOption[];
+
+  @OneToMany(() => Vote, (vote) => vote.votingQuestion)
+  votes: Vote[];
 
   @Column({ type: 'text' })
   question_text: string;
@@ -35,8 +49,22 @@ export class VotingQuestion {
   @Column({ type: 'timestamp', nullable: true })
   closed_at: Date;
 
-  @Column({ default: true })
+  @Column({ default: false })
   is_active: boolean;
+  
+  @Column({ type: 'uuid', nullable: true })
+  created_by?: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'created_by' })
+  createdByUser?: User;
+
+  @Column({ type: 'uuid', nullable: true })
+  updated_by?: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'updated_by' })
+  updatedByUser?: User;
 
   @CreateDateColumn()
   created_at: Date;

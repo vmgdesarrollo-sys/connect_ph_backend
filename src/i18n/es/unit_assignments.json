@@ -14,6 +14,8 @@
   "MSG_CREATE": "Unidad asignada exitosamente.",
   "MSG_GET": "Detalle de unidades asociados al usuario obtenido correctamente.",
   "MSG_ERROR_DATA": "Los datos informados son incorrectos o la unidad ya existe.",
+  "ALREADY_ASSIGNED": "Esta unidad ya está asignada a este usuario.",
+  "NOT_FOUND": "No se encontraron asignaciones de unidades para este usuario.",
   "LIST_DESC": "LIsta de de unidades usuario.",
   "PARAM_USERID": "Id de usuario rol creado en la aplicación."
 }
