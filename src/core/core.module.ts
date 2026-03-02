@@ -53,6 +53,10 @@ import { VotingQuestionsService } from './services/voting_questions.service';
 import { AuthController } from './controllers/auth.controller';
 import { AuthService } from './services/auth/auth.service';
 
+// LiveKit
+import { VideoController } from './controllers/livekit/video.controller';
+import { LiveKitService } from './services/livekit/livekit.service';
+
 // Utils para tracking automático de usuarios
 import { RequestContextService } from './utils/request-context.service';
 import { RequestContextMiddleware } from './utils/request-context.middleware';
@@ -84,6 +88,7 @@ import { UserTrackingSubscriber } from './utils/user-tracking.subscriber';
   ],
   controllers: [
     AuthController,
+    VideoController,
     PhsController, 
     UsersController, 
     RolesController,
@@ -118,6 +123,7 @@ import { UserTrackingSubscriber } from './utils/user-tracking.subscriber';
     QuestionsOptionsService,
     VotesService,
     VotingQuestionsService,
+    LiveKitService,
   ],
 
   exports: [
