@@ -30,12 +30,12 @@ import * as path from "path";
       envFilePath: ".env", // Busca el archivo en la raíz
     }),
     TypeOrmModule.forRoot({
-      type: "postgres",
-      host: "localhost",
-      port: 5432,
-      username: "postgres",
-      password: "1475369",
-      database: "connect_ph",
+      type: ((process.env.DB_TYPE || 'postgres') as 'mysql' | 'postgres' | 'mariadb' | 'sqlite'),
+      host: process?.env?.DB_HOST || "localhost",
+      port: parseInt(process?.env?.DB_PORT || '5432', 10),
+      username: process?.env?.DB_USER || "postgres",
+      password: process?.env?.DB_PASS || "1475369",
+      database: process?.env?.DB_DATABASE || "1475369",
       entities: [__dirname + "/**/*.entity{.ts,.js}"],
       synchronize: true, //Solo para desarrollo
     }),
