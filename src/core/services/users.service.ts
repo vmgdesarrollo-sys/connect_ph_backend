@@ -34,9 +34,12 @@ export class UsersService {
       throw new ConflictException("El correo electrónico ya está registrado");
     }
 
-    // 2. Cifrar la contraseña
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // 2. Cifrar la contraseña solo si se proporciona
+    let hashedPassword: string | undefined;
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      hashedPassword = await bcrypt.hash(password, salt);
+    }
 
     // 3. Crear instancia y guardar
     const newUser = this.userRepository.create({

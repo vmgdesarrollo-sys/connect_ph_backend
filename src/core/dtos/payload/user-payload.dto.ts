@@ -8,15 +8,15 @@ const t = (key: string) => getSwaggerText('users', key, lang);
 
 export class CreateUserDto {
   
-  @ApiProperty({ example: t('FIRST_NAME'), description: t('FIRST_NAME_DESC') })
+  @ApiProperty({ example: t('FIRST_NAME'), description: t('FIRST_NAME_DESC'), required: false })
   @IsString()
-  @IsNotEmpty({ message: t('FIRST_NAME_REQ') })
-  first_name: string;
+  @IsOptional()
+  first_name?: string;
 
-  @ApiProperty({ example: t('LAST_NAME'), description: t('LAST_NAME_DESC') })
+  @ApiProperty({ example: t('LAST_NAME'), description: t('LAST_NAME_DESC'), required: false })
   @IsString()
-  @IsNotEmpty({ message: t('LAST_NAME_REQ') })
-  last_name: string;
+  @IsOptional()
+  last_name?: string;
 
   @ApiProperty({ example: "Natural", description: t('TYPE_DESC') })
   @IsString()
@@ -32,16 +32,16 @@ export class CreateUserDto {
   @IsOptional()
   avatar_url: string;
 
-  @ApiProperty({ example: t('EMAIL'), description: t('EMAIL_DESC'), required: true })
+  @ApiProperty({ example: t('EMAIL'), description: t('EMAIL_DESC'), required: false })
   @IsEmail({}, { message: t('EMAIL_INVALID') })
-  @IsNotEmpty()
-  email: string;
+  @IsOptional()
+  email?: string;
 
-  @ApiProperty({ example: t('PASSWORD'), description: t('PASSWORD_DESC'), required: true })
+  @ApiProperty({ example: t('PASSWORD'), description: t('PASSWORD_DESC'), required: false })
   @IsString()
-  @IsNotEmpty({ message: t('PASSWORD_REQ') })
+  @IsOptional()
   @MinLength(8, { message: t('PASSWORD_MIN') })
-  password: string;
+  password?: string;
 
   @ApiProperty({ example: "CC", description: t('DOC_TYPE_DESC'), required: false })
   @IsOptional()
