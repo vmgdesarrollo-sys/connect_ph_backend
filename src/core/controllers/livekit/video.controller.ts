@@ -431,32 +431,34 @@ export class VideoController {
   ) {
     try {
       const event = await this.livekitService.processWebhook(body, authHeader);
+      const roomName = event.room?.name;
+      const identity = event.participant?.identity;
 
       // Manejar diferentes tipos de eventos
       switch (event.event) {
         case 'participant_joined':
           // Aquí puedes guardar en DB: assembly_attendances
-          console.log(`Participante joined: ${event.participant?.identity} en sala ${event.room?.name}`);
+          console.log(`Participante joined: ${identity} en sala ${roomName}`);
           break;
 
         case 'participant_left':
-          console.log(`Participante left: ${event.participant?.identity} de sala ${event.room?.name}`);
+          console.log(`Participante left: ${identity} de sala ${roomName}`);
           break;
 
         case 'room_started':
-          console.log(`Sala iniciada: ${event.room?.name}`);
+          console.log(`Sala iniciada: ${roomName}`);
           break;
 
         case 'room_ended':
-          console.log(`Sala finalizada: ${event.room?.name}`);
+          console.log(`Sala finalizada: ${roomName}`);
           break;
 
         case 'track_published':
-          console.log(`Track publicado por: ${event.participant?.identity}`);
+          console.log(`Track publicado por: ${identity}`);
           break;
 
         case 'track_unpublished':
-          console.log(`Track no publicado por: ${event.participant?.identity}`);
+          console.log(`Track no publicado por: ${identity}`);
           break;
 
         default:

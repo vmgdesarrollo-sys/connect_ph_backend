@@ -144,7 +144,7 @@ export class AuthService {
     }
 
     // Verificar la contraseña con bcrypt
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password); 
     if (!isPasswordValid) {
       throw new UnauthorizedException(
         this.i18n.t('general.INVALID_CREDENTIALS', {lang, args: {},})
