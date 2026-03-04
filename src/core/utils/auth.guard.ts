@@ -25,6 +25,10 @@ export class AuthGuard implements CanActivate {
       // 2. Verificación real contra el secreto de JWT
       const payload = await this.jwtService.verifyAsync(token);
       
+      if (payload?.token_type !== 'access') {
+        throw new UnauthorizedException('Acceso denegado: Token inválido para este servicio');
+      }
+
       // 3. Adjuntar el payload al request para que esté disponible en los controladores
       request.user = payload;
       

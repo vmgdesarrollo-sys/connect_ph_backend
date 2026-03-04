@@ -37,11 +37,11 @@ export class CreateUserDto {
   @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ example: t('PASSWORD'), description: t('PASSWORD_DESC'), required: true })
+  @ApiProperty({ example: t('PASSWORD'), description: t('PASSWORD_DESC'), required: false })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty({ message: t('PASSWORD_REQ') })
   @MinLength(8, { message: t('PASSWORD_MIN') })
-  password: string;
+  password?: string;
 
   @ApiProperty({ example: "CC", description: t('DOC_TYPE_DESC'), required: false })
   @IsOptional()

@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { UnitAssignment } from './unit_assignment.entity';
 
 @Entity('users')
 export class User {
@@ -14,8 +15,8 @@ export class User {
   @Column({ length: 150, unique: true })
   email: string;
 
-  @Column({ length: 255, select: false })
-  password: string;
+  @Column({ length: 255, select: false, nullable: true })
+  password?: string;
 
   @Column({ length: 20, nullable: true })
   document_type: string;
@@ -46,4 +47,7 @@ export class User {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  @OneToMany(() => UnitAssignment, (unitAssignment) => unitAssignment.user)
+  unitAssignments: UnitAssignment[];
 }

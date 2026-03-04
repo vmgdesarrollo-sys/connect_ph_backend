@@ -83,6 +83,17 @@ CREATE TABLE user_roles (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE user_roles_phs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    phs_id UUID REFERENCES phs(id) ON DELETE CASCADE,
+    user_roles_id UUID REFERENCES user_roles(id) ON DELETE CASCADE,
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES users(id),
+    updated_by UUID REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE units (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     phs_id UUID REFERENCES phs(id) ON DELETE CASCADE,
@@ -105,7 +116,7 @@ CREATE TABLE units (
 CREATE TABLE unit_assignments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     units_id UUID REFERENCES units(id) ON DELETE CASCADE,
-    user_roles_id UUID REFERENCES user_roles(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     is_main_resident BOOLEAN DEFAULT false,
     can_vote BOOLEAN DEFAULT false,
     is_active BOOLEAN DEFAULT true,
