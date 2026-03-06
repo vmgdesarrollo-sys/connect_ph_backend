@@ -214,7 +214,7 @@ export class AuthService {
       user,
       'SET_PASSWORD',
       '/set-password',
-      'auth.SET_PASSWORD_SUMMARY',
+      'auth.SET_PASSWORD_EMAIL_SUBJECT',
       'set-password'
     );
   }
@@ -249,7 +249,7 @@ export class AuthService {
       user,
       'RESET_PASSWORD',
       '/reset-password',
-      'auth.RESET_PASSWORD_REQUEST_SUMMARY',
+      'auth.RESET_PASSWORD_EMAIL_SUBJECT',
       'reset-password'
     );
 
@@ -442,7 +442,6 @@ export class AuthService {
       this.i18n.t(subjectKey, { lang }),
       templateName,
       {
-        appName: process.env.APP_NAME || 'nuestra plataforma',
         firstName: user.first_name || '',
         lastName: user.last_name || '',
         fullName: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
