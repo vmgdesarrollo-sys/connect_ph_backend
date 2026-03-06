@@ -45,6 +45,7 @@ export class UsersService {
       throw new ConflictException("El correo electrónico ya está registrado");
     }
 
+    // 2. Cifrar la contraseña solo si se proporciona
     let hashedPassword: string | undefined;
     if (password) {
       const salt = await bcrypt.genSalt(10);

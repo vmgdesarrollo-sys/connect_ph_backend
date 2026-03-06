@@ -59,6 +59,10 @@ import { MailerService } from './services/mailer.service';
 import { AuthController } from './controllers/auth.controller';
 import { AuthService } from './services/auth/auth.service';
 
+// LiveKit
+import { VideoController } from './controllers/livekit/video.controller';
+import { LiveKitService } from './services/livekit/livekit.service';
+
 // Utils para tracking automático de usuarios
 import { RequestContextService } from './services/request-context.service';
 import { RequestContextMiddleware } from './middleware/request-context.middleware';
@@ -93,6 +97,7 @@ import { UserTrackingSubscriber } from './subscribers/user-tracking.subscriber';
   ],
   controllers: [
     AuthController,
+    VideoController,
     PhsController, 
     UsersController, 
     RolesController,
@@ -130,6 +135,7 @@ import { UserTrackingSubscriber } from './subscribers/user-tracking.subscriber';
     VotingQuestionsService,
     UserRolesPhsService,
     MailerService,
+    LiveKitService,
   ],
 
   exports: [

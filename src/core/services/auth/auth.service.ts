@@ -311,13 +311,8 @@ export class AuthService {
       );
     }
 
-    if (!user.password) {
-      throw new UnauthorizedException(
-        this.i18n.t('general.INVALID_CREDENTIALS', {lang, args: {},})
-      );
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    // Verificar la contraseña con bcrypt
+    const isPasswordValid = await bcrypt.compare(password, user.password); 
     if (!isPasswordValid) {
       throw new UnauthorizedException(
         this.i18n.t('general.INVALID_CREDENTIALS', {lang, args: {},})
