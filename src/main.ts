@@ -10,6 +10,18 @@ const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix(process.env.API_VERSION ?? 'api/v1');
+
+  const corsOrigins = (process.env.CORS_ORIGINS ?? '*')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean);
+
+  app.enableCors({
+    origin: corsOrigins.includes('*') ? true : corsOrigins,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin'],
+  });
   
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true, // Elimina campos que no estén en el DTO

@@ -32,6 +32,7 @@
     "PARAM_ID": "Identificador unico de la unidad.", 
     "REGISTER_DESC": "Respuesta exitosa creacion de la unidad.", 
     "MSG_CREATE": "Unidad creada exitosamente.", 
+    "NOT_FOUND": "Unidad no encontrada.",
     "ID_EXAMPLE": "550e8400-e29b-41d4-a716-446655440000",
     "UPDATE_SUMMARY": "Servicio para la actualizacion de una unidad.", 
     "UPDATE_DESC": "Respuesta exitosa actualización de la unidad.", 

@@ -17,6 +17,9 @@ import { QaEntry } from './entities/qa_entries.entity';
 import { QuestionOption } from './entities/questions_options.entity';
 import { VotingQuestion } from './entities/voting_questions.entity';
 import { Vote } from './entities/votes.entity';
+import { RefreshToken } from './entities/refresh_token.entity';
+import { UserRolePh } from './entities/user_roles_phs.entity';
+import { PasswordToken } from './entities/password_token.entity';
 
 // Controladores
 import { UsersController } from './controllers/users.controller';
@@ -33,6 +36,7 @@ import { QaEntriesController } from './controllers/qa_entries.controller';
 import { QuestionsOptionsController } from './controllers/questions_options.controller';
 import { VotesController } from './controllers/votes.controller';
 import { VotingQuestionsController } from './controllers/voting_questions.controller';
+import { UserRolesPhsController } from './controllers/user_roles_phs.controller';
 
 // Servicios
 import { UsersService } from './services/users.service';
@@ -49,6 +53,8 @@ import { QaEntriesService } from './services/qa_entries.service';
 import { QuestionsOptionsService } from './services/questions_options.service';
 import { VotesService } from './services/votes.service';
 import { VotingQuestionsService } from './services/voting_questions.service';
+import { UserRolesPhsService } from './services/user_roles_phs.service';
+import { MailerService } from './services/mailer.service';
 
 import { AuthController } from './controllers/auth.controller';
 import { AuthService } from './services/auth/auth.service';
@@ -58,9 +64,9 @@ import { VideoController } from './controllers/livekit/video.controller';
 import { LiveKitService } from './services/livekit/livekit.service';
 
 // Utils para tracking automático de usuarios
-import { RequestContextService } from './utils/request-context.service';
-import { RequestContextMiddleware } from './utils/request-context.middleware';
-import { UserTrackingSubscriber } from './utils/user-tracking.subscriber';
+import { RequestContextService } from './services/request-context.service';
+import { RequestContextMiddleware } from './middleware/request-context.middleware';
+import { UserTrackingSubscriber } from './subscribers/user-tracking.subscriber';
 
 @Module({
   imports:[
@@ -84,6 +90,9 @@ import { UserTrackingSubscriber } from './utils/user-tracking.subscriber';
       QuestionOption,
       VotingQuestion,
       Vote,
+      RefreshToken,
+      UserRolePh,
+      PasswordToken,
     ]), 
   ],
   controllers: [
@@ -103,6 +112,7 @@ import { UserTrackingSubscriber } from './utils/user-tracking.subscriber';
     QuestionsOptionsController,
     VotesController,
     VotingQuestionsController,
+    UserRolesPhsController,
 
   ],
   providers: [  
@@ -123,6 +133,8 @@ import { UserTrackingSubscriber } from './utils/user-tracking.subscriber';
     QuestionsOptionsService,
     VotesService,
     VotingQuestionsService,
+    UserRolesPhsService,
+    MailerService,
     LiveKitService,
   ],
 

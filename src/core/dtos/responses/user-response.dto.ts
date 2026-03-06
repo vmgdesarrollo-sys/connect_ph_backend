@@ -87,6 +87,9 @@ export class CreateUserResponseDto {
   @ApiProperty({ example: t("MSG_CREATE") })
   message: string;
 
+  @ApiProperty({ example: false, description: t("ACTIVATION_REQUIRED_DESC") })
+  activation_required: boolean;
+
   @ApiProperty({ type: UserDataDto })
   data: UserDataDto;
 }
@@ -202,9 +205,9 @@ export class GetUserProfileResponseDto{
   @ApiProperty({ example: "550e8400-e29b-41d4-a716-446655440000" })
   userId: string;
 
-  @ApiProperty({ type: Ownership })
-  ownership: Ownership;
+  @ApiProperty({ type: [Ownership] })
+  ownerships: Ownership[];
 
-  @ApiProperty({ example: "read/write" })
-  scope: string;
+  @ApiProperty({ example: ["read_only"] })
+  scope: string[];
 }

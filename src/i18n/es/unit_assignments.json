@@ -7,6 +7,7 @@
   "UNITS_DESC": "IDs de unidades dentro de una copropiedad.",
   "UNITS_REQ": "El listado de unidades es obligatorio",
   "USERS_ID_DESC": "Id del registro de usuario creado en la aplicación.",
+  "USERS_ID_REQ": "El usuario es obligatorio.",
   "UNITS_ID_DESC": "Id del registro de la unidad creada en la aplicación.",
 
   "ID_EXAMPLE": "550e8400-e29b-41d4-a716-446655440000",
@@ -17,5 +18,5 @@
   "ALREADY_ASSIGNED": "Esta unidad ya está asignada a este usuario.",
   "NOT_FOUND": "No se encontraron asignaciones de unidades para este usuario.",
   "LIST_DESC": "LIsta de de unidades usuario.",
-  "PARAM_USERID": "Id de usuario rol creado en la aplicación."
+  "PARAM_USERID": "Id del usuario creado en la aplicación."
 }

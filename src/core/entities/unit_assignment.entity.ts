@@ -1,6 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Unit } from './unit.entity';
-import { UserRol } from './user_rol.entity';
 import { AssemblyAttendance } from './assembly_attendances.entity';
 import { User } from './user.entity';
 
@@ -17,11 +16,11 @@ export class UnitAssignment {
   unit: Unit;
 
   @Column({ type: 'uuid' })
-  user_roles_id: string;
+  user_id: string;
 
-  @ManyToOne(() => UserRol, (userRol) => userRol.unitAssignments, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_roles_id' })
-  userRol: UserRol;
+  @ManyToOne(() => User, (user) => user.unitAssignments, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 
   @OneToMany(() => AssemblyAttendance, (attendance) => attendance.unitAssignment)
   attendances: AssemblyAttendance[];
