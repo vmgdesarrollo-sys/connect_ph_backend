@@ -61,6 +61,28 @@ export class AssembliesController {
     };
   }
 
+  // 2.1 Listar asambleas por ID de PH (copropiedad)
+  @Get("ph/:phsId")
+  @ApiOperation({ summary: t('LISTAR_POR_PH_RES') || 'Listar asambleas por PH' })
+  @ApiParam({ name: "phsId", description: t('PHS_ID_DESC') })
+  @ApiResponse({ status: 200, type: AssemblyListResponseDto })
+  async findByPh(@Param("phsId", ParseUUIDPipe) phsId: string) {
+    const data = await this.assembliesService.findByPh(phsId);
+    const limit = 100, page = 1;
+
+    return {
+      status: "success",
+      message: t('LISTAR_POR_PH_RES') || 'Listado de asambleas por PH',
+      data,
+      properties: {
+        total_items: data.length,
+        items_per_page: limit,
+        current_page: page,
+        total_pages: Math.ceil(data.length / limit)
+      },
+    };
+  }
+
   // 3. Obtener una Asamblea por ID
   @Get(":id")
   @ApiOperation({ summary: t('DETALLE_RES') })

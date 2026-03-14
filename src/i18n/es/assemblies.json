@@ -29,6 +29,7 @@
   "DETALLE_RES": "Detalle de la asamblea obtenido.",
   "DETALLE_POR_ROOM_RES": "Detalle de la asamblea obtenido por room de LiveKit.",
   "LISTAR_RES": "Listado de asambleas obtenido correctamente.",
+  "LISTAR_POR_PH_RES": "Listado de asambleas de la copropiedad obtenido.",
   "ELIMINADA_RES": "Asamblea eliminada exitosamente.",
   "ERRORS_NO_EXISTE": "La asamblea con ID {{id}} no existe.",
   "ERRORS_NO_EXISTE_POR_ROOM": "No existe una asamblea activa con el room de LiveKit '{{roomName}}'."

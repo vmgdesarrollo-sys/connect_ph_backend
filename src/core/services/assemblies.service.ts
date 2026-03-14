@@ -63,6 +63,15 @@ export class AssembliesService {
     const assemblies = await this.assemblyRepository.find({ where: { is_active: true } });
     return assemblies;
   }
+
+  // Obtener asambleas por ID de PH (copropiedad)
+  async findByPh(phsId: string): Promise<any[]> {
+    const assemblies = await this.assemblyRepository.find({
+      where: { phs_id: phsId, is_active: true },
+      order: { scheduled_at: 'DESC' },
+    });
+    return assemblies;
+  }
  // Obtener detalle de una asamblea por ID
   async findOne(id: string): Promise<any> {
     const assembly = await this.assemblyRepository.findOne({ where: { id, is_active: true } });
