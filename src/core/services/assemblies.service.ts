@@ -20,6 +20,16 @@ export class AssembliesService {
   ) {}
  // Crear una nueva asamblea
   async create(createAssemblyDto: CreateAssemblyDto): Promise<any> {
+    // Auto-generar livekit_room_name basado en el nombre de la asamblea + timestamp
+    const timestamp = Date.now();
+    const sanitizedName = createAssemblyDto.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '');
+    
+    createAssemblyDto['livekit_room_name'] = `${sanitizedName}_${timestamp}`;
+
     const newAssembly = this.assemblyRepository.create(createAssemblyDto);
     const savedAssembly = await this.assemblyRepository.save(newAssembly);
     
@@ -69,13 +79,32 @@ export class AssembliesService {
       data: assembly,
     };
   }
+
+  // Obtener detalle de una asamblea por livekit_room_name
+  async findByLivekitRoomName(roomName: string): Promise<any> {
+    const assembly = await this.assemblyRepository.findOne({ 
+      where: { livekit_room_name: roomName, is_active: true } 
+    });
+
+    if (!assembly) {
+      throw new NotFoundException(
+        this.i18n.t("assemblies.ERRORS_NO_EXISTE_POR_ROOM", { lang, args: { roomName } }),
+      );
+    }
+
+    return {
+      status: this.i18n.t("general.SUCCESS", { lang }),
+      message: this.i18n.t("assemblies.DETALLE_RES", { lang }),
+      data: assembly,
+    };
+  }
   // Eliminar una asamblea por ID (soft delete)
   async delete(id: string): Promise<any> {
     const assembly = await this.assemblyRepository.findOne({ where: { id, is_active: true } });
     
     if (!assembly) {
       throw new NotFoundException(
-        this.i18n.t("assemblies.ERRORS.NO_EXISTE", { lang, args: { id } }),
+        this.i18n.t("assemblies.ERRORS_NO_EXISTE", { lang, args: { id } }),
       );
     }
 

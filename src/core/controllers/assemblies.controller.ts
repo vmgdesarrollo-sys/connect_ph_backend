@@ -70,6 +70,15 @@ export class AssembliesController {
     return await this.assembliesService.findOne(id);
   }
 
+  // 3.1 Obtener una Asamblea por livekit_room_name
+  @Get("livekit/:roomName")
+  @ApiOperation({ summary: t('DETALLE_POR_ROOM_RES') || 'Obtener asamblea por room de LiveKit' })
+  @ApiParam({ name: "roomName", description: t('LIVEKIT_ROOM_DESC') || 'Nombre de la sala de LiveKit' })
+  @ApiResponse({ status: 200, type: GetAssemblyResponseDto })
+  async findByLivekitRoomName(@Param("roomName") roomName: string) {
+    return await this.assembliesService.findByLivekitRoomName(roomName);
+  }
+
   // 4. Actualizar Asamblea (o cambiar estado)
   @Put(":id")
   @ApiOperation({ summary: t('ACTUALIZADA_RES') })
