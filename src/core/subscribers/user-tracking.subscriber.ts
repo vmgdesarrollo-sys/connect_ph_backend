@@ -1,6 +1,8 @@
+// Subscriber de TypeORM para asignar automáticamente el userId a los campos created_by y updated_by en las entidades, 
+// utilizando el contexto de la petición para obtener el userId del usuario autenticado.
 import { EventSubscriber, EntitySubscriberInterface, InsertEvent, UpdateEvent, DataSource } from 'typeorm';
 import { Injectable } from '@nestjs/common';
-import { RequestContextService } from './request-context.service';
+import { RequestContextService } from '../services/request-context.service';
 
 @Injectable()
 @EventSubscriber()

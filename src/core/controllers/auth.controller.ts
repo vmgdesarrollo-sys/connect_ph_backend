@@ -17,24 +17,23 @@ import {
 } from "@nestjs/swagger";
 import { AuthService } from "../services/auth/auth.service";
 import { ApiClientGuard } from "../services/auth/guards/api-client.guard";
-
-import {
-  GetUserProfileResponseDto,
-} from "../dtos/responses/user-response.dto";
-import { JwtService } from "@nestjs/jwt";
+import { RefreshTokenDto } from "../dtos/payload/auth-refresh.dto";
+import { SetPasswordDto } from "../dtos/payload/auth-set-password.dto";
+import { ResetPasswordRequestDto } from "../dtos/payload/auth-reset-password.dto";
 
 import { I18nContext, I18nService } from 'nestjs-i18n';
 import {getSwaggerText} from "../../utils/swagger-i18n.loader"
 const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
 const t = (key: string) => getSwaggerText("users", key, lang);
 const g = (key: string) => getSwaggerText("general", key, lang);
-const KEY_JWT = process.env.JWT_SECRET || "CLAVE_SECRETA_PROVISIONAL";
 
 @ApiTags(getSwaggerText('auth', 'TITLE', lang))
 @Controller("auth")
 // Aplicamos los headers requeridos para todo el controlador
 export class AuthController {
-  constructor(private readonly authService: AuthService, private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly authService: AuthService
+  ) {}
 
   @Get("options")
   @UseGuards(ApiClientGuard)
@@ -122,7 +121,7 @@ export class AuthController {
       properties: {
         fields: {
           type: "object",
-          example: { email: "usuario@correo.com", password: "myPassword123" },
+          example: { email: "adancarrillo@gmail.com", password: "12345678" },
           description: getSwaggerText('auth', 'VALUES_PREV_TEXT', lang),
         },
       },
@@ -160,33 +159,92 @@ export class AuthController {
     return await this.authService.validateStep(token, body.fields);
   }
 
-  @Get("getProfile")
-  @ApiOperation({ summary: t("GET_PROFILE_SUMMARY") })
+  @Post('refresh')
+  @ApiOperation({ summary: getSwaggerText('auth', 'REFRESH_SUMMARY', lang) })
   @ApiResponse({
     status: 200,
-    description: t("GET_DETAIL_PROFILE_DESC"),
-    type: GetUserProfileResponseDto,
+    description: getSwaggerText('auth', 'REFRESH_DESC', lang),
+    schema: {
+      example: {
+        state: getSwaggerText('general', 'SUCCESS', lang),
+        result: {
+          access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+          expires_in: 3600,
+          token_type: 'Bearer',
+          refresh_token: 'd2f7b8...',
+          refresh_expires_in: 604800,
+        }
+      }
+    }
   })
-  async getProfile(@Headers("authorization") authHeader: string) {
-    const token = authHeader?.replace("Bearer ", "");
-    if (!token) {
-      throw new UnauthorizedException(g("ERROR_TOKEN_AUTH"));
-    }
-
-    try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: KEY_JWT,
-      });
-
-      return {
-        userProfile: payload?.userProfile,
-        userId: payload?.userId,
-        ownership: payload?.ownership,
-        scope: payload?.scope,
-      };
-      // return await this.usersService.getProfile(payload);
-    } catch (error) {
-      throw new UnauthorizedException(g("ERROR_TOKEN_INVALID"));
-    }
+  @ApiResponse({
+    status: 401,
+    description: getSwaggerText('general', 'ERROR_TOKEN_AUTH_INVALID', lang),
+  })
+  async refresh(@Body() body: RefreshTokenDto, @Headers() headers: Record<string, string>) {
+    const ip = headers['x-forwarded-for'] || headers['x-real-ip'];
+    const userAgent = headers['user-agent'];
+    const result = await this.authService.refreshAccessToken(body.refresh_token, ip, userAgent);
+    return {
+      state: getSwaggerText('general', 'SUCCESS', lang),
+      result,
+    };
   }
+
+  @Post('logout')
+  @ApiOperation({ summary: getSwaggerText('auth', 'LOGOUT_SUMMARY', lang) })
+  @ApiResponse({
+    status: 200,
+    description: getSwaggerText('auth', 'LOGOUT_DESC', lang),
+    schema: {
+      example: {
+        state: getSwaggerText('general', 'SUCCESS', lang),
+        result: {
+          message: getSwaggerText('auth', 'LOGOUT_SUCCESS', lang)
+        }
+      }
+    }
+  })
+  async logout(@Body() body: RefreshTokenDto) {
+    await this.authService.logout(body.refresh_token);
+    return {
+      state: getSwaggerText('general', 'SUCCESS', lang),
+      result: { message: getSwaggerText('auth', 'LOGOUT_SUCCESS', lang) }
+    };
+  }
+
+  @Post('set-password')
+  @ApiOperation({ summary: getSwaggerText('auth', 'SET_PASSWORD_SUMMARY', lang) })
+  @ApiResponse({
+    status: 200,
+    description: getSwaggerText('auth', 'SET_PASSWORD_DESC', lang),
+    schema: {
+      example: {
+        state: getSwaggerText('general', 'SUCCESS', lang),
+        result: { message: getSwaggerText('auth', 'SET_PASSWORD_DESC', lang) }
+      }
+    }
+  })
+  async setPassword(@Body() body: SetPasswordDto) {
+    const result = await this.authService.setPassword(body);
+    return { state: getSwaggerText('general', 'SUCCESS', lang), result };
+  }
+
+  @Post('reset-password-request')
+  @ApiOperation({ summary: getSwaggerText('auth', 'RESET_PASSWORD_REQUEST_SUMMARY', lang) })
+  @ApiResponse({
+    status: 200,
+    description: getSwaggerText('auth', 'RESET_PASSWORD_REQUEST_DESC', lang),
+    schema: {
+      example: {
+        state: getSwaggerText('general', 'SUCCESS', lang),
+        result: { message: getSwaggerText('auth', 'RESET_EMAIL_SENT', lang) }
+      }
+    }
+  })
+  async resetPasswordRequest(@Body() body: ResetPasswordRequestDto) {
+    const result = await this.authService.resetPasswordRequest(body);
+    return { state: getSwaggerText('general', 'SUCCESS', lang), result };
+  }
+
 }

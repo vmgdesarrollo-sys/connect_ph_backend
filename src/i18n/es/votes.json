@@ -13,5 +13,7 @@
   "ACTUALIZADA_RES": "Voto modificado (si aplica configuración).",
   "DETALLE_RES": "Detalle del voto obtenido.",
   "LISTAR_RES": "Listado de votos obtenido.",
-  "ELIMINADA_RES": "Voto anulado correctamente."
+  "ELIMINADA_RES": "Voto anulado correctamente.",
+  "NO_ENCONTRADO": "Voto no encontrado.",
+  "DUPLICATE_VOTE": "Este usuario ya registró un voto para esta pregunta."
 }

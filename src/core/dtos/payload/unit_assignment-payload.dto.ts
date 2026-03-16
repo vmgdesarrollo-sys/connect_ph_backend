@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 import { I18nContext } from 'nestjs-i18n';
 import { getSwaggerText } from "../../../utils/swagger-i18n.loader";
 
@@ -13,10 +13,10 @@ export class CreateAssingmentUnitDto {
   @IsNotEmpty({ message: t('UNIT_ID_REQ') })
   units_id: string;
 
-  @ApiProperty({ example: "550e8400-e29b-41d4-a716-446655440001", description: t('USER_ROLE_ID_DESC') })
+  @ApiProperty({ example: "550e8400-e29b-41d4-a716-446655440001", description: t('USERS_ID_DESC') })
   @IsUUID()
-  @IsNotEmpty({ message: t('USER_ROLE_ID_REQ') })
-  user_roles_id: string;
+  @IsNotEmpty({ message: t('USERS_ID_REQ') })
+  user_id: string;
 
   @ApiProperty({ example: true, description: t('IS_MAIN_RESIDENT_DESC'), required: false })
   @IsBoolean()

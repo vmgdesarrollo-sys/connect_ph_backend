@@ -5,10 +5,14 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from "typeorm";
+import { Repository, In } from "typeorm";
 import { User } from "../entities/user.entity";
+import { UserRol } from "../entities/user_rol.entity";
+import { UnitAssignment } from "../entities/unit_assignment.entity";
+import { UserRolePh } from "../entities/user_roles_phs.entity";
 import { CreateUserDto } from "../dtos/payload/user-payload.dto";
 import * as bcrypt from "bcrypt";
+import { AuthService } from "./auth/auth.service";
 
 
 import { I18nContext, I18nService } from "nestjs-i18n";
@@ -18,8 +22,15 @@ const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
 export class UsersService {
   constructor(
     private readonly i18n: I18nService,
+    private readonly authService: AuthService,
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(UserRol)
+    private readonly userRolRepository: Repository<UserRol>,
+    @InjectRepository(UnitAssignment)
+    private readonly unitAssignmentRepository: Repository<UnitAssignment>,
+    @InjectRepository(UserRolePh)
+    private readonly userRolePhRepository: Repository<UserRolePh>
   ) {}
 // Crear un nuevo usuario
   async create(createUserDto: CreateUserDto): Promise<any> {
@@ -45,16 +56,26 @@ export class UsersService {
     const newUser = this.userRepository.create({
       ...createUserDto,
       password: hashedPassword,
+      is_active: !!password,
     });
 
     const savedUser = await this.userRepository.save(newUser);
 
+    if (!password) {
+      await this.authService.sendActivationLink(savedUser);
+    }
+
     // Eliminamos el password del objeto de respuesta por seguridad
     const { password: _, ...userWithoutPassword } = savedUser;
 
+    const activationRequired = !password;
+
     return {
       status: this.i18n.t("general.SUCCESS", { lang, args: {} }),
-      message: this.i18n.t("users.MSG_CREATE", { lang, args: {} }),
+      message: activationRequired
+        ? this.i18n.t("users.MSG_CREATE_PENDING", { lang, args: {} })
+        : this.i18n.t("users.MSG_CREATE", { lang, args: {} }),
+      activation_required: activationRequired,
       data: userWithoutPassword,
     };
   }
@@ -168,6 +189,109 @@ export class UsersService {
       status: this.i18n.t("general.SUCCESS", { lang, args: {} }),
       message: this.i18n.t("users.MSG_UPDATE", { lang, args: {} }),
       data: userWithoutPassword,
+    };
+  }
+
+  async getProfile(userId: string): Promise<any> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId, is_active: true },
+      select: [
+        'id',
+        'email',
+        'first_name',
+        'last_name',
+        'document_type',
+        'document_number',
+        'phone_number',
+        'avatar_url'
+      ]
+    });
+
+    if (!user) {
+      throw new NotFoundException(
+        this.i18n.t("users.NOT_FOUND", { lang, args: { id: userId } })
+      );
+    }
+
+    const userRoles = await this.userRolRepository.find({
+      where: { users_id: user.id, is_active: true },
+      relations: ['role']
+    });
+
+    const roles = userRoles.map(ur => ur.role.name);
+    const scopes = userRoles.flatMap(ur => ur.role.scopes || []);
+    const uniqueScopes = scopes.length > 0 ? [...new Set(scopes)] : ["read_only"];
+
+    let ownerships: any[] = [];
+    if (userRoles.length > 0) {
+      const roleIds = userRoles.map(ur => ur.id);
+      const rolePhAssignments = await this.userRolePhRepository.find({
+        where: {
+          user_roles_id: In(roleIds),
+          is_active: true,
+        },
+        relations: ['ph'],
+      });
+
+      const unitAssignments = await this.unitAssignmentRepository.find({
+        where: {
+          user_id: user.id,
+          is_active: true
+        },
+        relations: ['unit', 'unit.ph']
+      });
+
+      const ownershipMap = new Map<string, any>();
+
+      for (const assignment of rolePhAssignments) {
+        const ph = assignment?.ph;
+        if (!ph || ownershipMap.has(ph.id)) continue;
+
+        ownershipMap.set(ph.id, {
+          id: ph.id,
+          name: ph.name,
+          tax_id: ph.tax_id,
+          address: ph.address,
+          city: ph.city,
+          country: ph.country,
+          state: ph.state,
+          logo_url: ph.logo_url
+        });
+      }
+
+      for (const assignment of unitAssignments) {
+        const ph = assignment?.unit?.ph;
+        if (!ph || ownershipMap.has(ph.id)) continue;
+
+        ownershipMap.set(ph.id, {
+          id: ph.id,
+          name: ph.name,
+          tax_id: ph.tax_id,
+          address: ph.address,
+          city: ph.city,
+          country: ph.country,
+          state: ph.state,
+          logo_url: ph.logo_url
+        });
+      }
+
+      ownerships = Array.from(ownershipMap.values());
+    }
+
+    return {
+      userProfile: {
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        document: user.document_number,
+        documentType: user.document_type,
+        phone: user.phone_number,
+        avatar: user.avatar_url,
+        roles: roles
+      },
+      userId: user.id,
+      ownerships: ownerships,
+      scope: uniqueScopes
     };
   }
 }

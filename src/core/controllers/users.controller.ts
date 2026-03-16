@@ -11,7 +11,9 @@ import {
   Query,
   Headers,
   UnauthorizedException,
+  Req,
 } from "@nestjs/common";
+import type { Request } from "express";
 import {
   ApiTags,
   ApiOperation,
@@ -32,6 +34,7 @@ import {
   UsersListResponseDto,
   GetUserResponseDto,
   DeleteUserResponseDto,
+  GetUserProfileResponseDto,
 } from "../dtos/responses/user-response.dto";
 
 import { I18nContext, I18nService } from "nestjs-i18n";
@@ -108,22 +111,6 @@ export class UsersController {
     return await this.usersService.findAll(_fields, _where);
   }
 
-  @Get("id/:id")
-  @ApiOperation({ summary: t("GET_DETAIL_SUMMARY") })
-  @ApiParam({
-    name: "id",
-    description: t("PARAM_ID"),
-    example: "550e8400-e29b-41d4-a716-446655440000",
-  })
-  @ApiResponse({
-    status: 200,
-    description: t("GET_DETAIL_DESC"),
-    type: GetUserResponseDto,
-  })
-  async findOne(@Param("id", ParseUUIDPipe) id: string) {
-    return await this.usersService.findOne(id);
-  }
-
   @Get("email/:email")
   @ApiOperation({ summary: t("GET_EMAIL_SUMMARY") })
   @ApiParam({
@@ -138,6 +125,38 @@ export class UsersController {
   })
   async findByEmail(@Param("email") email: string) {
     return await this.usersService.findByEmail(email);
+  }
+
+  @Get("profile")
+  @ApiOperation({ summary: t("GET_PROFILE_SUMMARY") })
+  @ApiResponse({
+    status: 200,
+    description: t("GET_DETAIL_PROFILE_DESC"),
+    type: GetUserProfileResponseDto,
+  })
+  async getProfile(@Req() request: Request) {
+    const payload: any = (request as any).user;
+    if (!payload) {
+      throw new UnauthorizedException(g("ERROR_TOKEN_AUTH_INVALID"));
+    }
+
+    return await this.usersService.getProfile(payload.userId);
+  }
+
+  @Get(":id")
+  @ApiOperation({ summary: t("GET_DETAIL_SUMMARY") })
+  @ApiParam({
+    name: "id",
+    description: t("PARAM_ID"),
+    example: "550e8400-e29b-41d4-a716-446655440000",
+  })
+  @ApiResponse({
+    status: 200,
+    description: t("GET_DETAIL_DESC"),
+    type: GetUserResponseDto,
+  })
+  async findOne(@Param("id", ParseUUIDPipe) id: string) {
+    return await this.usersService.findOne(id);
   }
 
   @Delete(":id")
