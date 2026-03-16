@@ -1,6 +1,7 @@
 {
   "TITULO": "Preguntas y Respuestas (Q&A)",
   "ID_DESC": "Identificador único de la pregunta (UUID)",
+  "ASSEMBLY_ID_DESC": "Identificador único de la asamblea (UUID)",
   "ATTENDANCE_ID_DESC": "ID de la asistencia del participante que pregunta",
   "QUESTION_DESC": "Texto detallado de la pregunta",
   "MODERATED_DESC": "Indica si la pregunta ya pasó por revisión",
@@ -15,5 +16,23 @@
   "ACTUALIZADA_RES": "Pregunta actualizada/moderada exitosamente.",
   "DETALLE_RES": "Detalle de la pregunta obtenido.",
   "LISTAR_RES": "Listado de preguntas obtenido.",
-  "ELIMINADA_RES": "Pregunta eliminada correctamente."
+  "LISTAR_POR_ASAMBLEA_RES": "Preguntas de la asamblea obtenidas.",
+  "LISTAR_ACTIVAS_RES": "Preguntas activas de la asamblea obtenidas.",
+  "LISTAR_MODERADAS_RES": "Preguntas moderadas de la asamblea obtenidas.",
+  "ELIMINADA_RES": "Pregunta eliminada correctamente.",
+  "UPVOTE_RES": "Voto registrado correctamente.",
+  "ATTENDANCE_NOT_FOUND": "Asistencia no encontrada",
+  "NOT_FOUND": "Pregunta no encontrada",
+  "SOCKET_JOIN_ASSEMBLY": "Unirse a la sala de asamblea",
+  "SOCKET_SEND_QUESTION": "Enviar una pregunta",
+  "SOCKET_TYPING": "Indicador de escritura",
+  "SOCKET_MODERATE": "Moderar pregunta",
+  "SOCKET_UPVOTE": "Votar pregunta",
+  "SOCKET_ANSWER": "Responder pregunta",
+  "SOCKET_NEW_QUESTION": "Nueva pregunta recibida",
+  "SOCKET_QUESTION_MODERATED": "Pregunta moderada",
+  "SOCKET_QUESTION_ANSWERED": "Pregunta respondida",
+  "SOCKET_USER_JOINED": "Usuario joined al chat",
+  "SOCKET_USER_LEFT": "Usuario salió del chat",
+  "SOCKET_USER_TYPING": "Usuario está escribiendo"
 }

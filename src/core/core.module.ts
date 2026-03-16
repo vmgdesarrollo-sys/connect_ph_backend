@@ -63,6 +63,9 @@ import { AuthService } from './services/auth/auth.service';
 import { VideoController } from './controllers/livekit/video.controller';
 import { LiveKitService } from './services/livekit/livekit.service';
 
+// Q&A Gateway (WebSocket for live chat)
+import { QaGateway } from './gateways/qa.gateway';
+
 // Utils para tracking automático de usuarios
 import { RequestContextService } from './services/request-context.service';
 import { RequestContextMiddleware } from './middleware/request-context.middleware';
@@ -136,6 +139,7 @@ import { UserTrackingSubscriber } from './subscribers/user-tracking.subscriber';
     UserRolesPhsService,
     MailerService,
     LiveKitService,
+    QaGateway,
   ],
 
   exports: [
