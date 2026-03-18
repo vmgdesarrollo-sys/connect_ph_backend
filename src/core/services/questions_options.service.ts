@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import { QuestionOption } from "../entities/questions_options.entity";
 import { CreateQuestionOptionDto } from "../dtos/payload/questions_options-payload.dto";
 import { I18nService } from "nestjs-i18n";
+import { FindOptionsWhere } from "typeorm";
 
 // Servicio para gestionar las opciones de preguntas en una votación
 @Injectable()
@@ -25,33 +26,47 @@ export class QuestionsOptionsService {
       data: savedOption,
     };
   }
+// 
+async findAll(_where?: string): Promise<QuestionOption[]> {
+  const where: FindOptionsWhere<QuestionOption> = { is_active: true };
 
-  // Listar todas las opciones de preguntas activas
-  async findAll(_where?: string): Promise<any[]> {
-    const options = await this.repository.find({
-      where: { is_active: true },
-      order: { order_index: 'ASC' },
-    });
-    return options;
-  }
+  if (_where) {
+    const questionMatch = _where.match(/question_id=([a-f0-9-]+)/i);
 
-  // Actualizar una opción de pregunta por ID
-  async update(id: string, dto: CreateQuestionOptionDto): Promise<any> {
-    const option = await this.repository.findOne({ where: { id, is_active: true } });
-    
-    if (!option) {
-      throw new NotFoundException(this.i18n.t("questions_options.NO_ENCONTRADA"));
+    if (questionMatch) {
+      where.question_id = questionMatch[1];
     }
-
-    Object.assign(option, dto);
-    const updatedOption = await this.repository.save(option);
-    
-    return { 
-      status: "success", 
-      message: this.i18n.t("questions_options.ACTUALIZADA_RES"), 
-      data: updatedOption 
-    };
   }
+
+  return this.repository.find({
+    where,
+    order: { order_index: 'ASC' },
+  });
+}
+
+ async update(id: string, dto: Partial<CreateQuestionOptionDto>) {
+  const option = await this.repository.findOne({
+    where: { id, is_active: true },
+  });
+
+  if (!option) {
+    throw new NotFoundException(
+      this.i18n.t('questions_options.NO_ENCONTRADA'),
+    );
+  }
+  
+  // Merge limpio y seguro
+  const updatedData = this.repository.merge(option, dto);
+
+  const saved = await this.repository.save(updatedData);
+
+  return {
+    status: 'success',
+    message: this.i18n.t('questions_options.ACTUALIZADA_RES'),
+    data: saved,
+  };
+}
+
 // Eliminar una opción de pregunta por ID (soft delete)
   async delete(id: string): Promise<any> {
     const option = await this.repository.findOne({ where: { id, is_active: true } });

@@ -2,6 +2,7 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  BadRequestException,
 } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from "typeorm";
@@ -48,9 +49,28 @@ export class AssembliesService {
       data: updatedAssembly,
     };
   }
-  // Listar todas las asambleas activas
-  async findAll(_fields?: string, _where?: string): Promise<any[]> {
-    const assemblies = await this.assemblyRepository.find({ where: { is_active: true } });
+
+  // Listar asambleas activas, con opción de filtrar por phs_id
+  async findAll(params?:  { phs_id?: string; page?: number; limit?: number } ): Promise<Assembly[]> {
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    const where: any = {
+      is_active: true,
+    };
+
+    // Filtro por conjunto (phs_id)
+    if (params?.phs_id) {
+      if (!UUID_REGEX.test(params.phs_id)) {
+        throw new BadRequestException('phs_id debe ser un UUID válido');
+      }
+      where.phs_id = params.phs_id;
+    }
+
+    const assemblies = await this.assemblyRepository.find({
+      where,
+      order: { created_at: 'DESC' },
+    });
+
     return assemblies;
   }
  // Obtener detalle de una asamblea por ID
