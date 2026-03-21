@@ -81,8 +81,19 @@ export class UsersService {
   }
 // Listar todos los usuarios activos
   async findAll(_fields?: string, _where?: string): Promise<any> {
+    // Permitir filtrar por is_active desde _where o mostrar todos si no se especifica
+    let whereClause = {};
+    if (_where) {
+      try {
+        const parsed = JSON.parse(_where);
+        whereClause = parsed;
+      } catch {
+        // Si _where no es JSON válido, ignorar
+      }
+    }
+    // Si no se especifica is_active en _where, no filtrar
     const users = await this.userRepository.find({
-      where: { is_active: true },
+      where: whereClause,
       select: ['id', 'first_name', 'last_name', 'type_person', 'gender', 'avatar_url', 
                'email', 'document_type', 'document_number', 'phone_number', 'is_active', 'created_at']
     });
@@ -101,8 +112,13 @@ export class UsersService {
   }
 // Obtener detalle de un usuario por ID
   async findOne(id: string): Promise<any> {
+    // Permitir filtrar por is_active desde id o mostrar todos si no se especifica
+    let whereClause: any = { id };
+    // Si necesitas filtrar por is_active, pásalo como parte del objeto
+    // Ejemplo: findOne(id, { is_active: true })
+    // Para compatibilidad, puedes ajustar el controller para aceptar un parámetro opcional
     const user = await this.userRepository.findOne({
-      where: { id, is_active: true },
+      where: whereClause,
       select: ['id', 'first_name', 'last_name', 'type_person', 'gender', 'avatar_url', 
                'email', 'document_type', 'document_number', 'phone_number', 'is_active', 'created_at']
     });
@@ -218,7 +234,10 @@ export class UsersService {
       relations: ['role']
     });
 
-    const roles = userRoles.map(ur => ur.role.name);
+    const roles = userRoles.map(ur => ({
+      id: ur.role.id,
+      name: ur.role.name
+    }));
     const scopes = userRoles.flatMap(ur => ur.role.scopes || []);
     const uniqueScopes = scopes.length > 0 ? [...new Set(scopes)] : ["read_only"];
 

@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import { VotingQuestion } from "../entities/voting_questions.entity";
 import { CreateVotingQuestionDto } from "../dtos/payload/voting_questions-payload.dto";
 import { I18nService } from "nestjs-i18n";
+import { FindOptionsWhere } from "typeorm";
 // Servicio para gestionar las preguntas de votación en una asamblea
 @Injectable()
 export class VotingQuestionsService {
@@ -24,34 +25,49 @@ export class VotingQuestionsService {
     };
   }
 // Listar todas las preguntas de votación activas
-  async findAll(_where?: string): Promise<any[]> {
-    const votingQuestions = await this.repository.find({ 
-      where: { is_active: false } 
-    });
-    return votingQuestions;
+  async findAll(_where?: string): Promise<VotingQuestion[]> {
+  const where: FindOptionsWhere<VotingQuestion> = { is_active: true};
+
+  if (_where) {
+    const agendaMatch = _where.match(/agenda_id=([a-f0-9-]+)/i);
+
+    if (agendaMatch) {
+      where.agenda_id = agendaMatch[1];
+    }
   }
+
+  return this.repository.find({
+    where,
+  });
+}
 
   // Actualizar una pregunta de votación por ID
   async update(id: string, dto: CreateVotingQuestionDto): Promise<any> {
-    const votingQuestion = await this.repository.findOne({ 
-      where: { id, is_active: true } 
-    });
-    
-    if (!votingQuestion) {
-      throw new NotFoundException(
-        this.i18n.t("voting_questions.NO_ENCONTRADA")
-      );
-    }
+  const votingQuestion = await this.repository.findOne({
+    where: { id, is_active: true },
+  });
 
-    Object.assign(votingQuestion, dto);
-    const updatedVotingQuestion = await this.repository.save(votingQuestion);
-    
-    return {
-      status: "success",
-      message: this.i18n.t("voting_questions.ACTUALIZADA_RES"),
-      data: updatedVotingQuestion,
-    };
+  if (!votingQuestion) {
+    throw new NotFoundException(
+      this.i18n.t("voting_questions.NO_ENCONTRADA"),
+    );
   }
+
+  const filteredDto = Object.fromEntries(
+    Object.entries(dto).filter(([_, value]) => value !== undefined)
+  );
+
+  Object.assign(votingQuestion, filteredDto);
+
+  const updatedVotingQuestion = await this.repository.save(votingQuestion);
+
+  return {
+    status: "success",
+    message: this.i18n.t("voting_questions.ACTUALIZADA_RES"),
+    data: updatedVotingQuestion,
+  };
+}
+
 // Eliminar una pregunta de votación por ID (soft delete)
   async delete(id: string): Promise<any> {
     const votingQuestion = await this.repository.findOne({ 
