@@ -2,6 +2,7 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  BadRequestException,
 } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from "typeorm";
@@ -20,6 +21,16 @@ export class AssembliesService {
   ) {}
  // Crear una nueva asamblea
   async create(createAssemblyDto: CreateAssemblyDto): Promise<any> {
+    // Auto-generar livekit_room_name basado en el nombre de la asamblea + timestamp
+    const timestamp = Date.now();
+    const sanitizedName = createAssemblyDto.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '');
+    
+    createAssemblyDto['livekit_room_name'] = `${sanitizedName}_${timestamp}`;
+
     const newAssembly = this.assemblyRepository.create(createAssemblyDto);
     const savedAssembly = await this.assemblyRepository.save(newAssembly);
     
@@ -48,9 +59,37 @@ export class AssembliesService {
       data: updatedAssembly,
     };
   }
-  // Listar todas las asambleas activas
-  async findAll(_fields?: string, _where?: string): Promise<any[]> {
-    const assemblies = await this.assemblyRepository.find({ where: { is_active: true } });
+
+  // Listar asambleas activas, con opción de filtrar por phs_id
+  async findAll(params?:  { phs_id?: string; page?: number; limit?: number } ): Promise<Assembly[]> {
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    const where: any = {
+      is_active: true,
+    };
+
+    // Filtro por conjunto (phs_id)
+    if (params?.phs_id) {
+      if (!UUID_REGEX.test(params.phs_id)) {
+        throw new BadRequestException('phs_id debe ser un UUID válido');
+      }
+      where.phs_id = params.phs_id;
+    }
+
+    const assemblies = await this.assemblyRepository.find({
+      where,
+      order: { created_at: 'DESC' },
+    });
+
+    return assemblies;
+  }
+
+  // Obtener asambleas por ID de PH (copropiedad)
+  async findByPh(phsId: string): Promise<any[]> {
+    const assemblies = await this.assemblyRepository.find({
+      where: { phs_id: phsId, is_active: true },
+      order: { scheduled_at: 'DESC' },
+    });
     return assemblies;
   }
  // Obtener detalle de una asamblea por ID
@@ -69,13 +108,32 @@ export class AssembliesService {
       data: assembly,
     };
   }
+
+  // Obtener detalle de una asamblea por livekit_room_name
+  async findByLivekitRoomName(roomName: string): Promise<any> {
+    const assembly = await this.assemblyRepository.findOne({ 
+      where: { livekit_room_name: roomName, is_active: true } 
+    });
+
+    if (!assembly) {
+      throw new NotFoundException(
+        this.i18n.t("assemblies.ERRORS_NO_EXISTE_POR_ROOM", { lang, args: { roomName } }),
+      );
+    }
+
+    return {
+      status: this.i18n.t("general.SUCCESS", { lang }),
+      message: this.i18n.t("assemblies.DETALLE_RES", { lang }),
+      data: assembly,
+    };
+  }
   // Eliminar una asamblea por ID (soft delete)
   async delete(id: string): Promise<any> {
     const assembly = await this.assemblyRepository.findOne({ where: { id, is_active: true } });
     
     if (!assembly) {
       throw new NotFoundException(
-        this.i18n.t("assemblies.ERRORS.NO_EXISTE", { lang, args: { id } }),
+        this.i18n.t("assemblies.ERRORS_NO_EXISTE", { lang, args: { id } }),
       );
     }
 

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, ConflictException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Vote } from "../entities/votes.entity";
@@ -13,8 +13,20 @@ export class VotesService {
     @InjectRepository(Vote)
     private readonly repository: Repository<Vote>,
   ) {}
-// Crear un nuevo voto
+// Crear un nuevo voto para una pregunta de votación
+// Se asegura que un usuario solo pueda votar una vez por pregunta
   async create(dto: CreateVoteDto): Promise<any> {
+    const existingVote = await this.repository.findOne({
+      where: {
+        voting_questions_id: dto.voting_questions_id,
+        assembly_attendances_id: dto.assembly_attendances_id,
+      },
+    });
+
+    if (existingVote) {
+      throw new ConflictException(this.i18n.t("votes.DUPLICATE_VOTE"));
+    }
+
     const newVote = this.repository.create(dto);
     const savedVote = await this.repository.save(newVote);
     

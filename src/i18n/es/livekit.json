@@ -1,0 +1,31 @@
+{
+  "token": {
+    "generated": "Token generado exitosamente",
+    "error": "Error al generar token"
+  },
+  "room": {
+    "created": "Sala creada exitosamente",
+    "deleted": "Sala eliminada exitosamente",
+    "ended": "Sala finalizada exitosamente",
+    "notFound": "Sala no encontrada",
+    "error": "Error al procesar la solicitud de la sala",
+    "list": "Lista de salas obtenida"
+  },
+  "participant": {
+    "kicked": "Participante expulsado",
+    "muted": "Audio silenciado",
+    "unmuted": "Audio activado",
+    "updated": "Permisos actualizados",
+    "list": "Lista de participantes obtenida",
+    "notFound": "Participante no encontrado"
+  },
+  "webhook": {
+    "processed": "Webhook procesado exitosamente",
+    "invalid": "Firma de webhook inválida"
+  },
+  "errors": {
+    "notConfigured": "Credenciales de LiveKit no configuradas",
+    "invalidRoom": "Nombre de sala inválido",
+    "invalidIdentity": "Identidad de usuario inválida"
+  }
+}

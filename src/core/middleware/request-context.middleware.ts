@@ -3,7 +3,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { JwtService } from '@nestjs/jwt';
-import { RequestContextService } from './request-context.service';
+import { RequestContextService } from '../services/request-context.service';
 
 @Injectable()
 export class RequestContextMiddleware implements NestMiddleware {

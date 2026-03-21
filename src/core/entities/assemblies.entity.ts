@@ -47,7 +47,7 @@ export class Assembly {
   @Column({ type: 'timestamp', nullable: true })
   finished_at: Date;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, unique: true })
   livekit_room_name: string;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })

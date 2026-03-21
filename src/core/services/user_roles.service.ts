@@ -118,11 +118,11 @@ export class UserRolesService {
 
     // Mapear los roles
     const rolesData = userRoles.map(userRol => ({
-      //user_role_id: userRol.id,
-      //role_id: userRol.role.id,
+      user_role_id: userRol.id,
+      role_id: userRol.role.id,
       name: userRol.role.name,
       description: userRol.role.description,
-      //assigned_at: userRol.created_at
+      assigned_at: userRol.created_at
     }));
     
     return {

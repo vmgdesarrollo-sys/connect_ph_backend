@@ -7,6 +7,7 @@ const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
 const t = (key: string) => getSwaggerText('voting_questions', key, lang);
 
 export class CreateVotingQuestionDto {
+  
   @ApiProperty({ description: t('AGENDA_ID_DESC') })
   @IsUUID() @IsNotEmpty()
   agenda_id: string;
@@ -46,4 +47,9 @@ export class CreateVotingQuestionDto {
   @ApiProperty({ required: false })
   @IsDateString() @IsOptional()
   closed_at?: Date;
+
+  @ApiProperty({ description: t('IS_ACTIVE_DESC'), default: true, required: false })
+  @IsBoolean()
+  @IsOptional()
+  is_active?: boolean;
 }

@@ -43,14 +43,41 @@ export class AssembliesController {
   @ApiOperation({ summary: t('LISTAR_RES') })
   @ApiQuery({ name: "_fields", required: false, example: "*" })
   @ApiQuery({ name: "_where", required: false, example: "(phs_id=uuid)" })
+    @ApiQuery({ name: "phs_id", required: false, description: "UUID del conjunto (PH)", example: "00000000-0000-0000-0000-000000000000" })
   @ApiResponse({ status: 200, type: AssemblyListResponseDto })
-  async findAll(@Query("_fields") _fields?: string, @Query("_where") _where?: string) {
-    const data = await this.assembliesService.findAll(_fields, _where);
+    async findAll(
+      @Query("_fields") _fields?: string,
+      @Query("_where") _where?: string,
+      @Query("phs_id") phs_id?: string
+    ) {
+      const data = await this.assembliesService.findAll(phs_id ? { phs_id } : undefined);
+      const limit = 100, page = 1;
+
+      return {
+        status: "success",
+        message: t('LISTAR_RES'),
+        data,
+        properties: {
+          total_items: data.length,
+          items_per_page: limit,
+          current_page: page,
+          total_pages: Math.ceil(data.length / limit)
+        },
+      };
+    }
+
+  // 2.1 Listar asambleas por ID de PH (copropiedad)
+  @Get("ph/:phsId")
+  @ApiOperation({ summary: t('LISTAR_POR_PH_RES') || 'Listar asambleas por PH' })
+  @ApiParam({ name: "phsId", description: t('PHS_ID_DESC') })
+  @ApiResponse({ status: 200, type: AssemblyListResponseDto })
+  async findByPh(@Param("phsId", ParseUUIDPipe) phsId: string) {
+    const data = await this.assembliesService.findByPh(phsId);
     const limit = 100, page = 1;
 
     return {
       status: "success",
-      message: t('LISTAR_RES'),
+      message: t('LISTAR_POR_PH_RES') || 'Listado de asambleas por PH',
       data,
       properties: {
         total_items: data.length,
@@ -68,6 +95,15 @@ export class AssembliesController {
   @ApiResponse({ status: 200, type: GetAssemblyResponseDto })
   async findOne(@Param("id", ParseUUIDPipe) id: string) {
     return await this.assembliesService.findOne(id);
+  }
+
+  // 3.1 Obtener una Asamblea por livekit_room_name
+  @Get("livekit/:roomName")
+  @ApiOperation({ summary: t('DETALLE_POR_ROOM_RES') || 'Obtener asamblea por room de LiveKit' })
+  @ApiParam({ name: "roomName", description: t('LIVEKIT_ROOM_DESC') || 'Nombre de la sala de LiveKit' })
+  @ApiResponse({ status: 200, type: GetAssemblyResponseDto })
+  async findByLivekitRoomName(@Param("roomName") roomName: string) {
+    return await this.assembliesService.findByLivekitRoomName(roomName);
   }
 
   // 4. Actualizar Asamblea (o cambiar estado)

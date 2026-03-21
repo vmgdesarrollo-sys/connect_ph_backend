@@ -1,7 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from './user.entity';
 import { Role } from './role.entity';
-import { UnitAssignment } from './unit_assignment.entity';
 
 @Entity('user_roles')
 export class UserRol {
@@ -21,9 +20,6 @@ export class UserRol {
   @ManyToOne(() => Role)
   @JoinColumn({ name: 'roles_id' })
   role: Role;
-
-  @OneToMany(() => UnitAssignment, (assignment) => assignment.userRol)
-  unitAssignments: UnitAssignment[];
 
   @Column({ default: true })
   is_active: boolean;

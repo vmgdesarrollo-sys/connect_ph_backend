@@ -112,21 +112,7 @@ export class PhsController {
     @Query("_fields") _fields?: string,
     @Query("_where") _where?: string
   ) {
-    const phs = await this.phsService.findAll(_fields, _where),
-      limit = 100,
-      page = 1;
-
-    return {
-      status: "success",
-      message: getSwaggerText('phs', 'LISTAR_TODAS_PH_RESP', lang),
-      data: phs,
-      properties: {
-        total_items: phs.length,
-        items_per_page: limit,
-        current_page: page,
-        total_pages: Math.ceil(phs.length / limit)
-      },
-    };
+    return await this.phsService.findAll(_fields, _where);
   }
 
   // Get register per ID

@@ -49,7 +49,7 @@ export class VotingQuestion {
   @Column({ type: 'timestamp', nullable: true })
   closed_at: Date;
 
-  @Column({ default: false })
+  @Column({ default: true })
   is_active: boolean;
   
   @Column({ type: 'uuid', nullable: true })

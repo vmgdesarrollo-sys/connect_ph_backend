@@ -27,19 +27,19 @@ const g = (key: string) => getSwaggerText("general", key, lang);
 export class UnitAssignmentsController {
   constructor(private readonly unitAssignmentsService: UnitAssignmentsService) {}
 
-  @Post('assing/:userRolId')
+  @Post('assing/:userId')
   @ApiOperation({ summary: t("REGISTER_SUMMARY") })
-  @ApiParam({ name: "userRolId", description: t("PARAM_USERID"), example: "550e8400-e29b-41d4-a716-446655440000" })
+  @ApiParam({ name: "userId", description: t("PARAM_USERID"), example: "550e8400-e29b-41d4-a716-446655440000" })
   @ApiResponse({ status: 201, description: t("REGISTER_DESC"), type: CreateUserUnitResponseDto })
-  async assingRol(@Param("userRolId", ParseUUIDPipe) id: string, @Body() createAssingmentUnitDto: CreateAssingmentUnitDto) {
+  async assingRol(@Param("userId", ParseUUIDPipe) id: string, @Body() createAssingmentUnitDto: CreateAssingmentUnitDto) {
     return await this.unitAssignmentsService.assingRol(id, createAssingmentUnitDto); 
   }
 
-  @Get(':userRolId')
+  @Get(':userId')
   @ApiOperation({ summary: t("GET_DETAIL_SUMMARY") })
-  @ApiParam({ name: "userRolId", description: t("PARAM_USERID"), example: "550e8400-e29b-41d4-a716-446655440000" })
+  @ApiParam({ name: "userId", description: t("PARAM_USERID"), example: "550e8400-e29b-41d4-a716-446655440000" })
   @ApiResponse({ status: 200, description: t("GET_DETAIL_DESC"), type: GetUserUnitResponseDto })
-  async findOne(@Param('userRolId', ParseUUIDPipe) id: string) {
+  async findOne(@Param('userId', ParseUUIDPipe) id: string) {
     return await this.unitAssignmentsService.getRolPerUserId(id);
   }
 }

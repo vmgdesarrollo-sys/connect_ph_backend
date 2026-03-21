@@ -1,8 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { VotingQuestion } from './voting_questions.entity';
 import { QuestionOption } from './questions_options.entity';
 import { AssemblyAttendance } from './assembly_attendances.entity';
 
+@Index('uq_votes_question_attendance', ['voting_questions_id', 'assembly_attendances_id'], { unique: true })
 @Entity('votes')
 export class Vote {
   @PrimaryGeneratedColumn('uuid')
