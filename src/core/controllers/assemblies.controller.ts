@@ -118,4 +118,49 @@ export class AssembliesController {
   async delete(@Param("id", ParseUUIDPipe) id: string) {
     return await this.assembliesService.delete(id);
   }
+
+  // 6. Obtener citados (usuarios con derecho a voto) de una asamblea
+  @Get(":id/citados")
+  @ApiOperation({ summary: 'Obtener citados de la asamblea' })
+  @ApiParam({ name: "id", description: 'ID de la asamblea' })
+  @ApiResponse({ status: 200, description: 'Lista de usuarios citados' })
+  async getCited(@Param("id", ParseUUIDPipe) id: string) {
+    return await this.assembliesService.getCited(id);
+  }
+
+  // 7. Obtener asistentes de una asamblea
+  @Get(":id/asistentes")
+  @ApiOperation({ summary: 'Obtener asistentes de la asamblea' })
+  @ApiParam({ name: "id", description: 'ID de la asamblea' })
+  @ApiResponse({ status: 200, description: 'Lista de asistentes' })
+  async getAttendees(@Param("id", ParseUUIDPipe) id: string) {
+    return await this.assembliesService.getAttendees(id);
+  }
+
+  // 8. Obtener ausentes de una asamblea
+  @Get(":id/ausentes")
+  @ApiOperation({ summary: 'Obtener ausentes de la asamblea' })
+  @ApiParam({ name: "id", description: 'ID de la asamblea' })
+  @ApiResponse({ status: 200, description: 'Lista de usuarios ausentes' })
+  async getAbsences(@Param("id", ParseUUIDPipe) id: string) {
+    return await this.assembliesService.getAbsences(id);
+  }
+
+  // 9. Obtener coeficiente de una asamblea
+  @Get(":id/coeficiente")
+  @ApiOperation({ summary: 'Obtener coeficiente total de asistentes' })
+  @ApiParam({ name: "id", description: 'ID de la asamblea' })
+  @ApiResponse({ status: 200, description: 'Coeficiente total de asistentes' })
+  async getCoefficient(@Param("id", ParseUUIDPipe) id: string) {
+    return await this.assembliesService.getCoefficient(id);
+  }
+
+  // 10. Obtener quorum de una asamblea
+  @Get(":id/quorum")
+  @ApiOperation({ summary: 'Obtener quorum de la asamblea' })
+  @ApiParam({ name: "id", description: 'ID de la asamblea' })
+  @ApiResponse({ status: 200, description: 'Información del quorum' })
+  async getQuorum(@Param("id", ParseUUIDPipe) id: string) {
+    return await this.assembliesService.getQuorum(id);
+  }
 }
