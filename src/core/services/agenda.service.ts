@@ -122,4 +122,22 @@ export class AgendaService {
       message: this.i18n.t("agenda.AGENDA_ELIMINADA", { lang, args: { id } }),
     };
   }
+
+  // Obtener todos los puntos de agenda de una asamblea
+  async findByAssemblyId(assemblyId: string): Promise<any> {
+    const agendas = await this.agendaRepository.find({
+      where: { 
+        assembly_id: assemblyId, 
+        is_active: true 
+      },
+      order: { sort_order: 'ASC' },
+      relations: ['createdByUser', 'updatedByUser'],
+    });
+
+    return {
+      status: this.i18n.t("general.SUCCESS", { lang }),
+      message: this.i18n.t("agenda.AGENDA_POR_ASAMBLEA", { lang }),
+      data: agendas,
+    };
+  }
 }
