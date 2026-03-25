@@ -25,10 +25,10 @@ export class UnitAssignmentsService {
     private readonly unitAssignmentRepository: Repository<UnitAssignment>
   ) {}
 // Asignar una unidad a un usuario
-  async assingRol(id: string, createAssingmentUnitDto: CreateAssingmentUnitDto): Promise<any> {
+  async assignUser(id: string, createAssingmentUnitDto: CreateAssingmentUnitDto): Promise<any> {
     // Validar que el usuario existe
     const user = await this.userRepository.findOne({ 
-      where: { id, is_active: true } 
+      where: { id } 
     });
     
     if (!user) {
@@ -80,10 +80,11 @@ export class UnitAssignmentsService {
     };
   }
 // Obtener las asignaciones de unidades por user ID
-  async getRolPerUserId(id: string): Promise<any> {
+  async getAssignmentsByUserId(id: string): Promise<any> {
     // Verificar si el usuario tiene asignaciones de unidades
     const unitAssignments = await this.unitAssignmentRepository.find({
-      where: { user_id: id, is_active: true }
+      where: { user_id: id, is_active: true
+       }
     });
 
     // Si no tiene asignaciones, el usuario no está asignado a ninguna unidad
@@ -97,6 +98,61 @@ export class UnitAssignmentsService {
       status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
       message: this.i18n.t('unit_assignments.MSG_GET', {lang, args: {},}),
       data: unitAssignments
+    };
+  }
+
+  // Actualizar asignación de unidad
+  async update(id: string, dto: CreateAssingmentUnitDto): Promise<any> {
+    const assignment = await this.unitAssignmentRepository.findOne({
+      where: { id, is_active: true },
+    });
+
+    if (!assignment) {
+      throw new NotFoundException(
+        this.i18n.t('unit_assignments.NOT_FOUND', { lang, args: { id } }) || `Asignación con id ${id} no encontrada`
+      );
+    }
+
+    // Validar que la nueva unidad exista si se cambia
+    if (dto.units_id) {
+      const unit = await this.unitRepository.findOne({
+        where: { id: dto.units_id, is_active: true },
+      });
+      if (!unit) {
+        throw new NotFoundException(
+          this.i18n.t('units.NOT_FOUND', { lang, args: { id: dto.units_id } })
+        );
+      }
+    }
+
+    Object.assign(assignment, dto);
+    const updated = await this.unitAssignmentRepository.save(assignment);
+
+    return {
+      status: this.i18n.t('general.SUCCESS', { lang }),
+      message: this.i18n.t('unit_assignments.MSG_UPDATE', { lang }) || 'Asignación actualizada correctamente',
+      data: updated,
+    };
+  }
+
+  // Eliminar asignación de unidad (soft delete)
+  async delete(id: string): Promise<any> {
+    const assignment = await this.unitAssignmentRepository.findOne({
+      where: { id, is_active: true },
+    });
+
+    if (!assignment) {
+      throw new NotFoundException(
+        this.i18n.t('unit_assignments.NOT_FOUND', { lang, args: { id } }) || `Asignación con id ${id} no encontrada`
+      );
+    }
+
+    assignment.is_active = false;
+    await this.unitAssignmentRepository.save(assignment);
+
+    return {
+      status: this.i18n.t('general.SUCCESS', { lang }),
+      message: this.i18n.t('unit_assignments.MSG_DELETE', { lang }) || 'Asignación eliminada correctamente',
     };
   }
 
