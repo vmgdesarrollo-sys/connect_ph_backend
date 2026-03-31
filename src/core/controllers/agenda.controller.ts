@@ -72,6 +72,14 @@ export class AgendaController {
     };
   }
 
+  @Get('assembly/:assemblyId')
+  @ApiOperation({ summary: t('LISTAR_POR_ASAMBLEA'), description: t('LISTAR_POR_ASAMBLEA_DESC') })
+  @ApiParam({ name: "assemblyId", description: t('ASSEMBLY_ID_DESC') })
+  @ApiResponse({ status: 200, description: t('LISTAR_POR_ASAMBLEA_RES'), type: AgendaListResponseDto })
+  async findByAssemblyId(@Param("assemblyId", ParseUUIDPipe) assemblyId: string) {
+    return await this.agendaService.findByAssemblyId(assemblyId);
+  }
+
   @Get(":id")
   @ApiOperation({ summary: t('OBTENER') })
   @ApiParam({ name: "id", description: t('UUID_AGENDA') })
