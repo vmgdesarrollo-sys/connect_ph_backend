@@ -47,4 +47,12 @@ export class QuestionsOptionsController {
   async delete(@Param("id", ParseUUIDPipe) id: string) {
     return await this.service.delete(id);
   }
+
+  @Get("voting-question/:votingQuestionId")
+  @ApiOperation({ summary: t('LISTAR_POR_VOTING_QUESTION_RES') })
+  @ApiResponse({ status: 200, type: QuestionOptionListResponseDto })
+  @ApiParam({ name: 'votingQuestionId', description: 'ID de la pregunta de votación' })
+  async findByVotingQuestionId(@Param('votingQuestionId', ParseUUIDPipe) votingQuestionId: string) {
+    return await this.service.findByVotingQuestionId(votingQuestionId);
+  }
 }
