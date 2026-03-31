@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 import { I18nContext } from 'nestjs-i18n';
 import { getSwaggerText } from "../../../utils/swagger-i18n.loader";
 
@@ -54,4 +54,9 @@ export class CreateUserDto {
   @ApiProperty({ example: t('PHONE'), description: t('PHONE_DESC'), required: false })
   @IsOptional()
   phone_number?: string;
+
+  @ApiProperty({ example: true, required: false })
+  @IsBoolean()
+  @IsOptional()
+  is_active?: boolean;
 }

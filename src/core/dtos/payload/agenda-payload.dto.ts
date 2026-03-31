@@ -7,6 +7,7 @@ const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
 const t = (key: string) => getSwaggerText('agenda', `${key}`, lang);
 
 export class CreateAgendaDto {
+    
   @ApiProperty({ description: t('ASSEMBLY_ID_DESC'), example: 'd290f1ee-6c54-4b01-90e6-d701748f0851' })
   @IsUUID()
   @IsNotEmpty()
@@ -36,4 +37,9 @@ export class CreateAgendaDto {
   @IsNumber()
   @IsOptional()
   required_quorum: number;
+
+  @ApiProperty({ description: t('IS_ACTIVE_DESC'), example: true, required: false })
+    @IsBoolean()
+    @IsOptional()
+    is_active?: boolean;
 }

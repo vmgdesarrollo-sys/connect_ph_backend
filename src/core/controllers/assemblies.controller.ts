@@ -43,23 +43,28 @@ export class AssembliesController {
   @ApiOperation({ summary: t('LISTAR_RES') })
   @ApiQuery({ name: "_fields", required: false, example: "*" })
   @ApiQuery({ name: "_where", required: false, example: "(phs_id=uuid)" })
+    @ApiQuery({ name: "phs_id", required: false, description: "UUID del conjunto (PH)", example: "00000000-0000-0000-0000-000000000000" })
   @ApiResponse({ status: 200, type: AssemblyListResponseDto })
-  async findAll(@Query("_fields") _fields?: string, @Query("_where") _where?: string) {
-    const data = await this.assembliesService.findAll(_fields, _where);
-    const limit = 100, page = 1;
+    async findAll(
+      @Query("_fields") _fields?: string,
+      @Query("_where") _where?: string,
+      @Query("phs_id") phs_id?: string
+    ) {
+      const data = await this.assembliesService.findAll(phs_id ? { phs_id } : undefined);
+      const limit = 100, page = 1;
 
-    return {
-      status: "success",
-      message: t('LISTAR_RES'),
-      data,
-      properties: {
-        total_items: data.length,
-        items_per_page: limit,
-        current_page: page,
-        total_pages: Math.ceil(data.length / limit)
-      },
-    };
-  }
+      return {
+        status: "success",
+        message: t('LISTAR_RES'),
+        data,
+        properties: {
+          total_items: data.length,
+          items_per_page: limit,
+          current_page: page,
+          total_pages: Math.ceil(data.length / limit)
+        },
+      };
+    }
 
   // 2.1 Listar asambleas por ID de PH (copropiedad)
   @Get("ph/:phsId")

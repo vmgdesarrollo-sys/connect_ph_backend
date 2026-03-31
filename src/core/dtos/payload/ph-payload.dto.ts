@@ -9,6 +9,7 @@ import {
   IsUUID,
   IsNumber,
 } from "class-validator";
+import { Transform } from "class-transformer";
 
 import { I18nContext } from "nestjs-i18n";
 import { getSwaggerText } from "../../../utils/swagger-i18n.loader";
@@ -61,6 +62,15 @@ export class CreatePhDto {
     example: t("EXAMPLE_PH_LOGO_URL"),
     required: false,
     description: t("DESP_PH_LOGO_URL"),
+  })
+  @Transform(({ value }) => {
+    if (value === null || value === undefined) return undefined;
+    if (typeof value === "string") {
+      const normalized = value.trim();
+      if (normalized === "" || normalized.toLowerCase() === "null") return undefined;
+      return normalized;
+    }
+    return value;
   })
   @IsUrl(
     {},
@@ -134,6 +144,7 @@ export class CreatePhDto {
     description: t("DESP_HORIZONTAL_PROPERTY_REGULATIONS"),
     required: false,
   })
+  @IsOptional()
   @IsString()
   horizontal_property_regulations?: string;
   

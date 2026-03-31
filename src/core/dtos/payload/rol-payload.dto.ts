@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { I18nContext } from 'nestjs-i18n';
 import {getSwaggerText} from "../../../utils/swagger-i18n.loader"
@@ -32,4 +32,12 @@ export class CreateRoleDto {
   @IsString()
   @IsOptional()
   scopes?: string;
+
+  @ApiProperty({
+    example: true,
+    required: false
+  })
+  @IsBoolean()
+  @IsOptional()
+  is_active?: boolean;
 }
