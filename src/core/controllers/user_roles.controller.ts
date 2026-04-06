@@ -42,4 +42,20 @@ export class UserRolesController {
   async findOne(@Param('userId', ParseUUIDPipe) id: string) {
     return await this.userRolesService.getRolPerUserId(id);
   }
+
+  @Put(':id')
+  @ApiOperation({ summary: t("UPDATE_SUMMARY") })
+  @ApiParam({ name: "id", description: t("PARAM_ID"), example: "550e8400-e29b-41d4-a716-446655440000" })
+  @ApiResponse({ status: 200, description: t("UPDATE_DESC"), type: CreateUserRolResponseDto })
+  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CreateUserRolDto) {
+    return await this.userRolesService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: t("DELETE_SUMMARY") })
+  @ApiParam({ name: "id", description: t("PARAM_ID"), example: "550e8400-e29b-41d4-a716-446655440000" })
+  @ApiResponse({ status: 200, description: t("DELETE_DESC") })
+  async delete(@Param('id', ParseUUIDPipe) id: string) {
+    return await this.userRolesService.delete(id);
+  }
 }

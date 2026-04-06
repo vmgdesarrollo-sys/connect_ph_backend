@@ -27,12 +27,12 @@ const g = (key: string) => getSwaggerText("general", key, lang);
 export class UnitAssignmentsController {
   constructor(private readonly unitAssignmentsService: UnitAssignmentsService) {}
 
-  @Post('assing/:userId')
+  @Post('assign/:userId')
   @ApiOperation({ summary: t("REGISTER_SUMMARY") })
   @ApiParam({ name: "userId", description: t("PARAM_USERID"), example: "550e8400-e29b-41d4-a716-446655440000" })
   @ApiResponse({ status: 201, description: t("REGISTER_DESC"), type: CreateUserUnitResponseDto })
-  async assingRol(@Param("userId", ParseUUIDPipe) id: string, @Body() createAssingmentUnitDto: CreateAssingmentUnitDto) {
-    return await this.unitAssignmentsService.assingRol(id, createAssingmentUnitDto); 
+  async assignUser(@Param("userId", ParseUUIDPipe) id: string, @Body() createAssingmentUnitDto: CreateAssingmentUnitDto) {
+    return await this.unitAssignmentsService.assignUser(id, createAssingmentUnitDto); 
   }
 
   @Get(':userId')
@@ -40,6 +40,22 @@ export class UnitAssignmentsController {
   @ApiParam({ name: "userId", description: t("PARAM_USERID"), example: "550e8400-e29b-41d4-a716-446655440000" })
   @ApiResponse({ status: 200, description: t("GET_DETAIL_DESC"), type: GetUserUnitResponseDto })
   async findOne(@Param('userId', ParseUUIDPipe) id: string) {
-    return await this.unitAssignmentsService.getRolPerUserId(id);
+    return await this.unitAssignmentsService.getAssignmentsByUserId(id);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: t("UPDATE_SUMMARY") })
+  @ApiParam({ name: "id", description: t("PARAM_ID"), example: "550e8400-e29b-41d4-a716-446655440000" })
+  @ApiResponse({ status: 200, description: t("UPDATE_DESC"), type: CreateUserUnitResponseDto })
+  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CreateAssingmentUnitDto) {
+    return await this.unitAssignmentsService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: t("DELETE_SUMMARY") })
+  @ApiParam({ name: "id", description: t("PARAM_ID"), example: "550e8400-e29b-41d4-a716-446655440000" })
+  @ApiResponse({ status: 200, description: t("DELETE_DESC") })
+  async delete(@Param('id', ParseUUIDPipe) id: string) {
+    return await this.unitAssignmentsService.delete(id);
   }
 }
