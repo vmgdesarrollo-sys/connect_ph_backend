@@ -11,5 +11,6 @@
   "ACTUALIZADA_RES": "Opción actualizada correctamente.",
   "DETALLE_RES": "Detalle de la opción obtenido.",
   "LISTAR_RES": "Listado de opciones obtenido.",
-  "ELIMINADA_RES": "Opción eliminada correctamente."
+  "ELIMINADA_RES": "Opción eliminada correctamente.",
+  "LISTAR_POR_VOTING_QUESTION_RES": "Listado de opciones obtenido por pregunta de votación."
 }

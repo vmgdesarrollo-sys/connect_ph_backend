@@ -66,6 +66,28 @@ export class AssembliesController {
       };
     }
 
+  // 2.1 Listar asambleas por ID de PH (copropiedad)
+  @Get("ph/:phsId")
+  @ApiOperation({ summary: t('LISTAR_POR_PH_RES') || 'Listar asambleas por PH' })
+  @ApiParam({ name: "phsId", description: t('PHS_ID_DESC') })
+  @ApiResponse({ status: 200, type: AssemblyListResponseDto })
+  async findByPh(@Param("phsId", ParseUUIDPipe) phsId: string) {
+    const data = await this.assembliesService.findByPh(phsId);
+    const limit = 100, page = 1;
+
+    return {
+      status: "success",
+      message: t('LISTAR_POR_PH_RES') || 'Listado de asambleas por PH',
+      data,
+      properties: {
+        total_items: data.length,
+        items_per_page: limit,
+        current_page: page,
+        total_pages: Math.ceil(data.length / limit)
+      },
+    };
+  }
+
   // 3. Obtener una Asamblea por ID
   @Get(":id")
   @ApiOperation({ summary: t('DETALLE_RES') })
@@ -73,6 +95,15 @@ export class AssembliesController {
   @ApiResponse({ status: 200, type: GetAssemblyResponseDto })
   async findOne(@Param("id", ParseUUIDPipe) id: string) {
     return await this.assembliesService.findOne(id);
+  }
+
+  // 3.1 Obtener una Asamblea por livekit_room_name
+  @Get("livekit/:roomName")
+  @ApiOperation({ summary: t('DETALLE_POR_ROOM_RES') || 'Obtener asamblea por room de LiveKit' })
+  @ApiParam({ name: "roomName", description: t('LIVEKIT_ROOM_DESC') || 'Nombre de la sala de LiveKit' })
+  @ApiResponse({ status: 200, type: GetAssemblyResponseDto })
+  async findByLivekitRoomName(@Param("roomName") roomName: string) {
+    return await this.assembliesService.findByLivekitRoomName(roomName);
   }
 
   // 4. Actualizar Asamblea (o cambiar estado)
@@ -91,5 +122,50 @@ export class AssembliesController {
   @ApiResponse({ status: 200, type: DeleteAssemblyResponseDto })
   async delete(@Param("id", ParseUUIDPipe) id: string) {
     return await this.assembliesService.delete(id);
+  }
+
+  // 6. Obtener citados (usuarios con derecho a voto) de una asamblea
+  @Get(":id/citados")
+  @ApiOperation({ summary: 'Obtener citados de la asamblea' })
+  @ApiParam({ name: "id", description: 'ID de la asamblea' })
+  @ApiResponse({ status: 200, description: 'Lista de usuarios citados' })
+  async getCited(@Param("id", ParseUUIDPipe) id: string) {
+    return await this.assembliesService.getCited(id);
+  }
+
+  // 7. Obtener asistentes de una asamblea
+  @Get(":id/asistentes")
+  @ApiOperation({ summary: 'Obtener asistentes de la asamblea' })
+  @ApiParam({ name: "id", description: 'ID de la asamblea' })
+  @ApiResponse({ status: 200, description: 'Lista de asistentes' })
+  async getAttendees(@Param("id", ParseUUIDPipe) id: string) {
+    return await this.assembliesService.getAttendees(id);
+  }
+
+  // 8. Obtener ausentes de una asamblea
+  @Get(":id/ausentes")
+  @ApiOperation({ summary: 'Obtener ausentes de la asamblea' })
+  @ApiParam({ name: "id", description: 'ID de la asamblea' })
+  @ApiResponse({ status: 200, description: 'Lista de usuarios ausentes' })
+  async getAbsences(@Param("id", ParseUUIDPipe) id: string) {
+    return await this.assembliesService.getAbsences(id);
+  }
+
+  // 9. Obtener coeficiente de una asamblea
+  @Get(":id/coeficiente")
+  @ApiOperation({ summary: 'Obtener coeficiente total de asistentes' })
+  @ApiParam({ name: "id", description: 'ID de la asamblea' })
+  @ApiResponse({ status: 200, description: 'Coeficiente total de asistentes' })
+  async getCoefficient(@Param("id", ParseUUIDPipe) id: string) {
+    return await this.assembliesService.getCoefficient(id);
+  }
+
+  // 10. Obtener quorum de una asamblea
+  @Get(":id/quorum")
+  @ApiOperation({ summary: 'Obtener quorum de la asamblea' })
+  @ApiParam({ name: "id", description: 'ID de la asamblea' })
+  @ApiResponse({ status: 200, description: 'Información del quorum' })
+  async getQuorum(@Param("id", ParseUUIDPipe) id: string) {
+    return await this.assembliesService.getQuorum(id);
   }
 }

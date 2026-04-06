@@ -19,5 +19,8 @@
   "ACTUALIZADA_RES": "Votación actualizada correctamente.",
   "DETALLE_RES": "Detalle de la votación obtenido.",
   "LISTAR_RES": "Listado de preguntas de votación obtenido.",
-  "ELIMINADA_RES": "Pregunta de votación eliminada."
+  "ELIMINADA_RES": "Pregunta de votación eliminada.",
+  "LISTAR_POR_ASAMBLEA": "Listar preguntas por asamblea",
+  "LISTAR_POR_ASAMBLEA_DESC": "Obtiene las preguntas de votación de una asamblea específica.",
+  "LISTAR_POR_ASAMBLEA_RES": "Listado de preguntas de votación de la asamblea obtenido correctamente."
 }

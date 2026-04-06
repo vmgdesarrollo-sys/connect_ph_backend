@@ -21,6 +21,7 @@
   "DETALLE_AGENDA": "Detalle del punto de agenda obtenido",
   "AGENDA_ELIMINADA": "Punto de agenda con ID {id} eliminado exitosamente",
   "AGENDA_NO_EXISTE": "El punto de agenda con ID {id} no existe",
+  "AGENDA_POR_ASAMBLEA": "Listado de agenda de la asamblea obtenido correctamente",
   "ERROR_ORDEN": "Ya existe un punto con el orden {order} en esta asamblea",
 
   "CREAR_AGENDA": "Crear punto de agenda",
@@ -47,6 +48,9 @@
   "LISTAR": "Listar agenda",
   "LISTAR_DESC": "Obtiene todos los puntos de la agenda con soporte de filtros y campos dinámicos.",
   "LISTAR_RES": "Listado de agenda obtenido correctamente.",
+  "LISTAR_POR_ASAMBLEA": "Listar agenda por asamble",
+  "LISTAR_POR_ASAMBLEA_DESC": "Obtiene todos los puntos de la agenda de una asamblea específica.",
+  "LISTAR_POR_ASAMBLEA_RES": "Listado de agenda de la asamblea obtenido correctamente.",
   "OBTENER": "Obtener punto de agenda",
   "ELIMINAR": "Eliminar punto de agenda",
   "ERROR_DUPLICADO": "El orden del día para este punto ya existe."

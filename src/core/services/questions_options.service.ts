@@ -3,7 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from "typeorm";
 import { QuestionOption } from "../entities/questions_options.entity";
 import { CreateQuestionOptionDto } from "../dtos/payload/questions_options-payload.dto";
-import { I18nService } from "nestjs-i18n";
+import { I18nService, I18nContext } from "nestjs-i18n";
+
+const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? "es";
 import { FindOptionsWhere } from "typeorm";
 
 // Servicio para gestionar las opciones de preguntas en una votación
@@ -80,7 +82,24 @@ async findAll(_where?: string): Promise<QuestionOption[]> {
     
     return { 
       status: "success", 
-      message: this.i18n.t("questions_options.ELIMINADA_RES") 
+      message: this.i18n.t("questions_options.ELIMINADA_RES", { lang }) 
+    };
+  }
+
+  // Obtener opciones de una pregunta de votación específica
+  async findByVotingQuestionId(votingQuestionId: string): Promise<any> {
+    const options = await this.repository.find({
+      where: { 
+        question_id: votingQuestionId, 
+        is_active: true 
+      },
+      order: { order_index: 'ASC' },
+    });
+
+    return {
+      status: "success",
+      message: this.i18n.t("questions_options.LISTAR_POR_VOTING_QUESTION_RES", { lang }),
+      data: options,
     };
   }
 }

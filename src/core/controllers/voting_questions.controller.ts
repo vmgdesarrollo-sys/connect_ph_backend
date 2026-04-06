@@ -40,6 +40,14 @@ export class VotingQuestionsController {
     };
   }
 
+  @Get('assembly/:assemblyId')
+  @ApiOperation({ summary: t('LISTAR_POR_ASAMBLEA_RES') })
+  @ApiParam({ name: "assemblyId", description: t('ASSEMBLY_ID_DESC') })
+  @ApiResponse({ status: 200, type: VotingQuestionListResponseDto })
+  async findByAssemblyId(@Param("assemblyId", ParseUUIDPipe) assemblyId: string) {
+    return await this.service.findByAssemblyId(assemblyId);
+  }
+
   @Put(":id")
   @ApiOperation({ summary: t('ACTUALIZADA_RES') })
   @ApiParam({ name: "id", description: t('ID_DESC') })
