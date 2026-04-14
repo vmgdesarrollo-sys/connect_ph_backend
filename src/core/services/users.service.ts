@@ -62,7 +62,16 @@ export class UsersService {
     const savedUser = await this.userRepository.save(newUser);
 
     if (!password) {
-      await this.authService.sendActivationLink(savedUser);
+      console.log('[UsersService] Usuario creado sin password, enviando link de activación a:', savedUser.email);
+      try {
+        await this.authService.sendActivationLink(savedUser);
+        console.log('[UsersService] Email de activación enviado exitosamente a:', savedUser.email);
+      } catch (error) {
+        console.error('[UsersService] Error al enviar email de activación:', (error as any)?.message || error);
+        throw error;
+      }
+    } else {
+      console.log('[UsersService] Usuario creado con password, no se envía email de activación.');
     }
 
     // Eliminamos el password del objeto de respuesta por seguridad
@@ -79,34 +88,62 @@ export class UsersService {
       data: userWithoutPassword,
     };
   }
-// Listar todos los usuarios activos
-  async findAll(_fields?: string, _where?: string): Promise<any> {
-    // Permitir filtrar por is_active desde _where o mostrar todos si no se especifica
-    let whereClause = {};
+// Listar todos los usuarios, opcionalmente filtrados por copropiedad
+  async findAll(_fields?: string, _where?: string, phId?: string): Promise<any> {
+    const selectFields = [
+      'u.id', 'u.first_name', 'u.last_name', 'u.type_person', 'u.gender', 'u.avatar_url',
+      'u.email', 'u.document_type', 'u.document_number', 'u.phone_number', 'u.is_active', 'u.created_at'
+    ];
+
+    const qb = this.userRepository
+      .createQueryBuilder('u')
+      .select(selectFields);
+
+    // Si se pasa phId, filtrar usuarios vinculados a esa copropiedad vía user_roles_phs
+    if (phId) {
+      qb.innerJoin('user_roles', 'ur', 'ur.users_id = u.id AND ur.is_active = true')
+        .innerJoin('user_roles_phs', 'urp', 'urp.user_roles_id = ur.id AND urp.phs_id = :phId AND urp.is_active = true', { phId });
+    }
+
+    // Aplicar filtros adicionales desde _where
     if (_where) {
       try {
         const parsed = JSON.parse(_where);
-        whereClause = parsed;
+        for (const [key, value] of Object.entries(parsed)) {
+          qb.andWhere(`u.${key} = :${key}`, { [key]: value });
+        }
       } catch {
         // Si _where no es JSON válido, ignorar
       }
     }
-    // Si no se especifica is_active en _where, no filtrar
-    const users = await this.userRepository.find({
-      where: whereClause,
-      select: ['id', 'first_name', 'last_name', 'type_person', 'gender', 'avatar_url', 
-               'email', 'document_type', 'document_number', 'phone_number', 'is_active', 'created_at']
-    });
-// Retornar la lista de usuarios
+
+    const users = await qb.distinct(true).getRawMany();
+
+    // Normalizar nombres de columnas (getRawMany devuelve con prefijo u_)
+    const data = users.map(row => ({
+      id: row.u_id,
+      first_name: row.u_first_name,
+      last_name: row.u_last_name,
+      type_person: row.u_type_person,
+      gender: row.u_gender,
+      avatar_url: row.u_avatar_url,
+      email: row.u_email,
+      document_type: row.u_document_type,
+      document_number: row.u_document_number,
+      phone_number: row.u_phone_number,
+      is_active: row.u_is_active,
+      created_at: row.u_created_at,
+    }));
+
     return {
       status: this.i18n.t("general.SUCCESS", { lang, args: {} }),
       message: this.i18n.t("users.MSG_LIST", { lang, args: {} }),
-      data: users,
+      data,
       properties: {
-        total_items: users.length,
+        total_items: data.length,
         items_per_page: 10,
         current_page: 1,
-        total_pages: Math.ceil(users.length / 10),
+        total_pages: Math.ceil(data.length / 10),
       },
     };
   }
@@ -175,6 +212,7 @@ export class UsersService {
     };
   }
 
+  // Actualizar un usuario por ID
   async update(id: string, createUserDto: CreateUserDto): Promise<any> {
     const user = await this.userRepository.findOne({ where: { id } });
     
@@ -195,7 +233,13 @@ export class UsersService {
       }
     }
 
-    // Actualizar campos
+    // Si se envía contraseña en la actualización, cifrarla antes de guardar
+    if (createUserDto.password) {
+      const salt = await bcrypt.genSalt(10);
+      createUserDto.password = await bcrypt.hash(createUserDto.password, salt);
+    }
+
+    // Actualizar campos del usuario
     Object.assign(user, createUserDto);
     
     const updatedUser = await this.userRepository.save(user);
