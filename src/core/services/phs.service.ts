@@ -68,11 +68,19 @@ export class PhsService {
       data: updatedPh,
     };
   }
-// Listar todas las copropiedades (PH) activas
-  async findAll(_fields?: string, _where?: string): Promise<any> {
-    const phs = await this.phRepository.find({
-      where: { is_active: true },
-    });
+// Listar copropiedades, opcionalmente filtradas por usuario
+  async findAll(_fields?: string, _where?: string, userId?: string): Promise<any> {
+    const qb = this.phRepository
+      .createQueryBuilder('p')
+      .where('p.is_active = true');
+
+    // Si viene userId, filtrar PHs asignadas al usuario vía user_roles → user_roles_phs
+    if (userId) {
+      qb.innerJoin('user_roles_phs', 'urp', 'urp.phs_id = p.id AND urp.is_active = true')
+        .innerJoin('user_roles', 'ur', 'ur.id = urp.user_roles_id AND ur.users_id = :userId AND ur.is_active = true', { userId });
+    }
+
+    const phs = await qb.distinct(true).getMany();
 
     return {
       status: this.i18n.t('general.SUCCESS', {lang, args: {},}),

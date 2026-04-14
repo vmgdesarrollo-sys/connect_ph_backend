@@ -213,7 +213,7 @@ export class AuthService {
     await this.sendPasswordLinkEmail(
       user,
       'SET_PASSWORD',
-      '/set-password',
+      'reset-password',
       'auth.SET_PASSWORD_EMAIL_SUBJECT',
       'set-password'
     );
@@ -427,6 +427,7 @@ export class AuthService {
     subjectKey: string,
     templateName: string
   ): Promise<void> {
+    console.log(`[AuthService] sendPasswordLinkEmail - type: ${type}, email: ${user.email}, template: ${templateName}`);
     const token = await this.createPasswordToken(user.id, type);
     const baseUrl = process.env.APP_BASE_URL;
 
@@ -437,6 +438,7 @@ export class AuthService {
     }
 
     const link = `${baseUrl}${path}?token=${token}`;
+    console.log(`[AuthService] Link generado: ${link}`);
 
     await this.mailerService.sendTemplate(
       user.email,

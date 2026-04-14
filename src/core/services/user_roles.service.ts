@@ -69,6 +69,7 @@ export class UserRolesService {
     const newRoleIds = roleIds.filter(roleId => !existingRoleIds.has(roleId));
 
     // Crear todas las asignaciones de una vez (batch insert)
+    let savedUserRoles: UserRol[] = [];
     if (newRoleIds.length > 0) {
       const userRoles = newRoleIds.map(roleId => 
         this.userRolRepository.create({
@@ -77,7 +78,7 @@ export class UserRolesService {
         })
       );
       // Guardar todas las asignaciones de roles nuevas en una sola consulta
-      await this.userRolRepository.save(userRoles); 
+      savedUserRoles = await this.userRolRepository.save(userRoles); 
     }
 
     // Determinar mensaje según el resultado
@@ -95,6 +96,10 @@ export class UserRolesService {
       message: message,
       data: {
         user_id: id,
+        assigned: savedUserRoles.map(ur => ({
+          id: ur.id,
+          role_id: ur.roles_id
+        })),
         roles_assigned: newRoleIds.length,
         roles_already_existed: roleIds.length - newRoleIds.length,
         total_roles: roleIds.length

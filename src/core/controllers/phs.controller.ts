@@ -99,6 +99,7 @@ export class PhsController {
     summary: getSwaggerText('phs', 'LISTAR_TODAS_PH', lang),
     description: getSwaggerText('phs', 'LISTAR_TODAS_PH_DESC', lang),
   })
+  @ApiQuery({ name: "userId", required: false, description: getSwaggerText('phs', 'PARAM_USER_ID', lang), example: "550e8400-e29b-41d4-a716-446655440000" })
   @ApiQuery({ name: "page", required: false, example: 1 })
   @ApiQuery({ name: "limit", required: false, example: 100 })
   @ApiQuery({ name: "_fields", required: false, example: "*" })
@@ -109,10 +110,11 @@ export class PhsController {
     type: PhsListResponseDto,
   })
   async findAll(
+    @Query("userId") userId?: string,
     @Query("_fields") _fields?: string,
     @Query("_where") _where?: string
   ) {
-    return await this.phsService.findAll(_fields, _where);
+    return await this.phsService.findAll(_fields, _where, userId);
   }
 
   // Get register per ID
