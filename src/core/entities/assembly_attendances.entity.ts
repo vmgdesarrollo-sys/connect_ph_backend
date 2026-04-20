@@ -1,41 +1,56 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
-import { QaEntry } from './qa_entries.entity';
-import { Vote } from './votes.entity';
-import { Assembly } from './assemblies.entity';
-import { UnitAssignment } from './unit_assignment.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+  Index,
+} from "typeorm";
+import { QaEntry } from "./qa_entries.entity";
+import { Vote } from "./votes.entity";
+import { Assembly } from "./assemblies.entity";
+import { UnitAssignment } from "./unit_assignment.entity";
 
-@Entity('assembly_attendances')
+@Entity("assembly_attendances")
+@Index("idx_assembly_attendances_assembly", ["assemblies_id"])
+@Index("idx_assembly_attendances_unit_assignment", ["unit_assignments_id"])
 export class AssemblyAttendance {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: "uuid" })
   assemblies_id: string;
 
   @ManyToOne(() => Assembly, (assembly) => assembly.attendances)
-  @JoinColumn({ name: 'assemblies_id' })
+  @JoinColumn({ name: "assemblies_id" })
   assembly: Assembly;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: "uuid" })
   unit_assignments_id: string;
 
-  @ManyToOne(() => UnitAssignment, (unitAssignment) => unitAssignment.attendances)
-  @JoinColumn({ name: 'unit_assignments_id' })
+  @ManyToOne(
+    () => UnitAssignment,
+    (unitAssignment) => unitAssignment.attendances,
+  )
+  @JoinColumn({ name: "unit_assignments_id" })
   unitAssignment: UnitAssignment;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   arrival_at: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   departure_at: Date;
 
   @Column({ default: true })
   is_present: boolean;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: "uuid", nullable: true })
   proxy_file_id: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: "text", nullable: true })
   notes: string;
 
   @OneToMany(() => QaEntry, (qaEntry) => qaEntry.assemblyAttendance)
