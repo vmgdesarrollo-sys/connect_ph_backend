@@ -1,0 +1,135 @@
+version: "3.8"
+
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: connect-ph-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASS:-1475369}
+      POSTGRES_DB: ${DB_DATABASE:-1475369}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./connecting_ph.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    networks:
+      - connect-ph-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (desarrollo local - producción usa Cloud Memorystore)
+  redis:
+    image: redis:7-alpine
+    container_name: connect-ph-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - connect-ph-network
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # LiveKit Server (single-node para desarrollo)
+  # NOTA: Para producción (+2,000 usuarios), usar clúster GCP con MIG
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: connect-ph-livekit
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "7880:7880" # HTTP/WebSocket
+      - "7881:7881" # Metrics (Prometheus)
+      - "50000-60000:50000-60000/udp" # Rango UDP para video/audio
+    environment:
+      # LIVEKIT_KEYS: Generar con: livekit-server --create-api-key
+      # En producción, usar variables separadas LIVEKIT_API_KEY/SECRET
+      LIVEKIT_KEYS: ${LIVEKIT_API_KEY}:${LIVEKIT_API_SECRET}
+      LIVEKIT_REDIS_ADDRESS: redis:6379
+      LIVEKIT_REDIS_PASSWORD: ${LIVEKIT_REDIS_PASSWORD:-}
+      LIVEKIT_TTL: ${LIVEKIT_TTL:-8h}
+      LIVEKIT_ROOM_AUTO_DELETE_DELAY: 300
+      # Logging
+      LOG_LEVEL: debug
+    networks:
+      - connect-ph-network
+    volumes:
+      - livekit_data:/var/lib/livekit
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7880/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # NestJS Backend
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: connect-ph-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      livekit:
+        condition: service_healthy
+    ports:
+      - "${PORT:-3001}:3001"
+    environment:
+      NODE_ENV: development
+      DB_TYPE: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASS: ${DB_PASS:-1475369}
+      DB_DATABASE: ${DB_DATABASE:-1475369}
+      JWT_SECRET: ${JWT_SECRET:-supersecret_jwt_key_change_in_prod}
+      JWT_EXPIRE: 1h
+      LIVEKIT_URL: ${LIVEKIT_URL:-http://livekit:7880}
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
+      LIVEKIT_TTL: ${LIVEKIT_TTL:-8h}
+      LIVEKIT_REDIS_HOST: redis # Para clúster local (desarrollo)
+      LIVEKIT_REDIS_PORT: 6379
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      API_VERSION: ${API_VERSION:-api/v1}
+      PORT: 3001
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+      - ./i18n:/usr/src/app/dist/i18n
+    networks:
+      - connect-ph-network
+    command: npm run start:dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  livekit_data:
+    driver: local
+
+networks:
+  connect-ph-network:
+    driver: bridge
