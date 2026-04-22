@@ -13,6 +13,7 @@
   "DELETE_DESC": "Respuesta de la eliminación de un usuario.",
   "NOT_FOUND": "Usuario no encontrado.",
   "PARAM_ID": "Identificador único del usuario (UUID)",
+  "PARAM_PH_ID": "Identificador de la copropiedad para filtrar usuarios (UUID)",
   "PARAM_EMAIL": "Email principal del usuario asignado al momento de creación.",
   "QUERY_FIELDS": "Campos específicos a retornar (ej: id,email,name)",
   "QUERY_WHERE": "Filtros de búsqueda (ej: status=active)",

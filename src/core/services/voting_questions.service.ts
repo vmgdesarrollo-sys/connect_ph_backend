@@ -31,7 +31,7 @@ export class VotingQuestionsService {
   }
 // Listar todas las preguntas de votación activas
   async findAll(_where?: string): Promise<VotingQuestion[]> {
-  const where: FindOptionsWhere<VotingQuestion> = { is_active: true};
+  const where: FindOptionsWhere<VotingQuestion> = { is_active: true };
 
   if (_where) {
     const agendaMatch = _where.match(/agenda_id=([a-f0-9-]+)/i);

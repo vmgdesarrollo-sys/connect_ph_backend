@@ -25,7 +25,7 @@ export class UnitAssignment {
   @OneToMany(() => AssemblyAttendance, (attendance) => attendance.unitAssignment)
   attendances: AssemblyAttendance[];
 
-  @Column({ default: false })
+  @Column({ default: true })
   is_main_resident: boolean;
 
   @Column({ default: false })

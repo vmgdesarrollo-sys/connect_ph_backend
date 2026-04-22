@@ -28,7 +28,7 @@ export class UserRolesService {
   async assingRol(id: string, createUserRolDto: CreateUserRolDto): Promise<any> {
     // Validar que el usuario existe
     const user = await this.userRepository.findOne({ 
-      where: { id, is_active: true } 
+      where: { id } 
     });
     // Si no existe, lanzar error
     if (!user) {
@@ -37,24 +37,24 @@ export class UserRolesService {
       );
     }
 
-    // Buscar los roles por nombre para obtener sus UUIDs
+    // Buscar los roles por ID
     const roles = await this.roleRepository.find({
       where: { 
-        name: In(createUserRolDto.roles),
+        id: In(createUserRolDto.roles),
         is_active: true 
       }
     });
 
     // Validar que todos los roles existen
     if (roles.length !== createUserRolDto.roles.length) {
-      const foundRoleNames = roles.map(r => r.name);
-      const notFoundRoles = createUserRolDto.roles.filter(name => !foundRoleNames.includes(name));
+      const foundRoleIds = roles.map(r => r.id);
+      const notFoundRoles = createUserRolDto.roles.filter(id => !foundRoleIds.includes(id));
       throw new NotFoundException(
         `Los siguientes roles no fueron encontrados: ${notFoundRoles.join(', ')}`
       );
     }
 
-    // Obtener los UUIDs de los roles
+    // Obtener los IDs de los roles
     const roleIds = roles.map(r => r.id);
 
     // Verificar roles ya asignados (evitar duplicados)
@@ -69,6 +69,7 @@ export class UserRolesService {
     const newRoleIds = roleIds.filter(roleId => !existingRoleIds.has(roleId));
 
     // Crear todas las asignaciones de una vez (batch insert)
+    let savedUserRoles: UserRol[] = [];
     if (newRoleIds.length > 0) {
       const userRoles = newRoleIds.map(roleId => 
         this.userRolRepository.create({
@@ -77,7 +78,7 @@ export class UserRolesService {
         })
       );
       // Guardar todas las asignaciones de roles nuevas en una sola consulta
-      await this.userRolRepository.save(userRoles); 
+      savedUserRoles = await this.userRolRepository.save(userRoles); 
     }
 
     // Determinar mensaje según el resultado
@@ -95,6 +96,10 @@ export class UserRolesService {
       message: message,
       data: {
         user_id: id,
+        assigned: savedUserRoles.map(ur => ({
+          id: ur.id,
+          role_id: ur.roles_id
+        })),
         roles_assigned: newRoleIds.length,
         roles_already_existed: roleIds.length - newRoleIds.length,
         total_roles: roleIds.length
@@ -137,6 +142,61 @@ export class UserRolesService {
         },
         roles: rolesData
       }
+    };
+  }
+
+  // Actualizar asignación de rol (cambiar el rol asignado)
+  async update(id: string, createUserRolDto: CreateUserRolDto): Promise<any> {
+    const userRol = await this.userRolRepository.findOne({
+      where: { id, is_active: true },
+    });
+
+    if (!userRol) {
+      throw new NotFoundException(
+        this.i18n.t('user_roles.NOT_FOUND', { lang, args: { id } }) || `Asignación de rol con id ${id} no encontrada`
+      );
+    }
+
+    // Validar que el nuevo rol exista
+    if (createUserRolDto.roles?.length > 0) {
+      const role = await this.roleRepository.findOne({
+        where: { id: createUserRolDto.roles[0], is_active: true },
+      });
+      if (!role) {
+        throw new NotFoundException(
+          `El rol con id ${createUserRolDto.roles[0]} no fue encontrado`
+        );
+      }
+      userRol.roles_id = role.id;
+    }
+
+    const updated = await this.userRolRepository.save(userRol);
+
+    return {
+      status: this.i18n.t('general.SUCCESS', { lang }),
+      message: this.i18n.t('user_roles.MSG_UPDATE', { lang }) || 'Asignación de rol actualizada correctamente',
+      data: updated,
+    };
+  }
+
+  // Eliminar asignación de rol (soft delete)
+  async delete(id: string): Promise<any> {
+    const userRol = await this.userRolRepository.findOne({
+      where: { id, is_active: true },
+    });
+
+    if (!userRol) {
+      throw new NotFoundException(
+        this.i18n.t('user_roles.NOT_FOUND', { lang, args: { id } }) || `Asignación de rol con id ${id} no encontrada`
+      );
+    }
+
+    userRol.is_active = false;
+    await this.userRolRepository.save(userRol);
+
+    return {
+      status: this.i18n.t('general.SUCCESS', { lang }),
+      message: this.i18n.t('user_roles.MSG_DELETE', { lang }) || 'Asignación de rol eliminada correctamente',
     };
   }
 

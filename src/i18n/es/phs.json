@@ -42,5 +42,6 @@
   "EXAMPLE_UUID": "d290f1ee-6c54-4b01-90e6-d701748f0851",
   "EXAMPLE_TAX_ID_EXIST": "tax_id (NIT) ya existe.",
   "RESPUESTA_TODAS_LAS_COPROPIDADES": "Listado de copropiedades obtenido correctamente", 
-  "EXAMPLE_CREATED_AT": "2025-12-25T13:45:00Z"
+  "EXAMPLE_CREATED_AT": "2025-12-25T13:45:00Z",
+  "PARAM_USER_ID": "ID del usuario para filtrar las copropiedades asignadas"
 }

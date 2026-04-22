@@ -91,6 +91,7 @@ export class UsersController {
 
   @Get()
   @ApiOperation({ summary: t("LIST_SUMMARY") })
+  @ApiQuery({ name: "phId", required: false, description: t("PARAM_PH_ID"), example: "550e8400-e29b-41d4-a716-446655440000" })
   @ApiQuery({ name: "page", required: false, example: 1 })
   @ApiQuery({ name: "limit", required: false, example: 100 })
   @ApiQuery({
@@ -105,10 +106,11 @@ export class UsersController {
     type: UsersListResponseDto,
   })
   async findAll(
+    @Query("phId") phId?: string,
     @Query("_fields") _fields?: string,
     @Query("_where") _where?: string
   ) {
-    return await this.usersService.findAll(_fields, _where);
+    return await this.usersService.findAll(_fields, _where, phId);
   }
 
   @Get("email/:email")

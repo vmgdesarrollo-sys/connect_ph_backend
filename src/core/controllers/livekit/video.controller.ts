@@ -1,4 +1,4 @@
-import { LiveKitService } from '../../services/livekit/livekit.service';
+import { LiveKitService } from "../../services/livekit/livekit.service";
 import { AuthGuard } from "../../utils/auth.guard";
 import {
   ApiBearerAuth,
@@ -20,8 +20,8 @@ import {
   UseGuards,
   Param,
   Query,
-} from '@nestjs/common';
-import type { Response } from 'express';
+} from "@nestjs/common";
+import type { Response } from "express";
 import {
   GenerateTokenDto,
   CreateRoomDto,
@@ -30,32 +30,29 @@ import {
   MuteParticipantDto,
   RoomInfoDto,
   EndRoomDto,
-} from '../../dtos/payload/livekit-payload.dto';
+} from "../../dtos/payload/livekit-payload.dto";
 
-@ApiTags('Video')
+@ApiTags("Video")
 @UseGuards(AuthGuard)
 @ApiBearerAuth("access-token")
-@Controller('video')
+@Controller("video")
 export class VideoController {
   constructor(private readonly livekitService: LiveKitService) {}
 
   /**
    * Endpoint para generar token de acceso a una sala
    */
-  @Post('token')
-  @ApiOperation({ summary: 'Generar token de acceso a sala de video' })
-  @ApiResponse({ status: 200, description: 'Token generado exitosamente' })
-  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @Post("token")
+  @ApiOperation({ summary: "Generar token de acceso a sala de video" })
+  @ApiResponse({ status: 200, description: "Token generado exitosamente" })
+  @ApiResponse({ status: 401, description: "No autorizado" })
   @ApiBody({ type: GenerateTokenDto })
-  async getToken(
-    @Body() data: GenerateTokenDto,
-    @Res() res: Response,
-  ) {
+  async getToken(@Body() data: GenerateTokenDto, @Res() res: Response) {
     try {
       // Determinar permisos según el rol
       let canPublish = data.canPublish || false;
-      
-      if (data.role === 'ADMIN' || data.role === 'HOST') {
+
+      if (data.role === "ADMIN" || data.role === "HOST") {
         canPublish = true;
       }
 
@@ -66,7 +63,7 @@ export class VideoController {
         canPublish,
       );
 
-      const livekitUrl = process.env.LIVEKIT_URL || '';
+      const livekitUrl = process.env.LIVEKIT_URL || "";
 
       return res.status(HttpStatus.OK).json({
         accessToken: token,
@@ -75,7 +72,7 @@ export class VideoController {
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Error al generar token',
+        message: "Error al generar token",
         error: error.message,
       });
     }
@@ -84,13 +81,10 @@ export class VideoController {
   /**
    * Generar token de viewer (solo ver)
    */
-  @Post('token/viewer')
-  @ApiOperation({ summary: 'Generar token de viewer (solo puede ver)' })
-  @ApiResponse({ status: 200, description: 'Token de viewer generado' })
-  async getViewerToken(
-    @Body() data: GenerateTokenDto,
-    @Res() res: Response,
-  ) {
+  @Post("token/viewer")
+  @ApiOperation({ summary: "Generar token de viewer (solo puede ver)" })
+  @ApiResponse({ status: 200, description: "Token de viewer generado" })
+  async getViewerToken(@Body() data: GenerateTokenDto, @Res() res: Response) {
     try {
       const token = await this.livekitService.generateViewerToken(
         data.roomName,
@@ -98,7 +92,7 @@ export class VideoController {
         data.name,
       );
 
-      const livekitUrl = process.env.LIVEKIT_URL || '';
+      const livekitUrl = process.env.LIVEKIT_URL || "";
 
       return res.status(HttpStatus.OK).json({
         accessToken: token,
@@ -107,7 +101,7 @@ export class VideoController {
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Error al generar token de viewer',
+        message: "Error al generar token de viewer",
         error: error.message,
       });
     }
@@ -116,13 +110,10 @@ export class VideoController {
   /**
    * Generar token de host (puede publicar)
    */
-  @Post('token/host')
-  @ApiOperation({ summary: 'Generar token de host (puede publicar)' })
-  @ApiResponse({ status: 200, description: 'Token de host generado' })
-  async getHostToken(
-    @Body() data: GenerateTokenDto,
-    @Res() res: Response,
-  ) {
+  @Post("token/host")
+  @ApiOperation({ summary: "Generar token de host (puede publicar)" })
+  @ApiResponse({ status: 200, description: "Token de host generado" })
+  async getHostToken(@Body() data: GenerateTokenDto, @Res() res: Response) {
     try {
       const token = await this.livekitService.generateHostToken(
         data.roomName,
@@ -130,7 +121,7 @@ export class VideoController {
         data.name,
       );
 
-      const livekitUrl = process.env.LIVEKIT_URL || '';
+      const livekitUrl = process.env.LIVEKIT_URL || "";
 
       return res.status(HttpStatus.OK).json({
         accessToken: token,
@@ -139,7 +130,7 @@ export class VideoController {
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Error al generar token de host',
+        message: "Error al generar token de host",
         error: error.message,
       });
     }
@@ -148,14 +139,11 @@ export class VideoController {
   /**
    * Crear una nueva sala
    */
-  @Post('room')
-  @ApiOperation({ summary: 'Crear una nueva sala de video' })
-  @ApiResponse({ status: 201, description: 'Sala creada exitosamente' })
+  @Post("room")
+  @ApiOperation({ summary: "Crear una nueva sala de video" })
+  @ApiResponse({ status: 201, description: "Sala creada exitosamente" })
   @ApiBody({ type: CreateRoomDto })
-  async createRoom(
-    @Body() data: CreateRoomDto,
-    @Res() res: Response,
-  ) {
+  async createRoom(@Body() data: CreateRoomDto, @Res() res: Response) {
     try {
       const room = await this.livekitService.createRoom(data.roomName, {
         maxParticipants: data.maxParticipants,
@@ -173,7 +161,7 @@ export class VideoController {
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Error al crear la sala',
+        message: "Error al crear la sala",
         error: error.message,
       });
     }
@@ -182,9 +170,9 @@ export class VideoController {
   /**
    * Listar salas activas
    */
-  @Get('rooms')
-  @ApiOperation({ summary: 'Listar todas las salas activas' })
-  @ApiResponse({ status: 200, description: 'Lista de salas' })
+  @Get("rooms")
+  @ApiOperation({ summary: "Listar todas las salas activas" })
+  @ApiResponse({ status: 200, description: "Lista de salas" })
   async listRooms(@Res() res: Response) {
     try {
       const rooms = await this.livekitService.listActiveRooms();
@@ -193,14 +181,16 @@ export class VideoController {
         rooms: rooms.map((room) => ({
           name: room.name,
           numParticipants: room.numParticipants,
-          creationTime: new Date(Number(room.creationTime) * 1000).toISOString(),
+          creationTime: new Date(
+            Number(room.creationTime) * 1000,
+          ).toISOString(),
           metadata: room.metadata,
         })),
         total: rooms.length,
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Error al listar salas',
+        message: "Error al listar salas",
         error: error.message,
       });
     }
@@ -209,20 +199,17 @@ export class VideoController {
   /**
    * Obtener información de una sala
    */
-  @Get('room/:roomName')
-  @ApiOperation({ summary: 'Obtener información de una sala' })
-  @ApiParam({ name: 'roomName', description: 'Nombre de la sala' })
-  @ApiResponse({ status: 200, description: 'Información de la sala' })
-  async getRoomInfo(
-    @Param('roomName') roomName: string,
-    @Res() res: Response,
-  ) {
+  @Get("room/:roomName")
+  @ApiOperation({ summary: "Obtener información de una sala" })
+  @ApiParam({ name: "roomName", description: "Nombre de la sala" })
+  @ApiResponse({ status: 200, description: "Información de la sala" })
+  async getRoomInfo(@Param("roomName") roomName: string, @Res() res: Response) {
     try {
       const room = await this.livekitService.getRoomInfo(roomName);
 
       if (!room) {
         return res.status(HttpStatus.NOT_FOUND).json({
-          message: 'Sala no encontrada',
+          message: "Sala no encontrada",
         });
       }
 
@@ -236,7 +223,7 @@ export class VideoController {
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Error al obtener información de la sala',
+        message: "Error al obtener información de la sala",
         error: error.message,
       });
     }
@@ -245,14 +232,11 @@ export class VideoController {
   /**
    * Eliminar una sala
    */
-  @Delete('room/:roomName')
-  @ApiOperation({ summary: 'Eliminar una sala' })
-  @ApiParam({ name: 'roomName', description: 'Nombre de la sala' })
-  @ApiResponse({ status: 200, description: 'Sala eliminada' })
-  async deleteRoom(
-    @Param('roomName') roomName: string,
-    @Res() res: Response,
-  ) {
+  @Delete("room/:roomName")
+  @ApiOperation({ summary: "Eliminar una sala" })
+  @ApiParam({ name: "roomName", description: "Nombre de la sala" })
+  @ApiResponse({ status: 200, description: "Sala eliminada" })
+  async deleteRoom(@Param("roomName") roomName: string, @Res() res: Response) {
     try {
       await this.livekitService.deleteRoom(roomName);
 
@@ -261,7 +245,7 @@ export class VideoController {
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Error al eliminar la sala',
+        message: "Error al eliminar la sala",
         error: error.message,
       });
     }
@@ -270,14 +254,13 @@ export class VideoController {
   /**
    * Finalizar una sala (expulsar participantes y eliminar)
    */
-  @Post('room/end')
-  @ApiOperation({ summary: 'Finalizar una sala (expulsar participantes y eliminar)' })
+  @Post("room/end")
+  @ApiOperation({
+    summary: "Finalizar una sala (expulsar participantes y eliminar)",
+  })
   @ApiBody({ type: EndRoomDto })
-  @ApiResponse({ status: 200, description: 'Sala finalizada' })
-  async endRoom(
-    @Body() data: EndRoomDto,
-    @Res() res: Response,
-  ) {
+  @ApiResponse({ status: 200, description: "Sala finalizada" })
+  async endRoom(@Body() data: EndRoomDto, @Res() res: Response) {
     try {
       await this.livekitService.endRoom(data.roomName);
 
@@ -286,7 +269,7 @@ export class VideoController {
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Error al finalizar la sala',
+        message: "Error al finalizar la sala",
         error: error.message,
       });
     }
@@ -295,16 +278,17 @@ export class VideoController {
   /**
    * Listar participantes de una sala
    */
-  @Get('room/:roomName/participants')
-  @ApiOperation({ summary: 'Listar participantes de una sala' })
-  @ApiParam({ name: 'roomName', description: 'Nombre de la sala' })
-  @ApiResponse({ status: 200, description: 'Lista de participantes' })
+  @Get("room/:roomName/participants")
+  @ApiOperation({ summary: "Listar participantes de una sala" })
+  @ApiParam({ name: "roomName", description: "Nombre de la sala" })
+  @ApiResponse({ status: 200, description: "Lista de participantes" })
   async listParticipants(
-    @Param('roomName') roomName: string,
+    @Param("roomName") roomName: string,
     @Res() res: Response,
   ) {
     try {
-      const participants = await this.livekitService.listActiveParticipants(roomName);
+      const participants =
+        await this.livekitService.listActiveParticipants(roomName);
 
       return res.status(HttpStatus.OK).json({
         roomName,
@@ -319,7 +303,7 @@ export class VideoController {
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Error al listar participantes',
+        message: "Error al listar participantes",
         error: error.message,
       });
     }
@@ -328,10 +312,10 @@ export class VideoController {
   /**
    * Expulsar a un participante
    */
-  @Post('participant/kick')
-  @ApiOperation({ summary: 'Expulsar a un participante de la sala' })
+  @Post("participant/kick")
+  @ApiOperation({ summary: "Expulsar a un participante de la sala" })
   @ApiBody({ type: KickParticipantDto })
-  @ApiResponse({ status: 200, description: 'Participante expulsado' })
+  @ApiResponse({ status: 200, description: "Participante expulsado" })
   async kickParticipant(
     @Body() data: KickParticipantDto,
     @Res() res: Response,
@@ -344,7 +328,7 @@ export class VideoController {
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Error al expulsar participante',
+        message: "Error al expulsar participante",
         error: error.message,
       });
     }
@@ -353,10 +337,10 @@ export class VideoController {
   /**
    * Silenciar/Activar audio de un participante
    */
-  @Post('participant/mute')
-  @ApiOperation({ summary: 'Silenciar o activar audio de un participante' })
+  @Post("participant/mute")
+  @ApiOperation({ summary: "Silenciar o activar audio de un participante" })
   @ApiBody({ type: MuteParticipantDto })
-  @ApiResponse({ status: 200, description: 'Audio actualizado' })
+  @ApiResponse({ status: 200, description: "Audio actualizado" })
   async muteParticipant(
     @Body() data: MuteParticipantDto,
     @Res() res: Response,
@@ -369,11 +353,11 @@ export class VideoController {
       );
 
       return res.status(HttpStatus.OK).json({
-        message: `Audio de ${data.identity} ${data.muted ? 'silenciado' : 'activado'}`,
+        message: `Audio de ${data.identity} ${data.muted ? "silenciado" : "activado"}`,
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Error al modificar audio',
+        message: "Error al modificar audio",
         error: error.message,
       });
     }
@@ -382,10 +366,10 @@ export class VideoController {
   /**
    * Actualizar permisos de un participante
    */
-  @Post('participant/update')
-  @ApiOperation({ summary: 'Actualizar permisos de un participante' })
+  @Post("participant/update")
+  @ApiOperation({ summary: "Actualizar permisos de un participante" })
   @ApiBody({ type: UpdateParticipantDto })
-  @ApiResponse({ status: 200, description: 'Permisos actualizados' })
+  @ApiResponse({ status: 200, description: "Permisos actualizados" })
   async updateParticipant(
     @Body() data: UpdateParticipantDto,
     @Res() res: Response,
@@ -412,7 +396,7 @@ export class VideoController {
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Error al actualizar permisos',
+        message: "Error al actualizar permisos",
         error: error.message,
       });
     }
@@ -420,6 +404,9 @@ export class VideoController {
 
   /**
    * Endpoint para recibir webhooks de LiveKit
+   * En producción, registrar eventos clave en DB:
+   * - participant_joined/left → AssemblyAttendance
+   * - room_started/ended → Assembly status
    */
   @Post('webhooks')
   @ApiOperation({ summary: 'Recibir eventos de LiveKit (Webhooks)' })
@@ -428,46 +415,24 @@ export class VideoController {
     @Headers('authorization') authHeader: string,
     @Body() body: any,
     @Res() res: Response,
-  ) {
+  ): Promise<void> {
     try {
       const event = await this.livekitService.processWebhook(body, authHeader);
-      const roomName = event.room?.name;
-      const identity = event.participant?.identity;
+      const { event: eventType, room, participant } = event;
+      
+      console.debug(`LiveKit webhook: ${eventType}`, {
+        room: room?.name,
+        participant: participant?.identity,
+        timestamp: new Date().toISOString(),
+      });
 
-      // Manejar diferentes tipos de eventos
-      switch (event.event) {
-        case 'participant_joined':
-          // Aquí puedes guardar en DB: assembly_attendances
-          console.log(`Participante joined: ${identity} en sala ${roomName}`);
-          break;
-
-        case 'participant_left':
-          console.log(`Participante left: ${identity} de sala ${roomName}`);
-          break;
-
-        case 'room_started':
-          console.log(`Sala iniciada: ${roomName}`);
-          break;
-
-        case 'room_ended':
-          console.log(`Sala finalizada: ${roomName}`);
-          break;
-
-        case 'track_published':
-          console.log(`Track publicado por: ${identity}`);
-          break;
-
-        case 'track_unpublished':
-          console.log(`Track no publicado por: ${identity}`);
-          break;
-
-        default:
-          console.log(`Otro evento: ${event.event}`);
-      }
-
-      return res.status(HttpStatus.OK).send('ok');
+      // Implementar lógica de negocio para cada tipo de evento
+      // (En producción, actualizar AssemblyAttendance, Assembly status, etc.)
+      
+      res.status(HttpStatus.OK).send('ok');
     } catch (error) {
-      return res.status(HttpStatus.UNAUTHORIZED).send('Invalid signature');
+      console.error('Webhook processing error', error);
+      res.status(HttpStatus.UNAUTHORIZED).send('Invalid signature');
     }
   }
 }
