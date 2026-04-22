@@ -1,0 +1,158 @@
+import { Module, NestModule, MiddlewareConsumer } from "@nestjs/common";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { JwtModule } from "@nestjs/jwt";
+
+// Entidades (Asegúrate de importar todas las del Excel para esta etapa)
+import { User } from "./entities/user.entity";
+import { UserRol } from "./entities/user_rol.entity";
+import { Role } from "./entities/role.entity";
+import { Ph } from "./entities/ph.entity";
+import { Unit } from "./entities/unit.entity";
+import { UnitAssignment } from "./entities/unit_assignment.entity";
+import { Agenda } from "./entities/agenda.entity";
+import { Assembly } from "./entities/assemblies.entity";
+import { AssemblyAnnouncement } from "./entities/assembly_announcements.entity";
+import { AssemblyAttendance } from "./entities/assembly_attendances.entity";
+import { QaEntry } from "./entities/qa_entries.entity";
+import { QuestionOption } from "./entities/questions_options.entity";
+import { VotingQuestion } from "./entities/voting_questions.entity";
+import { Vote } from "./entities/votes.entity";
+import { RefreshToken } from "./entities/refresh_token.entity";
+import { UserRolePh } from "./entities/user_roles_phs.entity";
+import { PasswordToken } from "./entities/password_token.entity";
+
+// Controladores
+import { UsersController } from "./controllers/users.controller";
+import { UserRolesController } from "./controllers/user_roles.controller";
+import { RolesController } from "./controllers/roles.controller";
+import { PhsController } from "./controllers/phs.controller";
+import { UnitsController } from "./controllers/units.controller";
+import { UnitAssignmentsController } from "./controllers/unit_assignments.controller";
+import { AgendaController } from "./controllers/agenda.controller";
+import { AssembliesController } from "./controllers/assemblies.controller";
+import { AssemblyAnnouncementsController } from "./controllers/assembly_announcements.controller";
+import { AssemblyAttendancesController } from "./controllers/assembly_attendances.controller";
+import { QaEntriesController } from "./controllers/qa_entries.controller";
+import { QuestionsOptionsController } from "./controllers/questions_options.controller";
+import { VotesController } from "./controllers/votes.controller";
+import { VotingQuestionsController } from "./controllers/voting_questions.controller";
+import { UserRolesPhsController } from "./controllers/user_roles_phs.controller";
+import { AuthController } from "./controllers/auth.controller";
+import { VideoController } from "./controllers/livekit/video.controller";
+import { HealthController } from "./controllers/health.controller";
+
+// Q&A Gateway (WebSocket for live chat)
+import { QaGateway } from "./gateways/qa.gateway";
+
+// Utils para tracking automático de usuarios
+import { RequestContextService } from "./services/request-context.service";
+import { RequestContextMiddleware } from "./middleware/request-context.middleware";
+import { UserTrackingSubscriber } from "./subscribers/user-tracking.subscriber";
+
+// Servicios
+import { UsersService } from "./services/users.service";
+import { UserRolesService } from "./services/user_roles.service";
+import { RolesService } from "./services/roles.service";
+import { PhsService } from "./services/phs.service";
+import { UnitsService } from "./services/units.service";
+import { UnitAssignmentsService } from "./services/unit_assignments.service";
+import { AgendaService } from "./services/agenda.service";
+import { AssembliesService } from "./services/assemblies.service";
+import { AssemblyAnnouncementsService } from "./services/assembly_announcements.service";
+import { AssemblyAttendancesService } from "./services/assembly_attendances.service";
+import { QaEntriesService } from "./services/qa_entries.service";
+import { QuestionsOptionsService } from "./services/questions_options.service";
+import { VotesService } from "./services/votes.service";
+import { VotingQuestionsService } from "./services/voting_questions.service";
+import { UserRolesPhsService } from "./services/user_roles_phs.service";
+import { MailerService } from "./services/mailer.service";
+import { AuthService } from "./services/auth/auth.service";
+import { LiveKitService } from "./services/livekit/livekit.service";
+
+@Module({
+  imports: [
+    JwtModule.register({
+      global: true, // Esto permite usar el JwtService en otros módulos sin re-importarlo
+      secret: process.env.JWT_SECRET || "CLAVE_SECRETA_PROVISIONAL",
+      signOptions: { expiresIn: "1h" },
+    }),
+    TypeOrmModule.forFeature([
+      User,
+      Role,
+      Ph,
+      UserRol,
+      Unit,
+      UnitAssignment,
+      Agenda,
+      Assembly,
+      AssemblyAnnouncement,
+      AssemblyAttendance,
+      QaEntry,
+      QuestionOption,
+      VotingQuestion,
+      Vote,
+      RefreshToken,
+      UserRolePh,
+      PasswordToken,
+    ]),
+  ],
+  controllers: [
+    AuthController,
+    VideoController,
+    HealthController,
+    PhsController,
+    UsersController,
+    RolesController,
+    UserRolesController,
+    UnitsController,
+    UnitAssignmentsController,
+    AgendaController,
+    AssembliesController,
+    AssemblyAnnouncementsController,
+    AssemblyAttendancesController,
+    QaEntriesController,
+    QuestionsOptionsController,
+    VotesController,
+    VotingQuestionsController,
+    UserRolesPhsController,
+  ],
+  providers: [
+    UserTrackingSubscriber,
+    RequestContextService,
+    AuthService,
+    PhsService,
+    UsersService,
+    RolesService,
+    UserRolesService,
+    UnitsService,
+    UnitAssignmentsService,
+    AgendaService,
+    AssembliesService,
+    AssemblyAnnouncementsService,
+    AssemblyAttendancesService,
+    QaEntriesService,
+    QuestionsOptionsService,
+    VotesService,
+    VotingQuestionsService,
+    UserRolesPhsService,
+    MailerService,
+    LiveKitService,
+    QaGateway,
+  ],
+
+  exports: [
+    RequestContextService, // Permite que otros módulos usen el contexto
+    UserTrackingSubscriber, // Asegura que la instancia viva con el ciclo de vida del Core
+  ],
+})
+
+// El módulo Core se encarga de configurar el middleware de contexto de petición para el tracking automático de usuarios,
+// y también de proporcionar el servicio de contexto y el subscriber necesario para que funcione correctamente.
+export class CoreModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(RequestContextMiddleware)
+      .exclude("auth/(.*)") // Excluye login/registro si no necesitan tracking
+      .forRoutes("*"); // Aplica a todo lo demás automáticamente
+  }
+}

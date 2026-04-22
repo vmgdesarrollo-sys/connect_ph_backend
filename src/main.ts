@@ -1,0 +1,55 @@
+import { NestFactory } from "@nestjs/core";
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import { ValidationPipe } from "@nestjs/common";
+import { AppModule } from "./app.module";
+
+import { getSwaggerText } from "./utils/swagger-i18n.loader";
+const lang = process?.env?.APP_LANG ?? "es";
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix(process.env.API_VERSION ?? "api/v1");
+
+  const corsOrigins = (process.env.CORS_ORIGINS ?? "*")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  app.enableCors({
+    origin: corsOrigins.includes("*") ? true : corsOrigins,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin"],
+  });
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
+  const config = new DocumentBuilder()
+    .setTitle(getSwaggerText("general", "APP_TITLE", lang))
+    .setDescription(getSwaggerText("general", "APP_DESCR", lang))
+    .setVersion("1.0")
+    .addBearerAuth(
+      {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+        name: "JWT",
+        description: getSwaggerText("general", "JWT_DESCR", lang),
+        in: "header",
+      },
+      "access-token",
+    )
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup("api/docs", app, document);
+
+  await app.listen(process.env.PORT ?? 3001);
+}
+bootstrap();

@@ -1,0 +1,18 @@
+{
+  "TITULO": "Control de Asistencia",
+  "ID_DESC": "Identificador único de asistencia (UUID)",
+  "ASSEMBLY_ID_DESC": "ID de la asamblea",
+  "UNIT_ASSIGNMENT_ID_DESC": "ID del propietario o residente asignado a la unidad",
+  "ARRIVAL_AT_DESC": "Fecha y hora de ingreso",
+  "DEPARTURE_AT_DESC": "Fecha y hora de salida",
+  "IS_PRESENT_DESC": "Indica si el participante está actualmente en la sala",
+  "PROXY_FILE_ID_DESC": "ID del documento de poder (si actúa como delegado)",
+  "NOTES_DESC": "Observaciones adicionales sobre el ingreso",
+  "ARRIVAL": "2026-03-15T07:45:00Z",
+  "NOTES": "Ingresa con poder del apartamento 402",
+  "CREAR_RES": "Ingreso registrado correctamente.",
+  "ACTUALIZADA_RES": "Registro de asistencia actualizado.",
+  "DETALLE_RES": "Detalle de asistencia obtenido.",
+  "LISTAR_RES": "Listado de asistencia obtenido.",
+  "ELIMINADA_RES": "Registro de asistencia eliminado."
+}

@@ -1,0 +1,25 @@
+{
+  "TITULO": "Anuncios de Asamblea",
+    "ID_DESC": "Identificador único del anuncio (UUID)",
+    "ASSEMBLY_ID_DESC": "ID de la asamblea a la que pertenece el anuncio",
+    "TITLE_DESC": "Título breve del anuncio",
+    "MESSAGE_DESC": "Contenido detallado del mensaje",
+    "TYPE_DESC": "Categoría: Informativo | Urgente | Éxito",
+    "IS_STICKY_DESC": "Si el anuncio debe permanecer fijado en la parte superior"
+  ,
+    "TITLE": "Inicio de votación - Presupuesto",
+    "MESSAGE": "Se ha habilitado el módulo de votación para el punto 3 de la agenda.",
+    "TYPE": "Informativo",
+    "UUID": "550e8400-e29b-41d4-a716-446655440000"
+  ,
+    "CREAR_RES": "Anuncio publicado exitosamente.",
+    "ACTUALIZADA_RES": "Anuncio actualizado exitosamente.",
+    "DETALLE_RES": "Detalle del anuncio obtenido.",
+    "LISTAR_RES": "Listado de anuncios obtenido correctamente.",
+    "ELIMINADA_RES": "Anuncio eliminado correctamente."
+  ,
+    "NO_EXISTE": "El anuncio con ID {id} no existe o ya fue eliminado.",
+    "ASSEMBLY_NOT_FOUND": "La asamblea asociada no existe.",
+    "UPDATE_SUCCESS": "Anuncio actualizado exitosamente."
+  
+}

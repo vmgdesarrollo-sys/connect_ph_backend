@@ -1,0 +1,6 @@
+project_id  = "project-0f0aa45c-bb59-45f2-9dc"
+region      = "us-central1"
+zone        = "us-central1-a"
+vpc_id      = "projects/project-0f0aa45c-bb59-45f2-9dc/global/networks/livekit-vpc"
+environment = "testing"
+db_password = "ChangeMe123!"
