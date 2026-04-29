@@ -18,7 +18,7 @@ variable "zone" {
 variable "environment" {
   description = "Environment label (dev, staging, prod)"
   type        = string
-  default     = "production"
+  default     = "testing" # TODO PRODUCCION: Cambiar a "production"
 }
 
 variable "ssh_key" {
@@ -28,21 +28,21 @@ variable "ssh_key" {
 }
 
 variable "initial_node_count" {
-  description = "Initial number of LiveKit nodes"
+  description = "Initial number of LiveKit nodes (1 for testing)"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "min_nodes" {
   description = "Minimum number of nodes in MIG"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "max_nodes" {
   description = "Maximum number of nodes in MIG"
   type        = number
-  default     = 10
+  default     = 2
 }
 
 variable "livekit_api_key" {

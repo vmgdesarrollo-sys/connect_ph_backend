@@ -1,0 +1,7 @@
+project_id         = "project-0f0aa45c-bb59-45f2-9dc"
+region             = "us-central1"
+zone               = "us-central1-a"
+environment        = "testing"
+ssh_key            = ""
+livekit_api_key    = "test-key"
+livekit_api_secret = "test-secret"

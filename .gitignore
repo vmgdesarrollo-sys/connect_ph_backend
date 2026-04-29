@@ -1,3 +1,7 @@
+# Terraform
+/.terraform
+/terraform.lock.hcl
+
 # ----------------------------------------------
 # 1. Dependencias y Directorios Generados
 # ----------------------------------------------

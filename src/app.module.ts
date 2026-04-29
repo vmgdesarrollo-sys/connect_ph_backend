@@ -20,8 +20,8 @@ import { CoreModule } from "./core/core.module";
     I18nModule.forRoot({
       fallbackLanguage: "es",
       loaderOptions: {
-        path: path.join(process.cwd(), "dist/i18n/"),
-        watch: true,
+        path: path.join(process.cwd(), "src/i18n"),
+        watch: false,
       },
       resolvers: [
         new QueryResolver(["lang"]),

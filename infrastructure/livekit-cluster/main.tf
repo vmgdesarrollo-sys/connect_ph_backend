@@ -8,13 +8,18 @@ terraform {
   }
 }
 
+provider "google" {
+  project = var.project_id
+  region  = var.region
+}
+
 # =============================================
 # 1. VPC Network
 # =============================================
 resource "google_compute_network" "livekit_vpc" {
   name                    = "livekit-vpc"
   auto_create_subnetworks = false
-  routing_mode            = "GLOBAL"
+  routing_mode            = "REGIONAL"
 }
 
 resource "google_compute_subnetwork" "livekit_subnet" {
@@ -22,29 +27,26 @@ resource "google_compute_subnetwork" "livekit_subnet" {
   ip_cidr_range = "10.0.0.0/24"
   region        = var.region
   network       = google_compute_network.livekit_vpc.id
-  
+
   private_ip_google_access = true
 }
 
 # =============================================
-# 2. Cloud Memorystore (Redis) - HA
+# 2. Cloud Memorystore (Redis) - Basic para pruebas
+# TODO PRODUCCION: Cambiar tier a "STANDARD_HA" para redundancia
+# TODO PRODUCCION: Aumentar memory_size_gb a 50GB o más
 # =============================================
 resource "google_redis_instance" "livekit_redis" {
-  name               = "livekit-redis"
-  tier               = "STANDARD_HA"
-  memory_size_gb     = 50
-  region             = var.region
-  
-  redis_version      = "REDIS_6_X"
-  location_id        = var.zone
-  
+  name           = "livekit-redis"
+  tier           = "BASIC" # Básico para pruebas
+  memory_size_gb = 1       # 1GB para pruebas
+  region         = var.region
+
+  redis_version = "REDIS_6_X"
+  location_id   = var.zone
+
   authorized_network = google_compute_network.livekit_vpc.id
-  
-  maintenance_policy {
-    day          = "SUNDAY"
-    hour         = 3
-  }
-  
+
   labels = {
     environment = var.environment
     purpose     = "livekit-cluster"
@@ -55,10 +57,8 @@ resource "google_redis_instance" "livekit_redis" {
 # 3. Service Account para LiveKit nodes
 # =============================================
 resource "google_service_account" "livekit_sa" {
-  name            = "livekit-node-sa"
-  description     = "Service account for LiveKit cluster nodes"
-  account_id      = "livekit-node-sa"
-  display_name    = "LiveKit Node Service Account"
+  account_id   = "livekit-node-sa"
+  display_name = "LiveKit Node Service Account"
 }
 
 # IAM roles mínimos
@@ -68,60 +68,59 @@ resource "google_project_iam_member" "livekit_sa_roles" {
     "roles/monitoring.viewer",
     "roles/logging.logWriter",
   ])
-  
+
   project = var.project_id
   role    = each.key
   member  = "serviceAccount:${google_service_account.livekit_sa.email}"
 }
 
 # =============================================
-# 4. Instance Template for LiveKit Nodes
+# 4. Instance Template for LiveKit Node (Pruebas - 1 nodo pequeño)
+# TODO PRODUCCION: Cambiar machine_type a "c2-standard-4" o superior
+# TODO PRODUCCION: Cambiar disk_type a "pd-ssd" y disk_size_gb a 50
+# TODO PRODUCCION: Habilitar sysctl kernel buffers (net.core.rmem_max, etc)
 # =============================================
 resource "google_compute_instance_template" "livekit_node" {
-  name_prefix          = "livekit-node-"
-  base_instance_name   = "livekit-node"
-  region               = var.region
-  machine_type         = "c2-standard-4"
+  name_prefix  = "livekit-node-"
+  region       = var.region
+  machine_type = "e2-small"
 
-  # Boot disk
   disk {
-    source_image = "ubuntu-os-cloud/ubuntu-2204-lts-amd64-v20230620"
+    source_image = "ubuntu-os-cloud/ubuntu-2204-lts"
     auto_delete  = true
     boot         = true
-    disk_size_gb = 50
-    disk_type    = "pd-ssd"
+    disk_size_gb = 20            # Disco más pequeño
+    disk_type    = "pd-standard" # Standard en vez de SSD
   }
 
-  # Network
   network_interface {
     network    = google_compute_network.livekit_vpc.id
     subnetwork = google_compute_subnetwork.livekit_subnet.id
   }
 
-  # Metadata
   metadata = {
     ssh-keys = var.ssh_key != "" ? "admin:${var.ssh_key}" : ""
   }
 
   metadata_startup_script = <<-EOF
-    #!/bin/bash
-    set -e
-    
-    apt-get update && apt-get upgrade -y
-    
-    # Instalar Docker
-    apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-    apt-get update
-    apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-    
-    # Descargar LiveKit binary
-    curl -sSL https://get.livekit.io/cli | bash
-    mv livekit /usr/local/bin/
-    
-    # Configurar LiveKit
-    cat > /etc/livekit.yml << LIVEKIT
+#!/bin/bash
+set -e
+
+apt-get update && apt-get upgrade -y
+
+# Instalar Docker
+apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+apt-get update
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+# Descargar LiveKit binary
+curl -sSL https://get.livekit.io/cli | bash
+mv livekit /usr/local/bin/
+
+# Configurar LiveKit
+cat > /etc/livekit.yml << LIVEKIT
 port: 7880
 udp_port: 50000-60000
 redis:
@@ -135,28 +134,17 @@ prometheus:
   enable: true
   listen: ":9090"
 LIVEKIT
-    
-    # Ajustar ulimit
-    cat > /etc/security/limits.d/99-livekit.conf << LIMIT
+
+# Ajustar ulimit
+cat > /etc/security/limits.d/99-livekit.conf << LIMIT
 *               soft    nofile          65535
 *               hard    nofile          65535
 root            soft    nofile          65535
 root            hard    nofile          65535
 LIMIT
-    
-    # Ajustar kernel buffers
-    cat > /etc/sysctl.d/99-livekit.conf << SYSCTL
-net.core.rmem_max = 134217728
-net.core.wmem_max = 134217728
-net.core.rmem_default = 262144
-net.core.wmem_default = 262144
-net.core.netdev_max_backlog = 5000
-SYSCTL
-    
-    sysctl -p /etc/sysctl.d/99-livekit.conf
-    
-    # Systemd service
-    cat > /etc/systemd/system/livekit.service << SERVICE
+
+# Systemd service
+cat > /etc/systemd/system/livekit.service << SERVICE
 [Unit]
 Description=LiveKit Server
 After=network.target
@@ -172,25 +160,19 @@ LimitNOFILE=65535
 [Install]
 WantedBy=multi-user.target
 SERVICE
-    
-    systemctl daemon-reload
-    systemctl enable livekit
-    systemctl start livekit
-    
-    # Health check
-    sleep 5
-    curl -f http://localhost:7880/health || exit 1
-    
-    echo "LiveKit node listo"
-  EOF
 
-  # Service Account
+systemctl daemon-reload
+systemctl enable livekit
+systemctl start livekit
+
+echo "LiveKit node listo"
+EOF
+
   service_account {
     email  = google_service_account.livekit_sa.email
     scopes = ["cloud-platform"]
   }
 
-  # Tags para firewall
   tags = ["livekit-node", "livekit-udp", "livekit-tcp"]
 
   labels = {
@@ -201,48 +183,25 @@ SERVICE
 }
 
 # =============================================
-# 5. Managed Instance Group (MIG)
+# 5. Managed Instance Group (MIG) - 1 nodo para pruebas
+# TODO PRODUCCION: Aumentar target_size a 2 o más
+# TODO PRODUCCION: Habilitar auto_healing_policies con health_check
+# TODO PRODUCCION: Agregar auto_scaler (min 2, max 10)
 # =============================================
 resource "google_compute_region_instance_group_manager" "livekit_mig" {
   name               = "livekit-mig"
   region             = var.region
+  base_instance_name = "livekit-node"
   version {
     instance_template = google_compute_instance_template.livekit_node.id
     name              = "primary"
   }
 
-  target_size        = var.initial_node_count
-  
-  auto_healing_policies {
-    health_check      = google_compute_health_check.livekit_health_check.id
-    initial_delay_sec = 300
-  }
+  target_size = 1 # Solo 1 nodo para pruebas
 
   named_port {
     name = "livekit-tcp"
     port = 7880
-  }
-  
-  named_port {
-    name = "livekit-metrics"
-    port = 9090
-  }
-}
-
-# AutoScaler
-resource "google_compute_region_autoscaler" "livekit_autoscaler" {
-  name   = "livekit-autoscaler"
-  region = var.region
-  target = google_compute_region_instance_group_manager.livekit_mig.id
-
-  autoscaling_policy {
-    min_replicas    = var.min_nodes
-    max_replicas    = var.max_nodes
-    cooldown_period = 300
-
-    cpu_utilization {
-      target = 0.65
-    }
   }
 }
 
@@ -250,10 +209,10 @@ resource "google_compute_region_autoscaler" "livekit_autoscaler" {
 # 6. Health Checks
 # =============================================
 resource "google_compute_health_check" "livekit_health_check" {
-  name               = "livekit-health-check"
-  check_interval_sec = 30
-  timeout_sec        = 10
-  healthy_threshold  = 2
+  name                = "livekit-health-check"
+  check_interval_sec  = 30
+  timeout_sec         = 10
+  healthy_threshold   = 2
   unhealthy_threshold = 3
 
   tcp_health_check {
@@ -265,19 +224,19 @@ resource "google_compute_health_check" "livekit_health_check" {
 }
 
 resource "google_compute_health_check" "livekit_tcp_health" {
-  name               = "livekit-tcp-health"
-  check_interval_sec = 30
-  timeout_sec        = 10
-  healthy_threshold  = 2
+  name                = "livekit-tcp-health"
+  check_interval_sec  = 30
+  timeout_sec         = 10
+  healthy_threshold   = 2
   unhealthy_threshold = 3
-  
+
   tcp_health_check {
     port = 7880
   }
 }
 
 # =============================================
-# 7. Load Balancer (TCP)
+# 6. Load Balancer Global
 # =============================================
 resource "google_compute_global_address" "livekit_lb_ip" {
   name = "livekit-lb-ip"
@@ -289,7 +248,7 @@ resource "google_compute_backend_service" "livekit_backend" {
   port_name             = "livekit-tcp"
   timeout_sec           = 3600
   load_balancing_scheme = "EXTERNAL"
-  
+
   backend {
     group           = google_compute_region_instance_group_manager.livekit_mig.instance_group
     balancing_mode  = "UTILIZATION"
@@ -306,7 +265,7 @@ resource "google_compute_target_tcp_proxy" "livekit_proxy" {
 
 resource "google_compute_global_forwarding_rule" "livekit_tcp" {
   name       = "livekit-tcp-forwarding"
-  ip_address = google_compute_global_address.livekit_lb_ip.id
+  ip_address = google_compute_global_address.livekit_lb_ip.address
   port_range = "7880"
   target     = google_compute_target_tcp_proxy.livekit_proxy.id
 }
@@ -338,7 +297,8 @@ resource "google_compute_firewall" "allow_livekit_udp" {
     ports    = ["50000-60000"]
   }
 
-  target_tags = ["livekit-node"]
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["livekit-node"]
 
   description = "Allow UDP traffic for video/audio (50000-60000)"
 }
@@ -362,7 +322,7 @@ resource "google_compute_firewall" "allow_health_checks" {
 # 9. Outputs
 # =============================================
 output "livekit_lb_ip" {
-  description = "IP pública del Load Balancer (usar en LIVEKIT_URL)"
+  description = "IP pública del Load Balancer Global (usar en LIVEKIT_URL)"
   value       = google_compute_global_address.livekit_lb_ip.address
 }
 

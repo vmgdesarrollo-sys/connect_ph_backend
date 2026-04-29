@@ -23,7 +23,7 @@ variable "vpc_id" {
 variable "environment" {
   description = "Environment label (dev, staging, prod)"
   type        = string
-  default     = "production"
+  default     = "testing" # TODO PRODUCCION: Cambiar a "production"
 }
 
 variable "db_password" {
@@ -39,7 +39,7 @@ variable "enable_replica" {
 }
 
 variable "machine_tier" {
-  description = "Tier de Cloud SQL (db-custom-4-15360 recomendado para +2000 usuarios)"
+  description = "Tier de Cloud SQL (db-g1-small para pruebas, db-custom-4-15360 para prod)"
   type        = string
-  default     = "db-custom-4-15360"
+  default     = "db-g1-small"
 }
