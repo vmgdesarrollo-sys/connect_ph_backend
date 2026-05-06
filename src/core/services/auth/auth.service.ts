@@ -23,7 +23,7 @@ type SessionData = {
   userId: string;
   userProfile: {
     email: string;
-    firstName: string;
+    name: string;
     lastName: string;
     document: string | null;
     documentType: string | null;
@@ -369,7 +369,7 @@ export class AuthService {
       userId: user.id,
       userProfile: {
         email: user.email,
-        firstName: user.first_name,
+        name: user.first_name,
         lastName: user.last_name,
         document: user.document_number,
         documentType: user.document_type,
@@ -386,9 +386,7 @@ export class AuthService {
   private async issueAccessToken(userData: SessionData) {
     return this.jwtService.signAsync({
       sub: userData.userId,
-      email: userData.userProfile.email,
       userProfile: userData.userProfile,
-      userId: userData.userId,
       ownership: userData.ownership,
       scope: userData.scope,
       token_type: 'access',

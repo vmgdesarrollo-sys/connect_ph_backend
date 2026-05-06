@@ -103,4 +103,60 @@ export class UserRolesPhsService {
       }
     };
   }
+
+  // Actualizar asignación de copropiedad (cambiar la PH asociada)
+  async update(id: string, dto: CreateUserRolePhDto): Promise<any> {
+    const assignment = await this.userRolePhRepository.findOne({
+      where: { id, is_active: true },
+    });
+
+    if (!assignment) {
+      throw new NotFoundException(
+        this.i18n.t('user_roles_phs.NOT_FOUND_ASSIGNMENT', { lang, args: { id } })
+      );
+    }
+
+    if (dto.phs_ids?.length > 0) {
+      const ph = await this.phRepository.findOne({
+        where: { id: dto.phs_ids[0], is_active: true },
+      });
+
+      if (!ph) {
+        throw new NotFoundException(
+          this.i18n.t('user_roles_phs.PHS_NOT_FOUND', { lang, args: {} })
+        );
+      }
+
+      assignment.phs_id = ph.id;
+    }
+
+    const updated = await this.userRolePhRepository.save(assignment);
+
+    return {
+      status: this.i18n.t('general.SUCCESS', { lang }),
+      message: this.i18n.t('user_roles_phs.MSG_UPDATE', { lang }) || 'Asignación de copropiedad actualizada correctamente',
+      data: updated,
+    };
+  }
+
+  // Eliminar asignación de copropiedad (soft delete)
+  async delete(id: string): Promise<any> {
+    const assignment = await this.userRolePhRepository.findOne({
+      where: { id, is_active: true },
+    });
+
+    if (!assignment) {
+      throw new NotFoundException(
+        this.i18n.t('user_roles_phs.NOT_FOUND_ASSIGNMENT', { lang, args: { id } })
+      );
+    }
+
+    assignment.is_active = false;
+    await this.userRolePhRepository.save(assignment);
+
+    return {
+      status: this.i18n.t('general.SUCCESS', { lang }),
+      message: this.i18n.t('user_roles_phs.MSG_DELETE', { lang }) || 'Asignación de copropiedad eliminada correctamente',
+    };
+  }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, ParseUUIDPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, ParseUUIDPipe, UseGuards, Put, Delete } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { AuthGuard } from '../utils/auth.guard';
 import { AuthErrorDto } from '../dtos/general.dto';
@@ -43,5 +43,24 @@ export class UserRolesPhsController {
   @ApiResponse({ status: 200, description: t('GET_DETAIL_DESC'), type: GetUserRolePhResponseDto })
   async getByUserRole(@Param('userRoleId', ParseUUIDPipe) userRoleId: string) {
     return await this.userRolesPhsService.getPhsByUserRole(userRoleId);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: t('UPDATE_SUMMARY') })
+  @ApiParam({ name: 'id', description: t('PARAM_ID'), example: '550e8400-e29b-41d4-a716-446655440000' })
+  @ApiResponse({ status: 200, description: t('UPDATE_DESC'), type: CreateUserRolePhResponseDto })
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateUserRolePhDto
+  ) {
+    return await this.userRolesPhsService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: t('DELETE_SUMMARY') })
+  @ApiParam({ name: 'id', description: t('PARAM_ID'), example: '550e8400-e29b-41d4-a716-446655440000' })
+  @ApiResponse({ status: 200, description: t('DELETE_DESC') })
+  async delete(@Param('id', ParseUUIDPipe) id: string) {
+    return await this.userRolesPhsService.delete(id);
   }
 }
