@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS phs (
     country VARCHAR(100),
     stratum VARCHAR(50),
     number_of_towers INTEGER,
-    amount_of_real_state INTEGER,
+    amount_of_real_estate INTEGER,
     horizontal_property_regulations TEXT,
     created_by UUID REFERENCES users(id),
     updated_by UUID REFERENCES users(id),
@@ -54,14 +54,14 @@ CREATE TABLE IF NOT EXISTS users (
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
+    password VARCHAR(255),
     document_type VARCHAR(20),
     document_number VARCHAR(50),
     phone_number VARCHAR(20),
     avatar_url VARCHAR(255),
     last_login TIMESTAMP,
     is_active BOOLEAN DEFAULT true,
-    person_type VARCHAR(20),
+    type_person VARCHAR(50),
     gender VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -103,8 +103,8 @@ CREATE TABLE IF NOT EXISTS units (
     area DECIMAL(10,2),
     is_active BOOLEAN DEFAULT true,
     tax_responsible VARCHAR(150),
-    rf_document_type VARCHAR(20),
-    rf_document_number VARCHAR(50),
+    tax_responsible_document_type VARCHAR(20),
+    tax_responsible_document VARCHAR(50),
     created_by UUID REFERENCES users(id),
     updated_by UUID REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -133,11 +133,11 @@ CREATE TABLE IF NOT EXISTS unit_assignments (
 CREATE TABLE IF NOT EXISTS agenda (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     assembly_id UUID REFERENCES assemblies(id) ON DELETE CASCADE,
-    sort_order INTEGER,
+    sort_order INTEGER DEFAULT 0,
     title VARCHAR(200) NOT NULL,
     description TEXT,
     is_votable BOOLEAN DEFAULT false,
-    required_quorum DECIMAL(5,2),
+    required_quorum DECIMAL(5,2) DEFAULT 0,
     is_active BOOLEAN DEFAULT true,
     created_by UUID REFERENCES users(id),
     updated_by UUID REFERENCES users(id),
@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS agenda (
 CREATE TABLE IF NOT EXISTS assemblies (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     phs_id UUID REFERENCES phs(id),
-    name VARCHAR(200) NOT NULL,
+    name VARCHAR(255) NOT NULL,
     description TEXT,
     type VARCHAR(50),
     status VARCHAR(30) DEFAULT 'Programada',
@@ -169,12 +169,14 @@ CREATE TABLE IF NOT EXISTS assemblies (
 CREATE TABLE IF NOT EXISTS assembly_announcements (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     assemblies_id UUID REFERENCES assemblies(id) ON DELETE CASCADE,
-    title VARCHAR(100),
+    title VARCHAR(255),
     message TEXT NOT NULL,
-    type VARCHAR(30) DEFAULT 'INFO',
-    is_sticky BOOLEAN DEFAULT false,
+    type VARCHAR(50) DEFAULT 'Informativo', -- Informativo, Urgente, etc.
+    is_sticky BOOLEAN DEFAULT false, -- Para mensajes que deben quedar fijos en pantalla
     created_by UUID REFERENCES users(id),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_by UUID REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 3.4 Asistencia a asambleas (con coeficiente)
@@ -193,19 +195,20 @@ CREATE TABLE IF NOT EXISTS assembly_attendances (
 
 -- 3.5 Preguntas de votación
 CREATE TABLE IF NOT EXISTS voting_questions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     agenda_id UUID REFERENCES agenda(id) ON DELETE CASCADE,
     question_text TEXT NOT NULL,
     description TEXT,
-    type VARCHAR(30),
-    status VARCHAR(20) DEFAULT 'PENDIENTE',
-    result_type VARCHAR(20),
+    type VARCHAR(50) DEFAULT 'Coeficiente',
+    status VARCHAR(50) DEFAULT 'Pendiente',
+    result_type VARCHAR(50) DEFAULT 'Única',
     min_selections INTEGER,
     max_selections INTEGER,
     opened_at TIMESTAMP,
     closed_at TIMESTAMP,
-    is_active BOOLEAN DEFAULT false,
+    is_active BOOLEAN DEFAULT true,
     created_by UUID REFERENCES users(id),
+    updated_by UUID REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -215,7 +218,7 @@ CREATE TABLE IF NOT EXISTS questions_options (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     question_id UUID REFERENCES voting_questions(id) ON DELETE CASCADE,
     option_text VARCHAR(255) NOT NULL,
-    order_index INTEGER,
+    order_index INTEGER DEFAULT 0,
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -331,7 +334,7 @@ CREATE TABLE phs (
     country VARCHAR(100),
     stratum VARCHAR(50),
     number_of_towers INTEGER,
-    amount_of_real_state INTEGER,
+    amount_of_real_estate INTEGER,
     horizontal_property_regulations TEXT,
     created_by UUID REFERENCES users(id),
     updated_by UUID REFERENCES users(id),
@@ -344,14 +347,14 @@ CREATE TABLE users (
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
+    password VARCHAR(255),
     document_type VARCHAR(20),
     document_number VARCHAR(50),
     phone_number VARCHAR(20),
     avatar_url VARCHAR(255),
     last_login TIMESTAMP,
     is_active BOOLEAN DEFAULT true,
-    person_type VARCHAR(20),
+    type_person VARCHAR(50),
     gender VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -364,7 +367,7 @@ CREATE TABLE users (
     title VARCHAR(200) NOT NULL,
     description TEXT,
     is_votable BOOLEAN DEFAULT false,
-    required_quorum DECIMAL(5,2),
+    required_quorum DECIMAL(5,2) DEFAULT 0,
     is_active BOOLEAN DEFAULT true,
     created_by UUID REFERENCES users(id),
     updated_by UUID REFERENCES users(id),
@@ -407,8 +410,8 @@ CREATE TABLE units (
     area DECIMAL(10,2),
     is_active BOOLEAN DEFAULT true,
     tax_responsible VARCHAR(150),
-    rf_document_type VARCHAR(20),
-    rf_document_number VARCHAR(50),
+    tax_responsible_document_type VARCHAR(20),
+    tax_responsible_document VARCHAR(50),
     created_by UUID REFERENCES users(id),
     updated_by UUID REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -452,17 +455,18 @@ CREATE TABLE files (
 CREATE TABLE assemblies (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     phs_id UUID REFERENCES phs(id),
-    name VARCHAR(200),
+    name VARCHAR(255),
     description TEXT,
     type VARCHAR(50),
-    status VARCHAR(30),
-    scheduled_at TIMESTAMP,
+    status VARCHAR(50) DEFAULT 'Programada',
+    scheduled_at TIMESTAMP NOT NULL,
     started_at TIMESTAMP,
     finished_at TIMESTAMP,
-    livekit_room_name VARCHAR(100),
+    livekit_room_name VARCHAR(100) UNIQUE,
     quorum_requirement DECIMAL(5,2),
     is_active BOOLEAN DEFAULT true,
     created_by UUID REFERENCES users(id),
+    updated_by UUID REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -485,15 +489,16 @@ CREATE TABLE voting_questions (
     agenda_id UUID REFERENCES agenda(id) ON DELETE CASCADE,
     question_text TEXT NOT NULL,
     description TEXT,
-    type VARCHAR(30),
-    status VARCHAR(20),
-    result_type VARCHAR(20),
+    type VARCHAR(50) DEFAULT 'Coeficiente',
+    status VARCHAR(50) DEFAULT 'Pendiente',
+    result_type VARCHAR(50) DEFAULT 'Única',
     min_selections INTEGER,
     max_selections INTEGER,
     opened_at TIMESTAMP,
     closed_at TIMESTAMP,
-    is_active BOOLEAN DEFAULT false,
-    created_by UUID REFERENCES users(id),   
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES users(id),
+    updated_by UUID REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -502,7 +507,7 @@ CREATE TABLE questions_options (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     question_id UUID REFERENCES voting_questions(id) ON DELETE CASCADE,
     option_text VARCHAR(255) NOT NULL,
-    order_index INTEGER,
+    order_index INTEGER DEFAULT 0,
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -782,12 +787,14 @@ CREATE TABLE qa_entries (
 CREATE TABLE assembly_announcements (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     assemblies_id UUID REFERENCES assemblies(id) ON DELETE CASCADE,
-    title VARCHAR(100),
+    title VARCHAR(255),
     message TEXT NOT NULL,
-    type VARCHAR(30), -- Ej: 'INFO', 'WARNING', 'SUCCESS', 'URGENT'
+    type VARCHAR(50) DEFAULT 'Informativo', -- Informativo, Urgente, etc.
     is_sticky BOOLEAN DEFAULT false, -- Para mensajes que deben quedar fijos en pantalla
     created_by UUID REFERENCES users(id),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_by UUID REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 --- 12. LOGS DE CITOFONÍA (Comunicación Portería-Residente) ---
@@ -813,4 +820,28 @@ CREATE TABLE guard_report_files (
     guard_shift_reports_id UUID REFERENCES guard_shift_reports(id) ON DELETE CASCADE,
     files_id UUID REFERENCES files(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tokens de recuperación de contraseña
+CREATE TABLE password_tokens (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    token_hash TEXT NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    used_at TIMESTAMP,
+    type VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tokens de refresco para sesiones activas
+CREATE TABLE user_refresh_tokens (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    token_hash TEXT NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
