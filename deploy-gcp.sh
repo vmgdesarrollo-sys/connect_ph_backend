@@ -236,6 +236,7 @@ cmd_deploy_api() {
     --region $REGION \
     --platform managed \
     --allow-unauthenticated \
+    --max-instances=5 \
     --set-env-vars "NODE_ENV=production" \
     --set-env-vars "DB_HOST=$DB_HOST" \
     --set-env-vars "DB_USER=$DB_USER" \
@@ -258,8 +259,16 @@ cmd_deploy_api() {
     --set-env-vars "CORS_ORIGINS=$CORS_ORIGINS" \
     --set-env-vars "API_VERSION=api/v1" \
     --set-env-vars "PORT=3001" \
+    --set-env-vars "MAIL_HOST=sandbox.smtp.mailtrap.io" \
+    --set-env-vars "MAIL_PORT=587" \
+    --set-env-vars "MAIL_USER=7819591e5a00bb" \
+    --set-env-vars "MAIL_PASS=d32c3e5904b282" \
+    --set-env-vars "MAIL_FROM=conectando@conectandoph.com" \
+    --set-env-vars "MAIL_SECURE=false" \
+    --set-env-vars "APP_BASE_URL=http://localhost:3000/auth/" \
+    --set-env-vars "MAIL_REJECT_UNAUTHORIZED=false" \
     --format json \
-  2>/dev/null | jq -r '.status.url' > api_url.txt
+    2>/dev/null | jq -r '.status.url' > api_url.txt
   
   API_URL=$(cat api_url.txt)
   
