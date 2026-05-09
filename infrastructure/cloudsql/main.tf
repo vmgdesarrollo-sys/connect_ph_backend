@@ -53,6 +53,10 @@ resource "google_sql_database_instance" "main" {
 
     ip_configuration {
       ipv4_enabled = true
+      authorized_networks {
+        name = "allow-all"
+        value = "0.0.0.0/0"
+      }
       # private_network = var.vpc_id  # TODO PRODUCCION: Habilitar private IP
     }
   }
@@ -112,7 +116,7 @@ resource "google_project_iam_member" "cloudsql_iam" {
 }
 
 # =============================================
-# 6. Outputs
+# 5. Outputs
 # =============================================
 output "instance_name" {
   description = "Nombre de la instancia"
@@ -127,6 +131,11 @@ output "connection_name" {
 output "private_ip" {
   description = "IP privada de la instancia"
   value       = google_sql_database_instance.main.private_ip_address
+}
+
+output "public_ip" {
+  description = "IP pública de la instancia"
+  value       = google_sql_database_instance.main.ip_address
 }
 
 output "database_name" {
