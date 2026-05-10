@@ -96,13 +96,47 @@ resource "google_sql_user" "app" {
 # }
 
 # =============================================
-# 5. Service Account para Cloud SQL Proxy
+# 5. Outputs
 # =============================================
-resource "google_service_account" "cloudsql_sa" {
-  account_id   = "cloudsql-proxy-sa"
-  display_name = "Cloud SQL Proxy Service Account"
+output "instance_name" {
+  description = "Nombre de la instancia"
+  value       = google_sql_database_instance.main.name
+}
 
-  project = var.project_id
+output "connection_name" {
+  description = "Connection name para Cloud SQL Proxy"
+  value       = google_sql_database_instance.main.connection_name
+}
+
+output "private_ip" {
+  description = "IP privada de la instancia"
+  value       = google_sql_database_instance.main.private_ip_address
+}
+
+output "public_ip" {
+  description = "IP pública de la instancia"
+  value       = google_sql_database_instance.main.ip_address
+}
+
+output "database_name" {
+  description = "Nombre de la base de datos"
+  value       = google_sql_database.main.name
+}
+
+output "username" {
+  description = "Usuario de la aplicación"
+  value       = google_sql_user.app.name
+}
+
+# output "secret_name" {
+#   description = "Nombre del secreto en Secret Manager"
+#   value       = google_secret_manager_secret.db_password.name
+# }
+
+output "connection_string" {
+  description = "Connection string para NestJS"
+  value       = "postgresql://connect_ph_user:${var.db_password}@${google_sql_database_instance.main.private_ip_address}:5432/connect_ph_prod?sslmode=require"
+  sensitive   = true
 }
 
 resource "google_project_iam_member" "cloudsql_iam" {
@@ -121,6 +155,115 @@ resource "google_project_iam_member" "cloudsql_iam" {
 output "instance_name" {
   description = "Nombre de la instancia"
   value       = google_sql_database_instance.main.name
+}
+
+output "connection_name" {
+  description = "Connection name para Cloud SQL Proxy"
+  value       = google_sql_database_instance.main.connection_name
+}
+
+output "private_ip" {
+  description = "IP privada de la instancia"
+  value       = google_sql_database_instance.main.private_ip_address
+}
+
+output "public_ip" {
+  description = "IP pública de la instancia"
+  value       = google_sql_database_instance.main.ip_address
+}
+
+output "database_name" {
+  description = "Nombre de la base de datos"
+  value       = google_sql_database.main.name
+}
+
+output "username" {
+  description = "Usuario de la aplicación"
+  value       = google_sql_user.app.name
+}
+
+# output "secret_name" {
+#   description = "Nombre del secreto en Secret Manager"
+#   value       = google_secret_manager_secret.db_password.name
+# }
+
+output "connection_string" {
+  description = "Connection string para NestJS"
+  value       = "postgresql://connect_ph_user:${var.db_password}@${google_sql_database_instance.main.private_ip_address}:5432/connect_ph_prod?sslmode=require"
+  sensitive   = true
+}
+
+# IAM role for Cloud SQL Admin (needed to change instance tier)
+resource "google_project_iam_member" "cloudsql_scheduler_iam" {
+  for_each = toset([
+    "roles/cloudsql.admin",
+  ])
+
+  project = var.project_id
+  role    = each.key
+  member  = "serviceAccount:${google_service_account.cloudsql_scheduler_sa.email}"
+}
+
+# =============================================
+# 6. Cloud Scheduler Jobs to reduce Cloud SQL tier during off-hours
+# =============================================
+resource "google_cloud_scheduler_job" "cloudsql_reduce_tier" {
+  name     = "cloudsql-reduce-tier"
+  description = "Reduce Cloud SQL tier to minimum during off-hours (8PM-8AM)"
+  schedule = "0 20 * * *"  # 8:00 PM
+  time_zone = "America/Bogota"
+
+  attempt_deadline = "30s"
+
+  http_target {
+    http_method = "PATCH"
+    uri = "https://sqladmin.googleapis.com/v1beta4/projects/${var.project_id}/instances/connect-ph-db-instance"
+
+    oidc_token {
+      service_account_email = google_service_account.cloudsql_scheduler_sa.email
+      # Use cloud-platform scope for full access, or sqlservice.admin for more restricted
+      scope = "https://www.googleapis.com/auth/cloud-platform"
+    }
+
+    headers = {
+      "Content-Type" = "application/json"
+    }
+
+    body = jsonencode({
+      settings = {
+        tier = "db-f1-micro"
+      }
+    })
+  }
+}
+
+resource "google_cloud_scheduler_job" "cloudsql_restore_tier" {
+  name     = "cloudsql-restore-tier"
+  description = "Restore Cloud SQL tier to normal during business hours (8AM-8PM)"
+  schedule = "0 8 * * *"  # 8:00 AM
+  time_zone = "America/Bogota"
+
+  attempt_deadline = "30s"
+
+  http_target {
+    http_method = "PATCH"
+    uri = "https://sqladmin.googleapis.com/v1beta4/projects/${var.project_id}/instances/connect-ph-db-instance"
+
+    oidc_token {
+      service_account_email = google_service_account.cloudsql_scheduler_sa.email
+      scope = "https://www.googleapis.com/auth/cloud-platform"
+    }
+
+    headers = {
+      "Content-Type" = "application/json"
+    }
+
+    body = jsonencode({
+      settings = {
+        tier = var.machine_tier  # Use the variable tier (db-g1-small or db-f1-micro)
+      }
+    })
+  }
 }
 
 output "connection_name" {
