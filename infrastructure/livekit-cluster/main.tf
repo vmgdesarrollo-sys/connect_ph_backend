@@ -54,6 +54,24 @@ resource "google_redis_instance" "livekit_redis" {
 }
 
 # =============================================
+# 7. Instance Schedule for LiveKit nodes (8PM-8AM)
+# =============================================
+resource "google_compute_resource_policy" "livekit_schedule" {
+  name        = "livekit-schedule"
+  region      = var.region
+
+  instance_schedule_policy {
+    vm_start_schedule {
+      schedule = "0 8 * * *"
+    }
+    vm_stop_schedule {
+      schedule = "0 20 * * *"
+    }
+    time_zone = "America/Bogota"
+  }
+}
+
+# =============================================
 # 3. Service Account para LiveKit nodes
 # =============================================
 resource "google_service_account" "livekit_sa" {
