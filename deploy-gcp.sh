@@ -95,43 +95,38 @@ cmd_secrets() {
     log_error "GitHub CLI (gh) no instalado. Instalar: https://cli.github.com/"
     exit 1
   fi
-  
-  # Lista de secrets a crear
-  declare -A secrets=(
-    ["GCP_PROJECT_ID"]="$PROJECT_ID"
-    ["VPC_ID"]="projects/$PROJECT_ID/global/networks/livekit-vpc"
-    ["CORS_ORIGINS"]="https://app.connectph.com"
-  )
-  
-  # Pedir valores interactivamente
-  read -p "DB_PASSWORD (generar automáticamente? s/n): " gen_pass
-  if [[ $gen_pass =~ ^[Ss]$ ]]; then
-    DB_PASS=$(openssl rand -base64 32)
-    log_info "DB_PASSWORD generado: $DB_PASS"
-  else
-    read -p "DB_PASSWORD: " DB_PASS
-  fi
-  
-  read -p "LIVEKIT_API_KEY: " LIVEKIT_KEY
-  read -p "LIVEKIT_API_SECRET: " LIVEKIT_SECRET
-  read -p "JWT_SECRET (dejar vacío para generar): " JWT_SECRET
-  
-  if [[ -z "$JWT_SECRET" ]]; then
-    JWT_SECRET=$(openssl rand -base64 64)
-    log_info "JWT_SECRET generado: $JWT_SECRET"
-  fi
-  
-  # Crear/actualizar secrets via gh CLI
-  log_info "Subiendo secrets a GitHub..."
-  
-  gh secret set DB_PASSWORD -b"$DB_PASS"
-  gh secret set LIVEKIT_API_KEY -b"$LIVEKIT_KEY"
-  gh secret set LIVEKIT_API_SECRET -b"$LIVEKIT_SECRET"
-  gh secret set JWT_SECRET -b"$JWT_SECRET"
-  
-  for key in "${!secrets[@]}"; do
-    gh secret set $key -b"${secrets[$key]}"
-  done
+   # Pedir valores interactivamente
+   read -p "DB_PASSWORD (generar automáticamente? s/n): " gen_pass
+   if [[ $gen_pass =~ ^[Ss]$ ]]; then
+     DB_PASS=$(openssl rand -base64 32)
+     log_info "DB_PASSWORD generado: $DB_PASS"
+   else
+     read -p "DB_PASSWORD: " DB_PASS
+   fi
+   
+   read -p "LIVEKIT_API_KEY: " LIVEKIT_KEY
+   read -p "LIVEKIT_API_SECRET: " LIVEKIT_SECRET
+   read -p "JWT_SECRET (dejar vacío para generar): " JWT_SECRET
+   
+   if [[ -z "$JWT_SECRET" ]]; then
+     JWT_SECRET=$(openssl rand -base64 64)
+     log_info "JWT_SECRET generado: $JWT_SECRET"
+   fi
+   
+   # Valores fijos para otros secrets
+   VPC_ID="projects/$PROJECT_ID/global/networks/livekit-vpc"
+   CORS_ORIGINS="https://app.connectph.com"
+   
+   # Crear/actualizar secrets via gh CLI
+   log_info "Subiendo secrets a GitHub..."
+   
+   gh secret set DB_PASSWORD -b"$DB_PASS"
+   gh secret set LIVEKIT_API_KEY -b"$LIVEKIT_KEY"
+   gh secret set LIVEKIT_API_SECRET -b"$LIVEKIT_SECRET"
+   gh secret set JWT_SECRET -b"$JWT_SECRET"
+   gh secret set GCP_PROJECT_ID -b"$PROJECT_ID"
+   gh secret set VPC_ID -b"$VPC_ID"
+   gh secret set CORS_ORIGINS -b"$CORS_ORIGINS"
   
   # Service Account key
   if [[ -f "$HOME/github-actions-key.json" ]]; then
@@ -168,42 +163,42 @@ cmd_terraform() {
   
   terraform apply -auto-approve
   
-  # Capturar outputs
-  DB_HOST=$(terraform output -raw private_ip)
-  DB_NAME=$(terraform output -raw database_name)
-  DB_USER=$(terraform output -raw username)
-  
-  log_info "Cloud SQL desplegado ✅"
-  log_info "  DB_HOST: $DB_HOST"
-  log_info "  DB_NAME: $DB_NAME"
-  log_info "  DB_USER: $DB_USER"
-  
-  cd ../..
-  
-  # 2. LiveKit Cluster
-  log_info "2/2 Desplegando LiveKit Cluster..."
-  cd "$TERRAFORM_DIR_LIVEKIT"
-  
-  terraform init -upgrade
-  
-  if [[ ! -f terraform.tfvars ]]; then
-    cp terraform.tfvars.example terraform.tfvars
-  fi
-  
-  terraform apply -auto-approve
-  
-  # Capturar outputs
-  LIVEKIT_LB_IP=$(terraform output -raw livekit_lb_ip)
-  LIVEKIT_REDIS_HOST=$(terraform output -raw redis_host)
-  
-  log_info "LiveKit Cluster desplegado ✅"
-  log_info "  LB IP: $LIVEKIT_LB_IP"
-  log_info "  Redis: $LIVEKIT_REDIS_HOST"
-  
-  cd ../..
-  
-  # Guardar outputs para deploy-api
-  cat > .env.generated <<EOF
+   # Capturar outputs
+   DB_HOST=$(terraform output -json public_ip | jq -r '.[] | select(.type == "PRIMARY") | .ip_address')
+   DB_NAME=$(terraform output -raw database_name)
+   DB_USER=$(terraform output -raw username)
+   
+   log_info "Cloud SQL desplegado ✅"
+   log_info "  DB_HOST: $DB_HOST"
+   log_info "  DB_NAME: $DB_NAME"
+   log_info "  DB_USER: $DB_USER"
+   
+   cd ../..
+   
+   # 2. LiveKit Cluster
+   log_info "2/2 Desplegando LiveKit Cluster..."
+   cd "$TERRAFORM_DIR_LIVEKIT"
+   
+   terraform init -upgrade
+   
+   if [[ ! -f terraform.tfvars ]]; then
+     cp terraform.tfvars.example terraform.tfvars
+   fi
+   
+   terraform apply -auto-approve
+   
+   # Capturar outputs
+   LIVEKIT_LB_IP=$(terraform output -raw livekit_lb_ip)
+   LIVEKIT_REDIS_HOST=$(terraform output -raw redis_host)
+   
+   log_info "LiveKit Cluster desplegado ✅"
+   log_info "  LB IP: $LIVEKIT_LB_IP"
+   log_info "  Redis: $LIVEKIT_REDIS_HOST"
+   
+   cd ../..
+   
+   # Guardar outputs para deploy-api
+   cat > .env.generated <<EOF
 DB_HOST=$DB_HOST
 DB_NAME=$DB_NAME
 DB_USER=$DB_USER
@@ -217,49 +212,56 @@ EOF
 cmd_deploy_api() {
   log_info "Desplegando API a Cloud Run..."
   
-  # Verificar que tenemos los outputs
-  if [[ ! -f .env.generated ]]; then
-    log_error "Ejecuta primero: ./deploy-gcp.sh terraform"
-    exit 1
-  fi
-  
-  source .env.generated
-  
-  # Configurar gcloud
-  gcloud config set project $PROJECT_ID
-  gcloud auth configure-docker us-central1-docker.pkg.dev
-  
-  # Build y deploy
-  log_info "Building and deploying..."
-  gcloud run deploy $SERVICE_NAME \
-    --source . \
-    --region $REGION \
-    --platform managed \
-    --allow-unauthenticated \
-    --set-env-vars "NODE_ENV=production" \
-    --set-env-vars "DB_HOST=$DB_HOST" \
-    --set-env-vars "DB_USER=$DB_USER" \
-    --set-env-vars "DB_PASSWORD=$DB_PASSWORD" \
-    --set-env-vars "DB_DATABASE=$DB_NAME" \
-    --set-env-vars "DB_PORT=5432" \
-    --set-env-vars "DB_SSL=require" \
-    --set-env-vars "DB_POOL_MAX=100" \
-    --set-env-vars "DB_POOL_MIN=10" \
-    --set-env-vars "LIVEKIT_URL=wss://$LIVEKIT_LB_IP:7880" \
-    --set-env-vars "LIVEKIT_API_KEY=$LIVEKIT_API_KEY" \
-    --set-env-vars "LIVEKIT_API_SECRET=$LIVEKIT_API_SECRET" \
-    --set-env-vars "LIVEKIT_REDIS_HOST=$LIVEKIT_REDIS_HOST" \
-    --set-env-vars "LIVEKIT_REDIS_PORT=6379" \
-    --set-env-vars "LIVEKIT_TTL=8h" \
-    --set-env-vars "LIVEKIT_ROOM_STRATEGY=selective_forwarding" \
-    --set-env-vars "LIVEKIT_MAX_PARTICIPANTS_PER_ROOM=2000" \
-    --set-env-vars "JWT_SECRET=$JWT_SECRET" \
-    --set-env-vars "JWT_EXPIRE=1h" \
-    --set-env-vars "CORS_ORIGINS=$CORS_ORIGINS" \
-    --set-env-vars "API_VERSION=api/v1" \
-    --set-env-vars "PORT=3001" \
-    --format json \
-  2>/dev/null | jq -r '.status.url' > api_url.txt
+   # Verificar que tenemos los outputs
+   if [[ ! -f .env.generated ]]; then
+     log_error "Ejecuta primero: ./deploy-gcp.sh terraform"
+     exit 1
+   fi
+
+   source .env.generated
+
+   # Configurar gcloud
+   gcloud config set project $PROJECT_ID
+   gcloud auth configure-docker us-central1-docker.pkg.dev
+
+    # Build y deploy
+    log_info "Building and deploying..."
+    gcloud run deploy $SERVICE_NAME \
+      --source . \
+      --region $REGION \
+      --platform managed \
+      --allow-unauthenticated \
+      --max-instances=5 \
+      --set-env-vars "NODE_ENV=production" \
+      --set-env-vars "DB_HOST=$DB_HOST" \
+      --set-env-vars "DB_USER=$DB_USER" \
+      --set-env-vars "DB_PASSWORD=$DB_PASSWORD" \
+      --set-env-vars "DB_DATABASE=$DB_NAME" \
+      --set-env-vars "DB_SSL=false" \
+      --set-env-vars "DB_POOL_MAX=100" \
+      --set-env-vars "DB_POOL_MIN=10" \
+      --set-env-vars "LIVEKIT_URL=wss://$LIVEKIT_LB_IP:7880" \
+      --set-env-vars "LIVEKIT_API_KEY=$LIVEKIT_API_KEY" \
+      --set-env-vars "LIVEKIT_API_SECRET=$LIVEKIT_API_SECRET" \
+      --set-env-vars "LIVEKIT_REDIS_HOST=$LIVEKIT_REDIS_HOST" \
+      --set-env-vars "LIVEKIT_REDIS_PORT=6379" \
+      --set-env-vars "LIVEKIT_TTL=8h" \
+      --set-env-vars "LIVEKIT_ROOM_STRATEGY=selective_forwarding" \
+      --set-env-vars "LIVEKIT_MAX_PARTICIPANTS_PER_ROOM=2000" \
+      --set-env-vars "JWT_SECRET=$JWT_SECRET" \
+      --set-env-vars "JWT_EXPIRE=1h" \
+      --set-env-vars "CORS_ORIGINS=$CORS_ORIGINS" \
+      --set-env-vars "API_VERSION=api/v1" \
+      --set-env-vars "MAIL_HOST=sandbox.smtp.mailtrap.io" \
+      --set-env-vars "MAIL_PORT=587" \
+      --set-env-vars "MAIL_USER=7819591e5a00bb" \
+      --set-env-vars "MAIL_PASS=d32c3e5904b282" \
+      --set-env-vars "MAIL_FROM=conectando@conectandoph.com" \
+      --set-env-vars "MAIL_SECURE=false" \
+      --set-env-vars "APP_BASE_URL=http://localhost:3000/auth/" \
+      --set-env-vars "MAIL_REJECT_UNAUTHORIZED=false" \
+      --format json \
+      2>/dev/null | jq -r '.status.url' > api_url.txt
   
   API_URL=$(cat api_url.txt)
   
