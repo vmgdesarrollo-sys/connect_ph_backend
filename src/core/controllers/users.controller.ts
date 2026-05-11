@@ -142,7 +142,12 @@ export class UsersController {
       throw new UnauthorizedException(g("ERROR_TOKEN_AUTH_INVALID"));
     }
 
-    return await this.usersService.getProfile(payload.userId);
+    const userId = payload.sub;
+    if (!userId) {
+      throw new UnauthorizedException(g("ERROR_TOKEN_AUTH_INVALID"));
+    }
+
+    return await this.usersService.getProfile(userId);
   }
 
   @Get(":id")

@@ -7,9 +7,6 @@ import * as crypto from 'crypto';
 
 import { User } from "../../entities/user.entity";
 import { UserRol } from "../../entities/user_rol.entity";
-import { UnitAssignment } from "../../entities/unit_assignment.entity";
-import { Ph } from "../../entities/ph.entity";
-import { Role } from "../../entities/role.entity";
 import { RefreshToken } from "../../entities/refresh_token.entity";
 import { PasswordToken } from "../../entities/password_token.entity";
 import { MailerService } from "../mailer.service";
@@ -21,17 +18,8 @@ const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
 
 type SessionData = {
   userId: string;
-  userProfile: {
-    email: string;
-    firstName: string;
-    lastName: string;
-    document: string | null;
-    documentType: string | null;
-    phone: string | null;
-    avatar: string | null;
-    roles: string[];
-  };
-  ownership: any;
+  name: string;
+  roles: string[];
   scope: string[];
 };
 
@@ -44,12 +32,6 @@ export class AuthService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(UserRol)
     private readonly userRolRepository: Repository<UserRol>,
-    @InjectRepository(UnitAssignment)
-    private readonly unitAssignmentRepository: Repository<UnitAssignment>,
-    @InjectRepository(Ph)
-    private readonly phRepository: Repository<Ph>,
-    @InjectRepository(Role)
-    private readonly roleRepository: Repository<Role>,
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
     @InjectRepository(PasswordToken)
@@ -341,43 +323,10 @@ export class AuthService {
     const scopes = userRoles.flatMap(ur => ur.role.scopes || []);
     const uniqueScopes = scopes.length > 0 ? [...new Set(scopes)] : ["read_only"];
 
-    let ownership: any = null;
-    if (userRoles.length > 0) {
-      const unitAssignment = await this.unitAssignmentRepository.findOne({
-        where: { 
-          user_id: user.id,
-          is_active: true 
-        },
-        relations: ['unit', 'unit.ph']
-      });
-      if (unitAssignment?.unit?.ph) {
-        const ph = unitAssignment.unit.ph;
-        ownership = {
-          id: ph.id,
-          name: ph.name,
-          tax_id: ph.tax_id,
-          address: ph.address,
-          city: ph.city,
-          country: ph.country,
-          state: ph.state,
-          logo_url: ph.logo_url
-        };
-      }
-    }
-
     return {
       userId: user.id,
-      userProfile: {
-        email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        document: user.document_number,
-        documentType: user.document_type,
-        phone: user.phone_number,
-        avatar: user.avatar_url,
-        roles: roles
-      },
-      ownership: ownership,
+      name: user.first_name,
+      roles: roles,
       scope: uniqueScopes
     };
   }
@@ -386,10 +335,8 @@ export class AuthService {
   private async issueAccessToken(userData: SessionData) {
     return this.jwtService.signAsync({
       sub: userData.userId,
-      email: userData.userProfile.email,
-      userProfile: userData.userProfile,
-      userId: userData.userId,
-      ownership: userData.ownership,
+      name: userData.name,
+      roles: userData.roles,
       scope: userData.scope,
       token_type: 'access',
     }, { expiresIn: 3600 });
