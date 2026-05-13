@@ -45,6 +45,36 @@ variable "max_nodes" {
   default     = 2
 }
 
+variable "use_preemptible" {
+  description = "Use preemptible/spot VMs for ~80% cost savings"
+  type        = bool
+  default     = true
+}
+
+variable "enable_autoscaler" {
+  description = "Enable autoscaler for the MIG (scale to zero when idle)"
+  type        = bool
+  default     = true
+}
+
+variable "autoscaler_min_replicas" {
+  description = "Minimum replicas for autoscaler (0 = scale to zero when idle)"
+  type        = number
+  default     = 0
+}
+
+variable "autoscaler_max_replicas" {
+  description = "Maximum replicas for autoscaler"
+  type        = number
+  default     = 4
+}
+
+variable "autoscaler_target_cpu_utilization" {
+  description = "Target CPU utilization for autoscaler (0.0-1.0)"
+  type        = number
+  default     = 0.65
+}
+
 variable "livekit_api_key" {
   description = "LiveKit API Key (will be stored in Secret Manager)"
   type        = string
