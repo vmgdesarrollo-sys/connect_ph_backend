@@ -32,17 +32,17 @@ resource "google_compute_subnetwork" "livekit_subnet" {
 }
 
 # =============================================
-# 2. Cloud Memorystore (Redis) - Basic para pruebas
-# TODO PRODUCCION: Cambiar tier a "STANDARD_HA" para redundancia
-# TODO PRODUCCION: Aumentar memory_size_gb a 50GB o más
+# 2. Cloud Memorystore (Redis) - Cost Optimized
+# PRODUCCION: Cambiar tier a "STANDARD_HA" para redundancia
+# PRODUCCION: Aumentar memory_size_gb a 50GB o más
 # =============================================
 resource "google_redis_instance" "livekit_redis" {
   name           = "livekit-redis"
-  tier           = "BASIC" # Básico para pruebas
-  memory_size_gb = 1       # 1GB para pruebas
+  tier           = "BASIC"
+  memory_size_gb = 1
   region         = var.region
 
-  redis_version = "REDIS_6_X"
+  redis_version = "REDIS_7_0"
   location_id   = var.zone
 
   authorized_network = google_compute_network.livekit_vpc.id
@@ -93,98 +93,96 @@ resource "google_project_iam_member" "livekit_sa_roles" {
 }
 
 # =============================================
-# 4. Instance Template for LiveKit Node (Pruebas - 1 nodo pequeño)
-# TODO PRODUCCION: Cambiar machine_type a "c2-standard-4" o superior
-# TODO PRODUCCION: Cambiar disk_type a "pd-ssd" y disk_size_gb a 50
-# TODO PRODUCCION: Habilitar sysctl kernel buffers (net.core.rmem_max, etc)
+# 4. Instance Template for LiveKit Node (Cost-Optimized - Preemptible)
 # =============================================
 resource "google_compute_instance_template" "livekit_node" {
   name_prefix  = "livekit-node-"
   region       = var.region
-  machine_type = "e2-small"
+  machine_type = "e2-micro"
+
+  scheduling {
+    preemptible        = var.use_preemptible
+    automatic_restart  = !var.use_preemptible
+    on_host_maintenance = var.use_preemptible ? "TERMINATE" : "MIGRATE"
+  }
 
   disk {
     source_image = "ubuntu-os-cloud/ubuntu-2204-lts"
     auto_delete  = true
     boot         = true
-    disk_size_gb = 20            # Disco más pequeño
-    disk_type    = "pd-standard" # Standard en vez de SSD
+    disk_size_gb = 10
+    disk_type    = "pd-balanced"
   }
 
   network_interface {
     network    = google_compute_network.livekit_vpc.id
     subnetwork = google_compute_subnetwork.livekit_subnet.id
+    access_config {
+      # Ephemeral IP for startup script only
+    }
   }
 
   metadata = {
-    ssh-keys = var.ssh_key != "" ? "admin:${var.ssh_key}" : ""
+    ssh-keys                = var.ssh_key != "" ? "admin:${var.ssh_key}" : ""
+    shutdown-script         = var.use_preemptible ? "#!/bin/bash\nsystemctl stop livekit || true" : ""
+    terminate-notice-sec    = var.use_preemptible ? "30" : ""
   }
 
   metadata_startup_script = <<-EOF
-#!/bin/bash
-set -e
+  #!/bin/bash
+  set -e
 
-apt-get update && apt-get upgrade -y
+  # Fast install: skip upgrade, use Docker convenience script
+  curl -fsSL https://get.docker.com | sh
+  systemctl enable --now docker
 
-# Instalar Docker
-apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-apt-get update
-apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+  # Pre-download LiveKit binary & image
+  curl -sSL https://get.livekit.io/cli | bash
+  mv livekit /usr/local/bin/
 
-# Descargar LiveKit binary
-curl -sSL https://get.livekit.io/cli | bash
-mv livekit /usr/local/bin/
+  # Pull LiveKit server image in background
+  docker pull livekit/livekit-server:latest &
 
-# Configurar LiveKit
-cat > /etc/livekit.yml << LIVEKIT
-port: 7880
-udp_port: 50000-60000
-redis:
-  address: "${google_redis_instance.livekit_redis.host}:${google_redis_instance.livekit_redis.port}"
-  password: "${google_redis_instance.livekit_redis.auth_string}"
-  prefix: "livekit-cluster"
-node_id: "livekit-node-\$(hostname)"
-room_auto_delete_delay: 300
-log_level: info
-prometheus:
-  enable: true
-  listen: ":9090"
-LIVEKIT
+  # Configure LiveKit
+  cat > /etc/livekit.yml << LIVEKIT
+  port: 7880
+  udp_port: 50000-60000
+  redis:
+    address: "${google_redis_instance.livekit_redis.host}:${google_redis_instance.livekit_redis.port}"
+    password: "${google_redis_instance.livekit_redis.auth_string}"
+    prefix: "livekit-cluster"
+  node_id: "livekit-node-$(hostname)"
+  bind_addresses: ["0.0.0.0"]
+  room_auto_delete_delay: 300
+  log_level: warn
+  rtc:
+    port_range:
+      start: 50000
+      end: 60000
+  prometheus:
+    enable: true
+    listen: ":9090"
+  LIVEKIT
 
-# Ajustar ulimit
-cat > /etc/security/limits.d/99-livekit.conf << LIMIT
-*               soft    nofile          65535
-*               hard    nofile          65535
-root            soft    nofile          65535
-root            hard    nofile          65535
-LIMIT
+  # Ulimit
+  cat > /etc/security/limits.d/99-livekit.conf << LIMIT
+  * soft nofile 65535
+  * hard nofile 65535
+  LIMIT
 
-# Systemd service
-cat > /etc/systemd/system/livekit.service << SERVICE
-[Unit]
-Description=LiveKit Server
-After=network.target
+  # Wait for Docker image to finish pulling
+  wait
 
-[Service]
-Type=simple
-User=root
-ExecStart=/usr/local/bin/livekit-server --config /etc/livekit.yml
-Restart=on-failure
-RestartSec=10
-LimitNOFILE=65535
+  # Run LiveKit via Docker (faster startup, easier updates)
+  docker run -d --name livekit-server --restart unless-stopped \
+    -p 7880:7880 -p 50000-60000:50000-60000/udp \
+    -v /etc/livekit.yml:/etc/livekit.yml \
+    -e LIVEKIT_KEY="${var.livekit_api_key}" \
+    -e LIVEKIT_SECRET="${var.livekit_api_secret}" \
+    livekit/livekit-server:latest
 
-[Install]
-WantedBy=multi-user.target
-SERVICE
-
-systemctl daemon-reload
-systemctl enable livekit
-systemctl start livekit
-
-echo "LiveKit node listo"
-EOF
+  echo "LiveKit node ready"
+  EOF
 
   service_account {
     email  = google_service_account.livekit_sa.email
@@ -198,13 +196,14 @@ EOF
     purpose     = "livekit-node"
     cluster     = "connect-ph"
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # =============================================
-# 5. Managed Instance Group (MIG) - 1 nodo para pruebas
-# TODO PRODUCCION: Aumentar target_size a 2 o más
-# TODO PRODUCCION: Habilitar auto_healing_policies con health_check
-# TODO PRODUCCION: Agregar auto_scaler (min 2, max 10)
+# 5. Managed Instance Group (MIG) - Cost-Optimized with Autoscaler
 # =============================================
 resource "google_compute_region_instance_group_manager" "livekit_mig" {
   name               = "livekit-mig"
@@ -215,11 +214,38 @@ resource "google_compute_region_instance_group_manager" "livekit_mig" {
     name              = "primary"
   }
 
-  target_size = 1 # Solo 1 nodo para pruebas
+  target_size        = var.initial_node_count
+  distribution_policy_zones = [var.zone]
 
   named_port {
     name = "livekit-tcp"
     port = 7880
+  }
+
+  auto_healing_policies {
+    health_check      = google_compute_health_check.livekit_health_check.id
+    initial_delay_sec = 60
+  }
+}
+
+# =============================================
+# 5b. Autoscaler - Scale to zero when idle
+# =============================================
+resource "google_compute_region_autoscaler" "livekit_autoscaler" {
+  count = var.enable_autoscaler ? 1 : 0
+
+  name   = "livekit-autoscaler"
+  region = var.region
+  target = google_compute_region_instance_group_manager.livekit_mig.id
+
+  autoscaling_policy {
+    max_replicas    = var.autoscaler_max_replicas
+    min_replicas    = var.autoscaler_min_replicas
+    cooldown_period = 60
+
+    cpu_utilization {
+      target = var.autoscaler_target_cpu_utilization
+    }
   }
 }
 
