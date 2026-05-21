@@ -88,65 +88,63 @@ export class UsersService {
       data: userWithoutPassword,
     };
   }
-// Listar todos los usuarios, opcionalmente filtrados por copropiedad
-  async findAll(_fields?: string, _where?: string, phId?: string): Promise<any> {
-    const selectFields = [
-      'u.id', 'u.first_name', 'u.last_name', 'u.type_person', 'u.gender', 'u.avatar_url',
-      'u.email', 'u.document_type', 'u.document_number', 'u.phone_number', 'u.is_active', 'u.created_at'
-    ];
 
-    const qb = this.userRepository
-      .createQueryBuilder('u')
-      .select(selectFields);
+  // Listar todos los usuarios con filtrado por copropiedad (PH) y campos específicos
+async findAll(fields?: string, where?: string, phId?: string): Promise<any> {
+  const defaultFields = [
+    'id', 'first_name', 'last_name', 'type_person', 'gender', 'avatar_url',
+    'email', 'document_type', 'document_number', 'phone_number', 'is_active', 'created_at',
+  ];
 
-    // Si se pasa phId, filtrar usuarios vinculados a esa copropiedad vía user_roles_phs
-    if (phId) {
-      qb.innerJoin('user_roles', 'ur', 'ur.users_id = u.id AND ur.is_active = true')
-        .innerJoin('user_roles_phs', 'urp', 'urp.user_roles_id = ur.id AND urp.phs_id = :phId AND urp.is_active = true', { phId });
-    }
+  const allowedFields = new Set(defaultFields);
 
-    // Aplicar filtros adicionales desde _where
-    if (_where) {
-      try {
-        const parsed = JSON.parse(_where);
-        for (const [key, value] of Object.entries(parsed)) {
+  const requestedFields = fields
+    ?.split(',')
+    .map((field) => field.trim())
+    .filter((field) => allowedFields.has(field)) || [];
+
+  const selectedFields = requestedFields.length > 0
+    ? [...new Set(['id', ...requestedFields])]
+    : defaultFields;
+
+  const qb = this.userRepository.createQueryBuilder('u');
+
+  qb.select(selectedFields.map((field) => `u.${field}`));
+
+  if (phId) {
+    qb.innerJoin('user_roles', 'ur', 'ur.users_id = u.id AND ur.is_active = true')
+      .innerJoin('user_roles_phs', 'urp', 'urp.user_roles_id = ur.id AND urp.phs_id = :phId AND urp.is_active = true', { phId });
+  }
+
+  if (where) {
+    try {
+      const parsed = JSON.parse(where);
+
+      for (const [key, value] of Object.entries(parsed)) {
+        if (allowedFields.has(key)) {
           qb.andWhere(`u.${key} = :${key}`, { [key]: value });
         }
-      } catch {
-        // Si _where no es JSON válido, ignorar
       }
+    } catch {
+      
     }
-
-    const users = await qb.distinct(true).getRawMany();
-
-    // Normalizar nombres de columnas (getRawMany devuelve con prefijo u_)
-    const data = users.map(row => ({
-      id: row.u_id,
-      first_name: row.u_first_name,
-      last_name: row.u_last_name,
-      type_person: row.u_type_person,
-      gender: row.u_gender,
-      avatar_url: row.u_avatar_url,
-      email: row.u_email,
-      document_type: row.u_document_type,
-      document_number: row.u_document_number,
-      phone_number: row.u_phone_number,
-      is_active: row.u_is_active,
-      created_at: row.u_created_at,
-    }));
-
-    return {
-      status: this.i18n.t("general.SUCCESS", { lang, args: {} }),
-      message: this.i18n.t("users.MSG_LIST", { lang, args: {} }),
-      data,
-      properties: {
-        total_items: data.length,
-        items_per_page: 10,
-        current_page: 1,
-        total_pages: Math.ceil(data.length / 10),
-      },
-    };
   }
+
+  const data = await qb.distinct(true).getMany();
+
+  return {
+    status: this.i18n.t("general.SUCCESS"),
+    message: this.i18n.t("users.MSG_LIST"),
+    data,
+    properties: {
+      total_items: data.length,
+      items_per_page: 10,
+      current_page: 1,
+      total_pages: Math.ceil(data.length / 10),
+    },
+  };
+}
+
 // Obtener detalle de un usuario por ID
   async findOne(id: string): Promise<any> {
     // Permitir filtrar por is_active desde id o mostrar todos si no se especifica
