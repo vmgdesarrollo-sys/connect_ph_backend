@@ -68,32 +68,43 @@ export class PhsService {
       data: updatedPh,
     };
   }
-// Listar copropiedades, opcionalmente filtradas por usuario
+
+  // Listar todas las copropiedades (PHs) con filtrado por usuario y de campos
   async findAll(_fields?: string, _where?: string, userId?: string): Promise<any> {
-    const qb = this.phRepository
-      .createQueryBuilder('p')
-      .where('p.is_active = true');
+  const qb = this.phRepository.createQueryBuilder('p').where('p.is_active = true');
 
-    // Si viene userId, filtrar PHs asignadas al usuario vía user_roles → user_roles_phs
-    if (userId) {
-      qb.innerJoin('user_roles_phs', 'urp', 'urp.phs_id = p.id AND urp.is_active = true')
-        .innerJoin('user_roles', 'ur', 'ur.id = urp.user_roles_id AND ur.users_id = :userId AND ur.is_active = true', { userId });
-    }
-
-    const phs = await qb.distinct(true).getMany();
-
-    return {
-      status: this.i18n.t('general.SUCCESS', {lang, args: {},}),
-      message: this.i18n.t('phs.MSG_LIST', {lang, args: {},}),
-      data: phs,
-      properties: {
-        total_items: phs.length,
-        items_per_page: 10,
-        current_page: 1,
-        total_pages: Math.ceil(phs.length / 10),
-      },
-    };
+  if (userId) {
+    qb.innerJoin('user_roles_phs', 'urp', 'urp.phs_id = p.id AND urp.is_active = true')
+      .innerJoin('user_roles', 'ur', 'ur.id = urp.user_roles_id AND ur.users_id = :userId AND ur.is_active = true', { userId });
   }
+
+  // 1. Filtrado de campos en una sola línea
+  const allowed = new Set([
+  'id', 'name', 'tax_id', 'address', 'phone_number', 'email', 'logo_url', 'legal_representative', 'city', 'state', 'country',
+  'stratum', 'number_of_towers', 'amount_of_real_estate', 'horizontal_property_regulations', 'is_active', 'created_by', 'updated_by', 'created_at', 'updated_at',
+]);
+  const fields = _fields?.split(',').map(f => f.trim()).filter(f => allowed.has(f)) || [];
+
+  // 2. Selección dinámica optimizada
+  if (fields.length > 0) {
+    qb.select([...new Set(['id', ...fields])].map(f => `p.${f}`));
+  }
+
+  const [data, total_items] = await qb.distinct(true).getManyAndCount();
+
+  return {
+    status: this.i18n.t('general.SUCCESS', { lang, args: {} }),
+    message: this.i18n.t('phs.MSG_LIST', { lang, args: {} }),
+    data,
+    pagination: { 
+      total_items, 
+      items_per_page: data.length, 
+      current_page: 1, 
+      total_pages: 1 
+    },
+  };
+}
+
 // Obtener detalle de una copropiedad (PH) por ID
   async findOne(id: string): Promise<any> {
     const ph = await this.phRepository.findOne({

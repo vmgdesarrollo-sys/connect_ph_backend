@@ -1,8 +1,6 @@
 import {
   Injectable,
-  ConflictException,
   NotFoundException,
-  BadRequestException,
 } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from "typeorm";
@@ -69,28 +67,66 @@ export class AssembliesService {
     };
   }
 
-  // Listar asambleas activas, con opción de filtrar por phs_id
-  async findAll(params?:  { phs_id?: string; page?: number; limit?: number } ): Promise<Assembly[]> {
-    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  // Listar asambleas activas, con opción de filtrar por phs_id y campos
+  async findAll(params?:  { phs_id?: string; page?: number; limit?: number; fields?: string; where?: string } ): Promise<any> {
+    const page = Math.max(params?.page ?? 1, 1);
+    const limit = Math.min(Math.max(params?.limit ?? 20, 1), 100);
+    const skip = (page - 1) * limit;
 
-    const where: any = {
-      is_active: true,
-    };
+    const defaultFields = [
+      'id', 'phs_id', 'name', 'description', 'type', 'status',
+      'scheduled_at', 'started_at', 'finished_at', 'livekit_room_name',
+      'quorum_requirement', 'is_active', 'created_by', 'updated_by',
+      'created_at', 'updated_at',
+    ];
 
-    // Filtro por conjunto (phs_id)
+    const allowedFields = new Set(defaultFields);
+    const requestedFields = params?.fields
+      ?.split(',')
+      .map((field) => field.trim())
+      .filter((field) => allowedFields.has(field)) || [];
+
+    const selectedFields = requestedFields.length > 0
+      ? [...new Set(['id', ...requestedFields])]
+      : defaultFields;
+
+    const qb = this.assemblyRepository
+      .createQueryBuilder('a')
+      .where('a.is_active = :isActive', { isActive: true })
+      .select(selectedFields.map((field) => `a.${field}`));
+
     if (params?.phs_id) {
-      if (!UUID_REGEX.test(params.phs_id)) {
-        throw new BadRequestException('phs_id debe ser un UUID válido');
-      }
-      where.phs_id = params.phs_id;
+      qb.andWhere('a.phs_id = :phsId', { phsId: params.phs_id });
     }
 
-    const assemblies = await this.assemblyRepository.find({
-      where,
-      order: { created_at: 'DESC' },
-    });
+    if (params?.where) {
+      try {
+        const parsed = JSON.parse(params.where);
+        for (const [key, value] of Object.entries(parsed)) {
+          if (allowedFields.has(key)) {
+            qb.andWhere(`a.${key} = :${key}`, { [key]: value });
+          }
+        }
+      } catch {
+        // Si where no es JSON valido, se ignora.
+      }
+    }
 
-    return assemblies;
+    const [data, total_items] = await qb
+      .orderBy('a.created_at', 'DESC')
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
+
+    return {
+      data,
+      properties: {
+        total_items,
+        items_per_page: limit,
+        current_page: page,
+        total_pages: Math.ceil(total_items / limit),
+      },
+    };
   }
 
   // Obtener asambleas por ID de PH (copropiedad)

@@ -1,5 +1,5 @@
 import {
-  Controller, Put, Get, Post, Delete, Body, Param, ParseUUIDPipe, Query, UseGuards,
+  Controller, Put, Get, Post, Delete, Body, Param, ParseUUIDPipe, Query, UseGuards, DefaultValuePipe, ParseIntPipe,
 } from "@nestjs/common";
 import {
   ApiTags, ApiOperation, ApiQuery, ApiBearerAuth, ApiResponse, ApiParam,
@@ -15,7 +15,7 @@ import {
   UpdateAssemblyResponseDto,
 } from "../dtos/responses/assemblies-response.dto";
 import { AuthErrorDto } from "../dtos/general.dto";
-import { I18nContext, I18nService } from 'nestjs-i18n';
+import { I18nContext } from 'nestjs-i18n';
 import { getSwaggerText } from "../../utils/swagger-i18n.loader";
 
 const lang = I18nContext.current()?.lang ?? process?.env?.APP_LANG ?? 'es';
@@ -43,26 +43,30 @@ export class AssembliesController {
   @ApiOperation({ summary: t('LISTAR_RES') })
   @ApiQuery({ name: "_fields", required: false, example: "*" })
   @ApiQuery({ name: "_where", required: false, example: "(phs_id=uuid)" })
-    @ApiQuery({ name: "phs_id", required: false, description: "UUID del conjunto (PH)", example: "00000000-0000-0000-0000-000000000000" })
+  @ApiQuery({ name: "phs_id", required: false, description: "UUID del conjunto (PH)", example: "00000000-0000-0000-0000-000000000000" })
+  @ApiQuery({ name: "page", required: false, example: 1 })
+  @ApiQuery({ name: "limit", required: false, example: 20 })
   @ApiResponse({ status: 200, type: AssemblyListResponseDto })
     async findAll(
       @Query("_fields") _fields?: string,
       @Query("_where") _where?: string,
-      @Query("phs_id") phs_id?: string
+      @Query("phs_id", new ParseUUIDPipe({ optional: true })) phs_id?: string,
+      @Query("page", new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+      @Query("limit", new DefaultValuePipe(20), ParseIntPipe) limit: number = 20,
     ) {
-      const data = await this.assembliesService.findAll(phs_id ? { phs_id } : undefined);
-      const limit = 100, page = 1;
+      const result = await this.assembliesService.findAll({
+        phs_id,
+        fields: _fields,
+        where: _where,
+        page,
+        limit,
+      });
 
       return {
         status: "success",
         message: t('LISTAR_RES'),
-        data,
-        properties: {
-          total_items: data.length,
-          items_per_page: limit,
-          current_page: page,
-          total_pages: Math.ceil(data.length / limit)
-        },
+        data: result.data,
+        properties: result.properties,
       };
     }
 
