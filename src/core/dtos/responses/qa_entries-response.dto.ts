@@ -8,12 +8,10 @@ const g = (key: string) => getSwaggerText('general', key, lang);
 
 class QaEntryDataDto {
   @ApiProperty() id: string;
-  @ApiProperty() assembly_attendances_id: string;
-  @ApiProperty() question_text: string;
-  @ApiProperty() status: string;
-  @ApiProperty() answer_text: string;
-  @ApiProperty() upvotes: number;
-  @ApiProperty() created_at: Date;
+  @ApiProperty() text: string;
+  @ApiProperty() author: string;
+  @ApiProperty() authorId: string;
+  @ApiProperty() time: Date;
 }
 
 export class CreateQaResponseDto {
