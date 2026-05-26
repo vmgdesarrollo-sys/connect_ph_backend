@@ -1,11 +1,13 @@
 import { Injectable, NotFoundException, Inject, forwardRef } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, In } from "typeorm";
+import { Repository } from "typeorm";
 import { QaEntry } from "../entities/qa_entries.entity";
 import { AssemblyAttendance } from "../entities/assembly_attendances.entity";
 import { CreateQaEntryDto, UpdateQaEntryDto } from "../dtos/payload/qa_entries-payload.dto";
 import { I18nService } from "nestjs-i18n";
 import { QaGateway } from "../gateways/qa.gateway";
+
+const EXCLUDED_ACTIVE_STATUSES = ['rechazada', 'rejected', 'removed', 'eliminada'];
 
 // Servicio para gestionar las preguntas y respuestas de asambleas
 @Injectable()
@@ -19,10 +21,26 @@ export class QaEntriesService {
     @Inject(forwardRef(() => QaGateway))
     private readonly qaGateway: QaGateway,
   ) {}
+
+  private buildAuthor(firstName?: string | null, lastName?: string | null): string {
+    const name = `${firstName ?? ''} ${lastName ?? ''}`.trim();
+    return name || 'Usuario';
+  }
+
+  private mapQuestionRow(row: any) {
+    return {
+      id: row.id,
+      text: row.text,
+      author: this.buildAuthor(row.first_name, row.last_name),
+      authorId: row.author_id,
+      time: row.time,
+    };
+  }
 // Crear una nueva entrada de pregunta y respuesta
   async create(dto: CreateQaEntryDto): Promise<any> {
     const attendance = await this.attendanceRepository.findOne({
       where: { id: dto.assembly_attendances_id },
+      relations: ['unitAssignment', 'unitAssignment.user'],
     });
 
     if (!attendance) {
@@ -34,48 +52,74 @@ export class QaEntriesService {
     const qaEntry = this.qaRepository.create(dto);
     const saved = await this.qaRepository.save(qaEntry);
 
+    const data = {
+      id: saved.id,
+      text: saved.question_text,
+      author: this.buildAuthor(
+        attendance.unitAssignment?.user?.first_name,
+        attendance.unitAssignment?.user?.last_name,
+      ),
+      authorId: attendance.unitAssignment?.user?.id,
+      time: saved.created_at,
+    };
+
     // Emit socket event for real-time update
     if (attendance.assemblies_id) {
-      this.qaGateway.emitNewQuestion(attendance.assemblies_id, saved);
+      this.qaGateway.emitNewQuestion(attendance.assemblies_id, data);
     }
 
     return {
       status: "success",
       message: this.i18n.t("qa_entries.CREAR_RES"),
-      data: saved,
+      data,
     };
   }
 // Listar todas las entradas de preguntas y respuestas, opcionalmente por ID de asistencia
   async findAll(attendanceId?: string): Promise<any[]> {
-    const where: any = {};
-    
+    const qb = this.qaRepository
+      .createQueryBuilder('qa')
+      .innerJoin('qa.assemblyAttendance', 'aa')
+      .innerJoin('aa.unitAssignment', 'ua')
+      .innerJoin('ua.user', 'u')
+      .select([
+        'qa.id AS id',
+        'qa.question_text AS text',
+        'qa.created_at AS time',
+        'u.id AS author_id',
+        'u.first_name AS first_name',
+        'u.last_name AS last_name',
+      ])
+      .orderBy('qa.created_at', 'DESC');
+
     if (attendanceId) {
-      where.assembly_attendances_id = attendanceId;
+      qb.andWhere('qa.assembly_attendances_id = :attendanceId', { attendanceId });
     }
 
-    return await this.qaRepository.find({
-      where,
-      order: { created_at: 'DESC' },
-    });
+    const rows = await qb.getRawMany();
+    return rows.map((row) => this.mapQuestionRow(row));
   }
 
   // Obtener preguntas por ID de asamblea
   async findByAssembly(assemblyId: string): Promise<any[]> {
-    const attendances = await this.attendanceRepository.find({
-      where: { assemblies_id: assemblyId },
-      select: ['id'],
-    });
+    const rows = await this.qaRepository
+      .createQueryBuilder('qa')
+      .innerJoin('qa.assemblyAttendance', 'aa')
+      .innerJoin('aa.unitAssignment', 'ua')
+      .innerJoin('ua.user', 'u')
+      .where('aa.assemblies_id = :assemblyId', { assemblyId })
+      .andWhere('qa.is_active = :isActive', { isActive: true })
+      .select([
+        'qa.id AS id',
+        'qa.question_text AS text',
+        'qa.created_at AS time',
+        'u.id AS author_id',
+        'u.first_name AS first_name',
+        'u.last_name AS last_name',
+      ])
+      .orderBy('qa.created_at', 'DESC')
+      .getRawMany();
 
-    if (attendances.length === 0) {
-      return [];
-    }
-
-    const attendanceIds = attendances.map((a) => a.id);
-
-    return await this.qaRepository.find({
-      where: { assembly_attendances_id: In(attendanceIds) },
-      order: { created_at: 'DESC' },
-    });
+    return rows.map((row) => this.mapQuestionRow(row));
   }
 
   // Votar por una pregunta
@@ -114,46 +158,51 @@ export class QaEntriesService {
 
   // Obtener preguntas activas de una asamblea (para el chat en vivo)
   async getActiveQuestions(assemblyId: string): Promise<any[]> {
-    const attendances = await this.attendanceRepository.find({
-      where: { assemblies_id: assemblyId },
-      select: ['id'],
-    });
+    const rows = await this.qaRepository
+      .createQueryBuilder('qa')
+      .innerJoin('qa.assemblyAttendance', 'aa')
+      .innerJoin('aa.unitAssignment', 'ua')
+      .innerJoin('ua.user', 'u')
+      .where('aa.assemblies_id = :assemblyId', { assemblyId })
+      .andWhere('qa.is_active = :isActive', { isActive: true })
+      .andWhere("COALESCE(LOWER(qa.status), '') NOT IN (:...excludedStatuses)", {
+        excludedStatuses: EXCLUDED_ACTIVE_STATUSES,
+      })
+      .select([
+        'qa.id AS id',
+        'qa.question_text AS text',
+        'qa.created_at AS time',
+        'u.id AS author_id',
+        'u.first_name AS first_name',
+        'u.last_name AS last_name',
+      ])
+      .orderBy('qa.created_at', 'DESC')
+      .getRawMany();
 
-    if (attendances.length === 0) {
-      return [];
-    }
-
-    const attendanceIds = attendances.map((a) => a.id);
-
-    return await this.qaRepository.find({
-      where: { 
-        assembly_attendances_id: In(attendanceIds),
-        is_active: true,
-      },
-      order: { created_at: 'DESC' },
-    });
+    return rows.map((row) => this.mapQuestionRow(row));
   }
 
   // Obtener preguntas moderadas de una asamblea
   async getModeratedQuestions(assemblyId: string): Promise<any[]> {
-    const attendances = await this.attendanceRepository.find({
-      where: { assemblies_id: assemblyId },
-      select: ['id'],
-    });
+    const rows = await this.qaRepository
+      .createQueryBuilder('qa')
+      .innerJoin('qa.assemblyAttendance', 'aa')
+      .innerJoin('aa.unitAssignment', 'ua')
+      .innerJoin('ua.user', 'u')
+      .where('aa.assemblies_id = :assemblyId', { assemblyId })
+      .andWhere('qa.is_moderated = :isModerated', { isModerated: true })
+      .select([
+        'qa.id AS id',
+        'qa.question_text AS text',
+        'qa.created_at AS time',
+        'u.id AS author_id',
+        'u.first_name AS first_name',
+        'u.last_name AS last_name',
+      ])
+      .orderBy('qa.created_at', 'DESC')
+      .getRawMany();
 
-    if (attendances.length === 0) {
-      return [];
-    }
-
-    const attendanceIds = attendances.map((a) => a.id);
-
-    return await this.qaRepository.find({
-      where: { 
-        assembly_attendances_id: In(attendanceIds),
-        is_moderated: true,
-      },
-      order: { upvotes: 'DESC', created_at: 'DESC' },
-    });
+    return rows.map((row) => this.mapQuestionRow(row));
   }
 // Actualizar una entrada de pregunta y respuesta por ID
   async update(id: string, dto: UpdateQaEntryDto): Promise<any> {
@@ -167,6 +216,11 @@ export class QaEntriesService {
 
     if (dto.answer_text && !qaEntry.answered_at) {
       dto['answered_at'] = new Date();
+    }
+
+    const finalStatus = (dto.status ?? qaEntry.status ?? '').toString().toLowerCase();
+    if (EXCLUDED_ACTIVE_STATUSES.includes(finalStatus)) {
+      dto['is_active'] = false;
     }
 
     await this.qaRepository.update(id, dto);
@@ -206,6 +260,7 @@ export class QaEntriesService {
     return {
       status: "success",
       message: this.i18n.t("qa_entries.ACTUALIZADA_RES"),
+      final_status: updated?.status,
       data: updated,
     };
   }
@@ -219,11 +274,33 @@ export class QaEntriesService {
       );
     }
 
-    await this.qaRepository.remove(qaEntry);
+    qaEntry.is_active = false;
+    qaEntry.status = 'removed';
+    const updated = await this.qaRepository.save(qaEntry);
+
+    if (qaEntry.assembly_attendances_id) {
+      const attendance = await this.attendanceRepository.findOne({
+        where: { id: qaEntry.assembly_attendances_id },
+      });
+
+      if (attendance?.assemblies_id) {
+        this.qaGateway.emitQuestionModerated(attendance.assemblies_id, {
+          questionId: qaEntry.id,
+          status: 'removed',
+          is_moderated: true,
+          moderated_at: new Date(),
+        });
+      }
+    }
 
     return { 
       status: "success", 
-      message: this.i18n.t("qa_entries.ELIMINADA_RES") 
+      message: this.i18n.t("qa_entries.ELIMINADA_RES"),
+      final_status: updated.status,
+      data: {
+        id: updated.id,
+        status: updated.status,
+      },
     };
   }
 }

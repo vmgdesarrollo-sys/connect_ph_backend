@@ -6,6 +6,7 @@ import {
   OnGatewayDisconnect,
   ConnectedSocket,
   MessageBody,
+  WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Injectable, Logger } from '@nestjs/common';
@@ -18,10 +19,13 @@ interface JoinRoomPayload {
 
 interface SendMessagePayload {
   assemblyId: string;
-  userId: string;
-  userName: string;
-  questionText: string;
-  isPrivate: boolean;
+  isPrivate?: boolean;
+  author?: string;
+  authorId?: string;
+  text?: string;
+  userId?: string;
+  userName?: string;
+  questionText?: string;
 }
 
 interface TypingPayload {
@@ -141,41 +145,42 @@ export class QaGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: SendMessagePayload,
   ) {
-    const { assemblyId, userId, userName, questionText, isPrivate } = payload;
+    const { assemblyId } = payload;
+    const authorId = (payload.authorId || payload.userId || '').trim();
+    const author = (payload.author || payload.userName || '').trim();
+    const text = (payload.text || payload.questionText || '').trim();
+    const isPrivate = payload.isPrivate ?? false;
+
+    if (!author || !authorId || !text) {
+      throw new WsException('author, authorId y text son obligatorios');
+    }
+
+    const questionPayload = {
+      id: `temp_${Date.now()}`,
+      text,
+      author,
+      authorId,
+      time: new Date().toISOString(),
+    };
 
     // Broadcast to all users in the assembly room
     // If private, only notify moderators/admins
     if (isPrivate) {
       // Send to moderators only
-      this.server.to(`assembly:${assemblyId}`).emit('new_private_question', {
-        id: `temp_${Date.now()}`,
-        userId,
-        userName,
-        questionText,
-        isPrivate: true,
-        status: 'Pendiente',
-        created_at: new Date(),
-      });
+      this.server.to(`assembly:${assemblyId}`).emit('new_private_question', questionPayload);
     } else {
       // Send to all participants
-      this.server.to(`assembly:${assemblyId}`).emit('new_question', {
-        id: `temp_${Date.now()}`,
-        userId,
-        userName,
-        questionText,
-        isPrivate: false,
-        status: 'Pendiente',
-        created_at: new Date(),
-      });
+      this.server.to(`assembly:${assemblyId}`).emit('new_question', questionPayload);
     }
 
-    this.logger.log(`Question sent in assembly ${assemblyId} by user ${userId}`);
+    this.logger.log(`Question sent in assembly ${assemblyId} by user ${authorId}`);
 
     return {
       event: 'question_sent',
       data: {
+        ...questionPayload,
         status: 'pending_moderation',
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       },
     };
   }
@@ -277,7 +282,20 @@ export class QaGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // Helper method to emit events from service
   emitNewQuestion(assemblyId: string, question: any) {
-    this.server.to(`assembly:${assemblyId}`).emit('new_question', question);
+    const payload = {
+      id: question?.id,
+      text: question?.text ?? question?.questionText ?? question?.question_text,
+      author: question?.author ?? question?.userName ?? question?.user_name,
+      authorId: question?.authorId ?? question?.userId ?? question?.user_id,
+      time: question?.time ?? question?.created_at ?? new Date().toISOString(),
+    };
+
+    if (!payload.id || !payload.text || !payload.author || !payload.authorId) {
+      this.logger.warn('new_question omitido: payload incompleto');
+      return;
+    }
+
+    this.server.to(`assembly:${assemblyId}`).emit('new_question', payload);
   }
 
   emitQuestionModerated(assemblyId: string, data: any) {
