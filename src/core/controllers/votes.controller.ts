@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Query, UseGuards, Req } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
+import { Controller, Get, Post, Body, Query, UseGuards, Req, Param, ParseUUIDPipe, ValidationPipe } from "@nestjs/common";
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from "@nestjs/swagger";
 import { VotesService } from "../services/votes.service";
 import { CreateVoteDto } from "../dtos/payload/votes-payload.dto";
 import { AuthGuard } from "../utils/auth.guard";
@@ -19,7 +19,10 @@ export class VotesController {
   @Post()
   @ApiOperation({ summary: t('CREAR_RES') })
   @ApiResponse({ status: 201, type: CreateVoteResponseDto })
-  async create(@Body() dto: CreateVoteDto, @Req() req: any) {
+  async create(
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: false, transform: true })) dto: CreateVoteDto,
+    @Req() req: any,
+  ) {
     // Capturamos IP y User Agent automáticamente si no vienen en el DTO
     dto.ip_address = dto.ip_address || req.ip;
     dto.user_agent = dto.user_agent || req.headers['user-agent'];
@@ -37,5 +40,13 @@ export class VotesController {
       data,
       properties: { total_items: data.length, items_per_page: 100, current_page: 1, total_pages: 1 }
     };
+  }
+
+  @Get("results/:questionId")
+  @ApiOperation({ summary: t('RESULTS_RES') || 'Obtener resultados por pregunta' })
+  @ApiParam({ name: 'questionId', description: t('QUESTION_ID_DESC') })
+  @ApiResponse({ status: 200 })
+  async getResultsByQuestion(@Param("questionId", ParseUUIDPipe) questionId: string) {
+    return await this.votesService.getResultsByQuestion(questionId);
   }
 }

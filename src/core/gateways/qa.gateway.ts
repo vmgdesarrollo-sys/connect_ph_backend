@@ -56,7 +56,7 @@ interface UpvotePayload {
 @Injectable()
 export class QaGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   private readonly logger = new Logger(QaGateway.name);
   private connectedUsers: Map<string, { socketId: string; assemblyId: string; role: string }> = new Map();
@@ -312,6 +312,10 @@ export class QaGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   emitUserTyping(assemblyId: string, data: any) {
     this.server.to(`assembly:${assemblyId}`).emit('user_typing', data);
+  }
+
+  emitVotingStatusChanged(assemblyId: string, data: any) {
+    this.server.to(`assembly:${assemblyId}`).emit('voting_status_changed', data);
   }
 
   // Get connected users count for an assembly

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, ParseUUIDPipe } from "@nestjs/common";
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, ParseUUIDPipe, Patch, Req } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from "@nestjs/swagger";
 import { VotingQuestionsService } from "../services/voting_questions.service";
 import { CreateVotingQuestionDto } from "../dtos/payload/voting_questions-payload.dto";
@@ -54,6 +54,42 @@ export class VotingQuestionsController {
   @ApiResponse({ status: 200, type: UpdateVotingQuestionResponseDto })
   async update(@Param("id", ParseUUIDPipe) id: string, @Body() dto: CreateVotingQuestionDto) {
     return await this.service.update(id, dto);
+  }
+
+  @Patch(':id/open')
+  @ApiOperation({ summary: 'Open voting question (admin only)' })
+  @ApiParam({ name: 'id', description: t('ID_DESC') })
+  @ApiResponse({ status: 200, type: UpdateVotingQuestionResponseDto })
+  async openVoting(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: any,
+    @Body() body?: { statusMessage?: string },
+  ) {
+    return await this.service.openVoting(id, req.user, body?.statusMessage);
+  }
+
+  @Patch(':id/close')
+  @ApiOperation({ summary: 'Close voting question (admin only)' })
+  @ApiParam({ name: 'id', description: t('ID_DESC') })
+  @ApiResponse({ status: 200, type: UpdateVotingQuestionResponseDto })
+  async closeVoting(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: any,
+    @Body() body?: { statusMessage?: string },
+  ) {
+    return await this.service.closeVoting(id, req.user, body?.statusMessage);
+  }
+
+  @Patch(':id/status')
+  @ApiOperation({ summary: 'Change voting status (PENDING|OPEN|CLOSED, admin only)' })
+  @ApiParam({ name: 'id', description: t('ID_DESC') })
+  @ApiResponse({ status: 200, type: UpdateVotingQuestionResponseDto })
+  async changeVotingStatus(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: any,
+    @Body() body: { status: string; statusMessage?: string },
+  ) {
+    return await this.service.changeVotingStatus(id, req.user, body.status, body.statusMessage);
   }
 
   @Delete(":id")
