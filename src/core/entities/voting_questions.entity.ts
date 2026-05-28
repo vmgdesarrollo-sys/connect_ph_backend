@@ -44,10 +44,10 @@ export class VotingQuestion {
   max_selections: number;
 
   @Column({ type: 'timestamp', nullable: true })
-  opened_at: Date;
+  opened_at: Date | null;
 
   @Column({ type: 'timestamp', nullable: true })
-  closed_at: Date;
+  closed_at: Date | null;
 
   @Column({ default: true })
   is_active: boolean;

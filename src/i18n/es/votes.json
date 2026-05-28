@@ -15,5 +15,6 @@
   "LISTAR_RES": "Listado de votos obtenido.",
   "ELIMINADA_RES": "Voto anulado correctamente.",
   "NO_ENCONTRADO": "Voto no encontrado.",
-  "DUPLICATE_VOTE": "Este usuario ya registró un voto para esta pregunta."
+  "DUPLICATE_VOTE": "Este usuario ya registró un voto para esta pregunta.",
+  "VOTING_NOT_OPEN": "La votación no está abierta."
 }
